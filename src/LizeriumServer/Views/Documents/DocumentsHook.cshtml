@@ -1,0 +1,37 @@
+﻿@inject IViewLocalizer Localizer
+@model DocumentViewModel
+@{
+    ViewData["Title"] = Localizer["DocHook_Title_Site"];
+}
+@Html.ReCaptcha()
+
+<section class="news-section">
+    <h1 class="h-color-2 w-100 fw-bold mb-3 mt-5 text-center">⚙️ @Localizer["DocHook_Header_Site"]</h1>
+    <article class="markdown-body">
+        <div class="card-row small custom-cursor-hover">
+            <div class="subcard" onclick="window.location.href = '/docs/all'">
+                <div class="subcard-icon icon-style">📳</div>
+                <div class="subcard-text">@SharedLocalizer["Shared_Docs"]</div>
+            </div>
+        </div>
+        <div class="card full">
+            <div class="card-title purple"><span>📳@SharedLocalizer["Shared_Commands_List"]</span></div>
+            <div class="card-row small">
+                <div id="toc">
+                    <ul>
+                        @foreach (var category in Model.CategoriesHook)
+                        {
+                            var displayName = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName switch
+                            {
+                                "ru" => category.NameRu ?? category.Key,
+                                _ => category.NameEn ?? category.Key
+                            };
+
+                            <li><a href="/docs/hook/@category.Key">@displayName</a></li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </article>
+</section>

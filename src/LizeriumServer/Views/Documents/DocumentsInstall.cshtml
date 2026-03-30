@@ -1,0 +1,16 @@
+﻿@inject IViewLocalizer Localizer
+@model DocumentViewModel
+@{
+    ViewData["Title"] = Localizer["DocInstall_Title_Site"];
+}
+@Html.ReCaptcha()
+
+<h1 class="h-color-2 w-100 fw-bold mb-3 mt-5 text-center">⚙️ @Localizer["DocInstall_Header"]</h1>
+<article class="markdown-body">
+    <div class="card-row small custom-cursor-hover">
+        <div class="subcard" onclick="window.location.href = '/docs/all'">
+            <div class="subcard-icon icon-style">📳</div>
+            <div class="subcard-text">@SharedLocalizer["Shared_Docs"]</div>
+        </div>
+    </div>
+</article>

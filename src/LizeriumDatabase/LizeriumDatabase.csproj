@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LizeriumLogging\LizeriumLogging.csproj" />
+    <ProjectReference Include="..\LizeriumUtilities\LizeriumUtilities.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="database_configuration.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

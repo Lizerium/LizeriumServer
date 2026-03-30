@@ -1,0 +1,236 @@
+﻿@using LizeriumServer.FormatsData.AppSeo
+@inject IViewLocalizer Localizer
+@section PageStyle {
+    <link rel="stylesheet" href="/css/doc_hook.min.css" />
+}
+@model DocumentViewModel
+@{
+    var nameCategoryLocalized = Model.CategoriesHook.FirstOrDefault(it =>
+        it.Key == Model.Category);
+    string categoryName = Model.Category;
+    if (nameCategoryLocalized != null)
+    {
+        categoryName = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName switch
+        {
+            "en" => nameCategoryLocalized?.NameEn ?? Model.Category,
+            _ => nameCategoryLocalized?.NameRu ?? Model.Category
+        };
+    }
+    ViewData["Title"] = Localizer["DocHookItem_Title_Site"].Value + categoryName;
+}
+
+@Html.ReCaptcha()
+
+<h1 id="@Model.Category" class="h-color-2 w-100 fw-bold mb-3 mt-5 text-center">
+    ⚙️ @categoryName
+</h1>
+
+<article class="markdown-body">
+    <div class="card-row small margin-left-right-10 custom-cursor-hover">
+        <div class="subcard" onclick="window.location.href = '/docs/hook'">
+            <div class="subcard-icon icon-style">📳</div>
+            <div class="subcard-text">@SharedLocalizer["Shared_Commands_List"]</div>
+        </div>
+    </div>
+    <div class="search_doc_hook custom-cursor-hover mb-1 mt-1">
+        <input type="text" id="commandSearch" class="form-control mb-3" placeholder="@Localizer["DocHookItem_Search_Placeholder"]">
+        <div id="searchResults" class="row row-cols-1 row-cols-md-2 g-3 justify-content-center"></div>
+    </div>
+
+    <!-- Пагинация только для этой категории -->
+    <nav>
+        @if (Model.CommandsCount.TryGetValue(Model.Category, out var count))
+        {
+            int pages = (int)Math.Ceiling(count / (double)Model.PageSize);
+            if (pages > 1)
+            {
+                <ul class="pagination d-flex align-items-end m-0 flex-row p-0">
+                    @for (int i = 1; i <= pages; i++)
+                    {
+                        if (i == Model.Page)
+                        {
+                            <li class="page-item active"><a class="page-link" href="#">@i</a></li>
+                        }
+                        else
+                        {
+                            <li class="page-item"><a class="page-link" href="/docs/hook/@Model.Category?page=@i">@i</a></li>
+                        }
+                    }
+                </ul>
+            }
+        }
+    </nav>
+    @foreach (var command in Model.Commands)
+    {
+        <pre class="command_block">
+        <blockquote></blockquote>
+        <pre>
+        <code class="language-bash block_command">
+           @foreach (var name in command.CommandNamesList)
+           {
+            <div class="command_div" id="hook_@command.ClearId(@name)">
+            <code class="language-bash name_c">@name</code>
+                </div>
+           }
+          </code>
+        </pre>
+        <pre>
+        <code class="language-ini">
+        @{
+            var currentLang = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+
+            // Проверяем, есть ли перевод для текущей локали
+            string displayName = command.Description;
+
+            if (command.Translations != null
+                    && command.Translations.TryGetValue(currentLang, out var translationsList)
+                    && translationsList.Any())
+            {
+                displayName = translationsList.First();
+            }
+            else
+            {
+                displayName = command.Description ?? "No description";
+            }
+        }@displayName
+        </code>
+        </pre>
+        <blockquote>
+        @if (!string.IsNullOrEmpty(command.UrlGif))
+        {
+            <img id="gif" src="/gifs/@command.UrlGif" alt="@Localizer["DocHookItem_Gif_Alt"]">
+        }
+        @if (command.Status == 1)
+        {
+            <div style="display: flex; flex-direction: column;">
+            <span class="loader status-job short" style="display: flex; flex-direction: row; justify-content: center;">
+               @{
+                    var msg = Localizer["DocHookItem_Command_State3"].Value;
+                    @for (int i = 0; i < msg.Length; i++)
+                    {
+                    <span>@msg[i]</span>
+                    }
+               }
+              </span>
+             </div>
+        }
+        @if (command.Status == 2)
+        {
+            <div style="display: flex; flex-direction: column;">
+
+            <span class="loader status-read short" style="display: flex; flex-direction: row; justify-content: center;">
+                @{
+                     var msg = Localizer["DocHookItem_Command_State1"].Value;
+                     @for (int i = 0; i < msg.Length; i++)
+                     {
+                    <span>@msg[i]</span>
+                     }
+                }
+               </span>	
+               </div>
+
+        }
+        @if (command.Status == 3)
+        {
+            <div style="display: flex; flex-direction: column;">
+
+            <span class="loader status-complete short" style="display: flex; flex-direction: row; justify-content: center;">
+                @{
+                     var msg = Localizer["DocHookItem_Command_State2"].Value;
+                     @for (int i = 0; i < msg.Length; i++)
+                     {
+                    <span>@msg[i]</span>
+                     }
+                }
+               </span>	
+                 </div>
+
+        }
+       </blockquote>
+      </pre>
+    }
+    <!-- Пагинация только для этой категории -->
+    <nav>
+        @if (Model.CommandsCount.TryGetValue(Model.Category, out var countLow))
+        {
+            int pages = (int)Math.Ceiling(countLow / (double)Model.PageSize);
+            if (pages > 1)
+            {
+                <ul class="pagination d-flex align-items-end m-0 flex-row p-0">
+                    @for (int i = 1; i <= pages; i++)
+                    {
+                        if (i == Model.Page)
+                        {
+                            <li class="page-item active"><a class="page-link" href="#">@i</a></li>
+                        }
+                        else
+                        {
+                            <li class="page-item"><a class="page-link" href="/docs/hook/@Model.Category?page=@i">@i</a></li>
+                        }
+                    }
+                </ul>
+            }
+        }
+    </nav>
+
+    <button class="button-copy-code hidden"></button>
+    <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true"
+         class="copy-docs-icon hidden">
+        <path fill-rule="evenodd"
+              d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z">
+        </path>
+        <path fill-rule="evenodd"
+              d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z">
+        </path>
+    </svg>
+    <script>
+        const copyIcon = `<svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" fill="#f1f1f1" class="copy-docs-icon">
+                      <path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                      <path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                    </svg>`;
+
+        const copiedIcon = `<svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" fill="#f1f1f1" class="docs-copied-icon">
+                      <path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path>
+                    </svg>`;
+
+        const blocks = document.querySelectorAll("div.command_div");
+
+        blocks.forEach((block) => {
+            if (!navigator.clipboard) {
+                return;
+            }
+
+            let button = document.createElement("button");
+            button.className = "button-copy-code";
+            button.style.visibility = "visible";
+            button.style.backgroundColor = "#383838";
+            button.innerHTML = copyIcon;
+            block.appendChild(button);
+
+            button.addEventListener("click", async () => {
+                await copyCode(block);
+            });
+        });
+
+        async function copyCode(block) {
+            let copiedCode = block.cloneNode(true);
+            copiedCode.removeChild(copiedCode.querySelector("button.button-copy-code"));
+
+            const html = copiedCode.outerHTML.replace(/<[^>]*>?/gm, "");
+
+            block.querySelector("button.button-copy-code").innerHTML = copiedIcon;
+            setTimeout(function () {
+                block.querySelector("button.button-copy-code").innerHTML = copyIcon;
+            }, 2000);
+
+            const parsedHTML = htmlDecode(html);
+
+            await navigator.clipboard.writeText(parsedHTML);
+        }
+
+        function htmlDecode(input) {
+            const doc = new DOMParser().parseFromString(input, "text/html");
+            return doc.documentElement.textContent;
+        }
+    </script>
+</article>

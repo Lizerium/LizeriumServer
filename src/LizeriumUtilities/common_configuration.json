@@ -1,0 +1,8 @@
+﻿{
+  "appSettings": {
+    "mainDomain": "lizup.ru"
+  },
+  "knownProxies": [
+    "127.0.0.1"
+  ]
+}

@@ -1,0 +1,15 @@
+﻿@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["Maintenance_Title"];
+}
+@Html.ReCaptcha()
+
+<div class="maintenance-wrapper">
+
+    <div id="maintenance">
+        <div class="subcard">
+            <div class="subcard-icon icon-style">🌌</div>
+            <div class="subcard-text">@Localizer["Maintenance_Message"] <a href="https://vk.com/lizerium_game" target="_blank">Lizerium ❕</a></div>
+        </div>
+    </div>
+</div>

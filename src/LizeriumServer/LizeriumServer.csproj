@@ -1,0 +1,111 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+	<PreserveCompilationContext>true</PreserveCompilationContext>
+	<ApplicationIcon>wwwroot\img\96_ico_no_fon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="docs\**" />
+    <Compile Remove="wwwroot\KnowledgeBase\**" />
+    <Compile Remove="wwwroot\Mods\**" />
+    <Content Remove="docs\**" />
+    <Content Remove="wwwroot\KnowledgeBase\**" />
+    <Content Remove="wwwroot\Mods\**" />
+    <EmbeddedResource Remove="docs\**" />
+    <EmbeddedResource Remove="wwwroot\KnowledgeBase\**" />
+    <EmbeddedResource Remove="wwwroot\Mods\**" />
+    <None Remove="docs\**" />
+    <None Remove="wwwroot\KnowledgeBase\**" />
+    <None Remove="wwwroot\Mods\**" />
+    <TypeScriptCompile Remove="docs\**" />
+    <TypeScriptCompile Remove="node_modules\**" />
+    <TypeScriptCompile Remove="wwwroot\KnowledgeBase\**" />
+    <TypeScriptCompile Remove="wwwroot\Mods\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="wwwroot\img\cursor-active.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Gruntfile.js" />
+    <Content Include="ScriptsAndCss\CssFiles\base\_global.scss" />
+    <Content Include="ScriptsAndCss\CssFiles\img\cursor.png">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\1.2.4\1.2.4\1.2.4\AppUpdater.dll.deploy" />
+    <None Include="wwwroot\1.2.4\1.2.4\1.2.4\AppUpdater.pdb.deploy" />
+    <None Include="wwwroot\1.2.4\1.2.4\1.2.4\TestApp.exe.deploy" />
+    <None Include="wwwroot\1.2.4\1.2.4\1.2.4\TestApp.pdb.deploy" />
+    <None Include="wwwroot\1.2.4\1.2.4\config.xml.deploy" />
+    <None Include="wwwroot\1.2.4\config.xml.deploy" />
+    <None Include="wwwroot\img\cursor-active.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspNetCore.ReCaptcha" Version="1.8.2" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.12.2" />
+    <PackageReference Include="Markdig" Version="0.41.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="6.0.33" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.33" />
+    <PackageReference Include="Microsoft.Extensions.Localization" Version="9.0.7" />
+    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.5.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="6.7.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.7.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.7.1" />
+    <PackageReference Include="YamlDotNet" Version="16.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LizeriumDatabase\LizeriumDatabase.csproj" />
+    <ProjectReference Include="..\LizeriumLogging\LizeriumLogging.csproj" />
+    <ProjectReference Include="..\LizeriumNetSecurity\LizeriumNetSecurity.csproj" />
+    <ProjectReference Include="..\LizeriumUtilities\LizeriumUtilities.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="ScriptsAndCss\Combined\" />
+    <Folder Include="ScriptsAndCss\JsScripts\" />
+    <Folder Include="wwwroot\css\" />
+    <Folder Include="wwwroot\js\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="46722929.ini">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy &quot;$(ProjectDir)database_configuration.json&quot; &quot;$(TargetDir)&quot;;&#xD;&#xA;copy &quot;$(ProjectDir)email_configuration.json&quot; &quot;$(TargetDir)&quot;;&#xD;&#xA;copy &quot;$(ProjectDir)version.xml&quot; &quot;$(TargetDir)&quot;;" />
+  </Target>
+	<ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
+</Project>

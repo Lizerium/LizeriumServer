@@ -1,0 +1,94 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <TypeScriptCompile Remove="node_modules\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="Views\Home\Confirmation.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Gruntfile.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Gruntfile.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspNetCore.ReCaptcha" Version="1.8.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="6.0.33" />
+    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.5.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="System.Data.SQLite" Version="1.0.119" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LizeriumDatabase\LizeriumDatabase.csproj" />
+    <ProjectReference Include="..\LizeriumEmail\LizeriumEmail.csproj" />
+    <ProjectReference Include="..\LizeriumNetSecurity\LizeriumNetSecurity.csproj" />
+    <ProjectReference Include="..\TranslationService\TranslationService.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Accessories\ConfigurationAccessories\" />
+    <Folder Include="ScriptsAndCss\Combined\" />
+    <Folder Include="ScriptsAndCss\CssFiles\" />
+    <Folder Include="ScriptsAndCss\JsScripts\" />
+    <Folder Include="wwwroot\css\" />
+  </ItemGroup>
+	<PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+		<TypeScriptTarget>ES2016</TypeScriptTarget>
+		<TypeScriptJSXEmit>None</TypeScriptJSXEmit>
+		<TypeScriptModuleKind>None</TypeScriptModuleKind>
+		<TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
+		<TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
+		<TypeScriptRemoveComments>True</TypeScriptRemoveComments>
+		<TypeScriptOutFile />
+		<TypeScriptOutDir>ScriptsAndCss/JsScripts</TypeScriptOutDir>
+		<TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
+		<TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
+		<TypeScriptSourceMap>False</TypeScriptSourceMap>
+		<TypeScriptMapRoot />
+		<TypeScriptSourceRoot></TypeScriptSourceRoot>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
+		<TypeScriptTarget>ES2016</TypeScriptTarget>
+		<TypeScriptJSXEmit>None</TypeScriptJSXEmit>
+		<TypeScriptModuleKind>None</TypeScriptModuleKind>
+		<TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
+		<TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
+		<TypeScriptRemoveComments>True</TypeScriptRemoveComments>
+		<TypeScriptOutFile />
+		<TypeScriptOutDir>ScriptsAndCss/JsScripts</TypeScriptOutDir>
+		<TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
+		<TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
+		<TypeScriptSourceMap>False</TypeScriptSourceMap>
+		<TypeScriptMapRoot />
+		<TypeScriptSourceRoot></TypeScriptSourceRoot>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <UpToDateCheckInput Remove="Views\Home\Confirmation.cshtml" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_ContentIncludedByDefault Remove="Views\Home\Confirmation.cshtml" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="Views\Home\Confirmation.cshtml" />
+	  <None Include="wwwroot\svg\down_arrow.svg" />
+	</ItemGroup>
+</Project>

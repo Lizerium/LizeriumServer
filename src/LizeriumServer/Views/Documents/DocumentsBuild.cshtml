@@ -1,0 +1,73 @@
+﻿@inject IViewLocalizer Localizer
+@model DocumentViewModel
+@{
+    ViewData["Title"] = Localizer["DocBuild_Site_Title"];
+}
+@Html.ReCaptcha()
+
+<h1 class="h-color-2 w-100 fw-bold mb-3 mt-5 text-center">⚙️ @Localizer["DocBuild_Site_Header"]</h1>
+<article class="markdown-body">
+    <div class="card-row small custom-cursor-hover">
+        <div class="subcard" onclick="window.location.href = '/docs/all'">
+            <div class="subcard-icon icon-style">📳</div>
+            <div class="subcard-text">@SharedLocalizer["Shared_Docs"]</div>
+        </div>
+    </div>
+    <div class="text-light rounded-3 builds-block p-4">
+
+        <!-- Вкладки -->
+        <ul id="builds_category" class="nav nav-tabs d-flex align-items-center justify-content-center align-content-center flex-row flex-wrap" id="craftTabs" role="tablist">
+            @foreach (var build in Model.ListBuilds)
+            {
+               <li class="nav-item">
+                   @{
+                        var categoryName = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName switch
+                        {
+                            "en" => build.TranslationsNameCategory.English ?? "unknown",
+                            _ => build.TranslationsNameCategory.Russian ?? "unknown"
+                        };
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#@build.NameFile" type="button">@categoryName</button>
+                   }
+               </li>
+            }
+        </ul>
+
+        <!-- Контент вкладок -->
+        <div class="tab-content mt-4" id="buildsTabsContent">
+            @foreach (var build in Model.ListBuilds)
+            {
+                <!-- Категория: Амуниция -->
+                <div class="tab-pane fade" id="@build.NameFile">
+                    <div class="accordion" id="@(@build.NameFile)Accordion">
+                        @foreach (var component in build.Components)
+                        {
+                            <!-- Предмет -->
+                            <div class="accordion-item rounded-3 bg-dark text-light m-1">
+                                <h2 id="builds_name_comp" class="accordion-header">
+                                    <button class="accordion-button collapsed text-light rounded-3 load-build-component"
+                                            type="button" 
+                                            data-name="@component.Nickname"
+                                            data-bs-toggle="collapse"
+                                            data-target="#@component.Nickname">
+                                        @{
+                                            var itemName = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName switch
+                                            {
+                                                "en" => component.TranslationsNameComponent.English ?? "unknown",
+                                                _ => component.TranslationsNameComponent.Russian ?? "unknown"
+                                            };
+                                        }
+                                        @itemName
+                                    </button>
+                                </h2>
+                                <div id="@component.Nickname" class="accordion-collapse collapse" data-bs-parent="#@(build.NameFile)Accordion">
+                                    <div class="accordion-body build-body"></div>
+                                </div>
+                            </div>
+                            <!-- Предмет -->
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</article>

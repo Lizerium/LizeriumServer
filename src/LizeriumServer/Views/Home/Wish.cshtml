@@ -1,0 +1,64 @@
+﻿@inject IViewLocalizer Localizer
+@section PageStyle {
+    <link rel="stylesheet" href="/css/wish.min.css" />
+}
+@model WishViewModel
+@{
+    ViewData["Title"] = Localizer["Wish_Title_Site"];
+    var isDev = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+}
+
+@Html.ReCaptcha()
+
+<input type="hidden" id="last_user_id" value="@Model.Posts.LastUserId" />
+<section class="news-section">
+    <h1 class="h-color-2 w-100 fw-bold mb-2 mt-2 text-center">❓ @Localizer["Wish_Title"]</h1>
+    <div class="status_page block">
+        <div class="filter">
+            <select id="status">
+                <option value="0">@Localizer["Wish_Status_0"]</option>
+                <option value="1">@Localizer["Wish_Status_1"]</option>
+                <option value="2">@Localizer["Wish_Status_2"]</option>
+                <option value="3">@Localizer["Wish_Status_3"]</option>
+                <option value="4">@Localizer["Wish_Status_4"]</option>
+                <option value="5">@Localizer["Wish_Status_5"]</option>
+            </select>
+        </div>
+        <button id="create-post-btn">@Localizer["Wish_Send_Wish_Btn_Msg"]</button>
+    </div>
+    <div class="posts block">
+    </div>
+    @if (isDev)
+    {
+        <div class="block">
+            <div>
+                <a href="/rebuild">@Localizer["Wish_Rebuild_Btn"]</a>
+            </div>
+        </div>
+    }
+</section>
+
+<!--Start Modal Form-->
+<div id="modal_form" class="modal hidden">
+    <div class="modal_content">
+        <div class="modal_header">
+            <div class="createpost block">
+                <h3 class="h-color-2 w-100 fw-bold mb-1 mt-1 text-center">@Localizer["Wish_Modal_Title"]</h3>
+                <form action="/create" method="post">
+                    <input type="text" name="autor" placeholder="@Localizer["Wish_Modal_Name_Placeholder"]" />
+                    <textarea maxlength="3500" type="text" name="message" placeholder="@Localizer["Wish_Modal_Message_Placeholder"]"></textarea>
+                    <input type="submit" value="@Localizer["Wish_Modal_Input"]" />
+                </form>
+            </div>
+            <h3></h3>
+        </div>
+        <div class="modal_body"></div>
+    </div>
+</div>
+<!--End Modal Form-->
+
+<script>
+    const LocalizedStrings = {
+        title: '@Localizer["Wish_Modal_Title"]'
+    };
+</script>

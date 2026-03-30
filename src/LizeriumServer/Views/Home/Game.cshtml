@@ -1,0 +1,106 @@
+﻿@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["Game_Title_Site"];
+}
+@Html.ReCaptcha()
+<div class="main-news">
+    <section class="news-section">
+        <div class="container_last_video">
+            <div class="downloadblock">
+                <h1 class="h-color-2 w-100 fw-bold mb-3 mt-5 text-center">🎮 @Localizer["Game_Title"]</h1>
+                <div class="news-grid links">
+                    <div class="card full">
+                        <div class="card-title purple"><span>💻 @Localizer["Game_Title_Mini"]</span></div>
+                        <div class="card-row small">
+                            <div class="subcard-block">
+                                <div class="subcard d-flex no-hover">
+                                    <div class="subcard-icon icon-style">🌠</div>
+                                    <div class="subcard-text">@Localizer["Game_Name_Lizerium_Launcher"]</div>
+                                    <div class="subcard custom-cursor-hover ms-auto p-0" onclick="window.open('/uploader/projects/download/steam', '_blank', 'noopener,noreferrer')">
+                                        <div class="subcard-icon icon-style">📥</div>
+                                        <div class="subcard-text p-2">@Localizer["Game_Download"]</div>
+                                    </div>
+                                </div>
+                                <div class="subcard-title">
+                                    <span class="badge text-bg-secondary">@Localizer["Game_Note_Lizerium_Launcher"]</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-row small">
+                            <div class="subcard-block">
+                                <div class="subcard d-flex no-hover">
+                                    <div class="subcard-icon icon-style"><img src="@Url.Content("~/img/Mode.png")" alt="Lizerium"></div>
+                                    <div class="subcard-text">@Localizer["Game_FL_Lizerium_Game"]</div>
+                                    <div class="subcard custom-cursor-hover ms-auto p-0" onclick="window.open('/uploader/projects/download/lizerium_game', '_blank', 'noopener,noreferrer')">
+                                        <div class="subcard-icon icon-style">📥</div>
+                                        <div class="subcard-text p-2">@Localizer["Game_Download"]</div>
+                                    </div>
+                                </div>
+                                <div class="subcard-title">
+                                    <span class="badge text-bg-secondary">@Localizer["Game_FL_Lizerium_Game_Note"]</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-row small">
+                            <div class="subcard-block">
+                                <div class="subcard d-flex no-hover">
+                                    <div class="subcard-icon icon-style"><img src="@Url.Content("~/img/Freelancer.png")" alt="Freelancer"></div>
+                                    <div class="subcard-text">@Localizer["Game_FL_Freelancer_Game"]</div>
+                                    <div class="subcard custom-cursor-hover ms-auto p-0" onclick="window.open('/uploader/projects/download/freelancer_game', '_blank', 'noopener,noreferrer')">
+                                        <div class="subcard-icon icon-style">📥</div>
+                                        <div class="subcard-text p-2">@Localizer["Game_Download"]</div>
+                                    </div>
+                                </div>
+                                <div class="subcard-title">
+                                    <span class="badge text-bg-secondary">@Localizer["Game_FL_Freelancer_Game_Note"]</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="downloadblock">
+                <div class="news-grid links">
+                    <div class="card full">
+                        <div class="card-title purple"><span>📋 @Localizer["Game_Additional_Info"]</span></div>
+                        <div class="card-row small">
+                            <div class="subcard-block">
+                                <div class="subcard-note">
+                                    <span class="badge text-bg-secondary">@Localizer["Game_Additional_Info_1"]</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-row small">
+                            <div class="subcard-block">
+                                <div class="subcard-note">
+                                    <span class="badge text-bg-secondary">@Localizer["Game_Additional_Info_2"]</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-row small">
+                            <div class="subcard-block">
+                                <div class="subcard-note">
+                                    <span class="badge text-bg-secondary">@Localizer["Game_Additional_Info_3"]</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-row small">
+                            <div class="subcard-block">
+                                <div class="subcard-note">
+                                    <span class="badge text-bg-secondary">@Localizer["Game_Additional_Info_4"]</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-row small">
+                            <div class="subcard-block">
+                                <div class="subcard-note">
+                                    <span class="badge text-bg-secondary">@Localizer["Game_Additional_Info_5_1"] <a href="https://www.dvurechensky.pro" target="_blank">@Localizer["Game_Additional_Info_5_2"]</a></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

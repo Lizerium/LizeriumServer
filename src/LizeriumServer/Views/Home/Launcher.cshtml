@@ -1,0 +1,70 @@
+﻿@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["Launcher_Title_Site"];
+}
+@Html.ReCaptcha()
+<article>
+    <section class="news-section">
+        <div class="container-fluid">
+            <h1 class="h-color-2 w-100 fw-bold mb-3 mt-5 text-center">📰 @Localizer["Launcher_Header"]</h1>
+            <div class="news-grid">
+                <div class="w-100">
+                    <div class="row w-100 gy-3">
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="w-100 video-block">
+                                    <iframe width="720" height="405" src="https://rutube.ru/play/embed/166b1de79791472c13f79c24838847c3/" frameBorder="0" allow="clipboard-write; autoplay" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">@Localizer["Launcher_News_1"] <a href="https://rutube.ru/video/166b1de79791472c13f79c24838847c3/" target="_blank">Freelancer Lizerium</a></h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="w-100 video-block">
+                                    <iframe width="720" height="405" src="https://rutube.ru/play/embed/f7359c52b38dbfd9eab1426349de6571/" frameBorder="0" allow="clipboard-write; autoplay" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">@Localizer["Launcher_News_2"] <a href="https://rutube.ru/video/f7359c52b38dbfd9eab1426349de6571/" target="_blank">Freelancer Lizerium</a></h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="w-100 video-block">
+                                    <iframe src="https://rutube.ru/play/embed/da9bd6b780314bb96ca23b10110dcfd9/"
+                                            frameborder="0"
+                                            allow="clipboard-write; autoplay"
+                                            allowfullscreen
+                                            webkitallowfullscreen
+                                            mozallowfullscreen>
+                                    </iframe>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">@Localizer["Launcher_News_3"] <a href="https://rutube.ru/video/da9bd6b780314bb96ca23b10110dcfd9/" target="_blank">Freelancer Lizerium (Unity ver.)</a></h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="w-100 video-block">
+                                    <iframe src="https://rutube.ru/play/embed/0f20131048cc69a38337431fafdc4597/"
+                                            frameborder="0"
+                                            allow="clipboard-write; autoplay"
+                                            allowfullscreen
+                                            webkitallowfullscreen
+                                            mozallowfullscreen>
+                                    </iframe>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">@Localizer["Launcher_News_4"] <a href="https://rutube.ru/video/0f20131048cc69a38337431fafdc4597/" target="_blank">Freelancer Lizerium (Unity ver.)</a></h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</article>

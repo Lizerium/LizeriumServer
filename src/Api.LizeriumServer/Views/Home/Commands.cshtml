@@ -1,0 +1,124 @@
+﻿@model MainModel
+@{
+    ViewData["Title"] = @"Команды";
+}
+
+<div class="top with_left_side container">
+    <h2>Команды</h2>
+    <input type="hidden" id="last_user_id" value="@Model.Commands?.LastId" />
+    <div class="status_page block">
+        <div class="filter">
+            <select id="status">
+                <option value="1">Активна</option>
+                <option value="2">Выключена</option>
+                <option value="3">В разработке</option>
+            </select>
+        </div>
+        <div class="category">
+            <select id="categories">
+                @if(Model.Commands != null)
+                {
+                    @if (Model.Commands.Categories != null)
+                    {
+                        int i = 0;
+                        @foreach (var category in Model.Commands.Categories)
+                        {
+                            i++;
+                            <option value="@i">@category</option>
+                        }
+                    }
+                }
+            </select>
+        </div>
+    </div>
+    <div style="overflow-y: auto;" class="panel round_shadow">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Категория</th>
+                    <th>Имена</th>
+                    <th>Пример</th>
+                    <th>Описание</th>
+                    <th>GIF</th>
+                    <th>Likes</th>
+                    <th>Статус</th>
+                    <th>©</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td></td>
+                    <td><textarea id="newCategory"></textarea></td>
+                    <td><textarea id="newName"></textarea></td>
+                    <td><textarea id="newExampleInput"></textarea></td>
+                    <td><textarea id="newDescription"></textarea></td>
+                    <td><textarea id="newGif"></textarea></td>
+                    <td><textarea id="newLikes">0</textarea></td>
+                    <td>
+                        <select id="newStatus">
+                            <option value="1">Активна</option>
+                            <option value="2">Выключена</option>
+                            <option value="3">В разработке</option>
+                        </select>
+                    </td>
+                    <td><button id="createCommand">Создать</button></td>
+                </tr>
+                @if(Model.Commands != null)
+                {
+                    @foreach (var commandData in Model.Commands.Commands)
+                    {
+                        <tr>
+                            <td>@commandData.Id</td>
+                            <td><textarea id="@(commandData.Id)_Category">@commandData.Category</textarea></td>
+                            <td><textarea id="@(commandData.Id)_CommandNames">@commandData.CommandNames</textarea></td>
+                            <td><textarea id="@(commandData.Id)_ExampleInput">@commandData.ExampleInput</textarea></td>
+                            <td><textarea id="@(commandData.Id)_Description">@commandData.Description</textarea></td>
+                            <td>
+                                <label id="@(commandData.Id)_UrlGif">@commandData.UrlGif</label>
+                                <form method="post" enctype="multipart/form-data" action="/Ajax/UploadGifCommand">
+                                    <input type="file" name="file" accept=".gif">
+                                    <input type="hidden" name="id" value="@commandData.Id">
+                                    <button type="submit">Загрузить GIF</button>
+                                </form>
+                            </td>
+                            <td><textarea id="@(commandData.Id)_CountLike">@commandData.CountLike</textarea></td>
+                            <td>
+                                <select id="@(commandData.Id)_status" asp-for="@commandData.Status" id="(@commandData.Id)_Status" user="@commandData.Id">
+                                    <option value="1">Активна</option>
+                                    <option value="2">Выключена</option>
+                                    <option value="3">В разработке</option>
+                                </select>
+                            </td>
+                            <td><button IdC="@commandData.Id" id="changeCommand">Изменить</button></td>
+                            <td><button IdC="@commandData.Id" id="deleteCommand">💢</button></td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+        <form method="post" enctype="multipart/form-data" action="/Ajax/UploadCommandsJson">
+            <input type="file" name="file" accept=".json">
+            <button type="submit">Загрузить JSON c командами</button>
+        </form>
+        <form method="post" enctype="multipart/form-data" action="/Ajax/UploadCategoriesCommandsJson">
+            <input type="file" name="file" accept=".json">
+            <button type="submit">Загрузить JSON с категориями</button>
+        </form>
+        <!-- Форма для перевода всех команд -->
+        <form method="get" action="/Admin/TranslatedAllCommands">
+            <label for="langTo">Перевести все команды на язык:</label>
+            <select id="langTo" name="langTo" required>
+                <option value="en">Английский (en)</option>
+                <option value="fr">Французский (fr)</option>
+                <option value="de">Немецкий (de)</option>
+                <option value="es">Испанский (es)</option>
+                <!-- Добавь другие языки при необходимости -->
+            </select>
+
+            <input type="hidden" name="langFrom" value="ru" /> <!-- исходный язык всегда русский -->
+
+            <button type="submit">Перевести все команды</button>
+        </form>
+    </div>
+</div>

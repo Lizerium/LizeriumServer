@@ -1,0 +1,395 @@
+﻿@inject IBreadcrumbService BreadcrumbService
+@inject IViewLocalizer Localizer
+@{
+	var breadcrumbs = BreadcrumbService.GetBreadcrumbs(ViewContext.RouteData, Localizer, ViewData);
+}
+
+@using System.Globalization
+@using LizeriumServer.FormatsData.AppSeo
+@using System.Security.Policy
+@using LizeriumServer.Services.Breadcrumb
+@using LizeriumServer.Services.Breadcrumb.Implements
+@{
+	// Ссылка на текущую страницу
+	var currentUrl = Context.Request.Scheme + "://" + Context.Request.Host + Context.Request.Path;
+
+	// анонимный объект с "безопасными" именами
+	var jsonLdObj = new
+	{
+		context = "https://schema.org",
+		type = "BreadcrumbList",
+		itemListElement = breadcrumbs.Select((b, i) => new
+		{
+			type = "ListItem",
+			position = i + 1,
+			name = b.Name,
+			item = Context.Request.Scheme + "://" + Context.Request.Host + b.Url
+		}).ToList()
+	};
+
+	// сериализация и замена ключей на корректные @type, @context
+	var jsonLdString = System.Text.Json.JsonSerializer.Serialize(jsonLdObj, new System.Text.Json.JsonSerializerOptions
+	{
+		WriteIndented = true,
+		PropertyNamingPolicy = null
+	})
+	.Replace("\"context\"", "\"@context\"")
+	.Replace("\"type\"", "\"@type\"");
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+	<meta name="description " content="@(ViewData["Description"] ?? SharedLocalizer["Shared_Desc_Site"])" />
+    <meta name="keywords" content="Dvurechensky, dvurechensky_pro, freelancer, freelancer 2003, freelancer игра, freelancer com, скачать freelancer, Lizerium, космические симуляторы, Lizerium Launcher, Lizerium Mod, игры" />
+    <meta name="author" content="Dvurechensky Nikolay" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#0d0d0d">
+
+	<meta property="og:title" content="@ViewData["Title"]" />
+	<meta property="og:description" content="@(ViewData["Description"] ?? SharedLocalizer["Shared_Desc2_Site"])" />
+	<meta property="og:url" content="@currentUrl" />
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://lizup.ru/img/Main.png">
+    <meta property="og:site_name" content="Lizerium">
+    <meta property="og:locale" content="ru_RU">
+    <meta property="vk:image" content="https://lizup.ru/img/Main.png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap&subset=cyrillic" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="~/LOGO.ico" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/global.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layout.min.css" asp-append-version="true" />
+    @RenderSection("PageStyle", required: false)
+	<script type="application/ld+json">
+		@Html.Raw(jsonLdString)
+	</script>
+	<script type="application/ld+json">
+		{
+			"@@context": "https://schema.org",
+			"@@graph": [
+				{
+					"@@type": "Person",
+					"@@id": "@currentUrl#person",
+					"name": "Dvurechensky Pro",
+					"alternateName": ["Lizerium", "Unifier", "Rota", "Dvurechensky"],
+					"url": "https://github.com/Dvurechensky",
+					"image": "https://avatars.githubusercontent.com/u/46356631?v=4",
+					"knowsAbout": [
+						"ASP.NET Core",
+						"RabbitMQ",
+						"PostgreSQL",
+						"SQLLite",
+						"EF Core",
+						"TypeScript",
+						"Unity",
+						"Qt",
+						"Zenject",
+						"ECS",
+						"FastAPI",
+						"Burb Suit",
+						"Ghidra",
+						"x32dbg",
+						"x64dbg",
+						"Linux",
+						"WPF",
+						"WinForms",
+						"JET Brains",
+						"Flutter"
+					],
+					"sameAs": [
+						"https://github.com/dvurechensky",
+						"https://www.linkedin.com/in/dvurechensky-pro/",
+						"https://vk.com/dvurechensky_pro",
+						"https://www.youtube.com/@@DvurechenskyMedia",
+						"https://rutube.ru/channel/43901645/",
+						"https://x.com/DvurechenskyPro",
+						"https://bsky.app/profile/dvurechensky.pro",
+						"https://steamcommunity.com/id/dvurechensky/",
+						"https://steamcommunity.com/profiles/76561198335938126",
+						"https://mastodon.social/@@dvurechensky",
+						"https://www.threads.com/@@dvurechensky_pro",
+						"https://dev.to/dvurechensky",
+						"https://www.instagram.com/dvurechensky_pro/",
+						"https://gitlab.com/Dvurechensky",
+						"https://www.twitch.tv/dvurechensky_pro"
+					],
+					"jobTitle": "Software Engineer, Founder of Unifier and Lizerium",
+					"description": "Full-stack .NET & TypeScript developer. Опыт в ASP.NET Core, RabbitMQ, PostgreSQL, Unity, Flutter. Автор проекта Unifier.",
+					"email": "mailto:dvurechenskysoft@gmail.com",
+					"mainEntityOfPage": "https://sites.google.com/view/dvurechensky",
+					"contactPoint": {
+						"@@type": "ContactPoint",
+						"contactType": "Job offers",
+						"email": "dvurechenskysoft@gmail.com"
+					},
+					"hasCredential": [
+						{
+							"@@type": "EducationalOccupationalCredential",
+							"name": "Безопасность компьютерных и информационных систем / защита информации (2017–2019)",
+							"educationalLevel": "Specialist",
+							"description": "Воронежский Государственный Технический Университет",
+							"url": "https://cchgeu.ru/"
+						},
+						{
+							"@@type": "EducationalOccupationalCredential",
+							"name": "Двухсредные летательные аппараты",
+							"educationalLevel": "Specialist",
+							"description": "Московский авиационный институт (национальный исследовательский университет) (2015-2017)",
+							"url": "https://mai.ru/"
+						},
+						{
+							"@@type": "EducationalOccupationalCredential",
+							"name": "Профессия — Белый Хакер && Profession — White Hacker",
+							"description": "Образовательный центр CyberEd, Pentest && CyberEd Educational Center, Pentest (2024-02-23)",
+							"url": "https://stepik.org/cert/2369093"
+						},
+						{
+							"@@type": "EducationalOccupationalCredential",
+							"name": "C#",
+							"description": "Sololearn (2019-11-08)",
+							"url": "https://www.sololearn.com/ru/certificates/CT-70MDLPFG"
+						},
+						{
+							"@@type": "EducationalOccupationalCredential",
+							"name": "C++",
+							"description": "Sololearn (2019-03-27)",
+							"url": "https://www.sololearn.com/ru/certificates/CT-BCELXSJQ"
+						},
+						{
+							"@@type": "EducationalOccupationalCredential",
+							"name": "CSS",
+							"description": "Sololearn (2019-04-04)",
+							"url": "https://www.sololearn.com/ru/certificates/CT-ELXDOGBR"
+						},
+						{
+							"@@type": "EducationalOccupationalCredential",
+							"name": "HTML",
+							"description": "Sololearn (2019-03-25)",
+							"url": "https://www.sololearn.com/ru/certificates/CT-TWNF0GUO"
+						},
+						{
+							"@@type": "EducationalOccupationalCredential",
+							"name": "JavaScript",
+							"description": "Sololearn (2019-06-17)",
+							"url": "https://www.sololearn.com/ru/certificates/CT-G0683SAI"
+						},
+						{
+							"@@type": "EducationalOccupationalCredential",
+							"name": "SQL",
+							"description": "Sololearn (2019-06-16)",
+							"url": "https://www.sololearn.com/ru/certificates/CT-0UKGVMV2"
+						}
+					]
+				},
+				{
+					"@@type": "JobPosting",
+					"baseSalary": {
+						"@@type": "MonetaryAmount",
+						"currency": "USD",
+						"value": {
+							"@@type": "QuantitativeValue",
+							"minValue": 3000,
+							"maxValue": 999999,
+							"unitText": "MONTH"
+						}
+					},
+					"title": "Software Engineer / Backend Developer",
+					"description": "Ищу позицию Software Engineer / Backend Developer в международной компании.",
+					"employmentType": "FULL_TIME",
+					"industry": "Software Development",
+					"jobLocation": {
+						"@@type": "Place",
+						"address": {
+							"@@type": "PostalAddress",
+							"addressCountry": "RU",
+							"postalCode": "123112",
+							"addressRegion": "Москва",
+							"streetAddress": "Пресненская наб., 8 стр 1",
+							"addressLocality": "Москва"
+						}
+					},
+					"datePosted": "2025-08-19",
+					"validThrough": "2025-12-31T23:59",
+					"hiringOrganization": {
+						"@@type": "Organization",
+						"founder": { "@@id": "@currentUrl#person" },
+						"name": "Dvurechensky Pro / Unifier / Lizerium",
+						"sameAs": "https://github.com/Dvurechensky",
+						"contactPoint": {
+							"@@type": "ContactPoint",
+							"contactType": "Job offers",
+							"email": "dvurechenskysoft@gmail.com"
+						}
+					}
+				},
+				{
+					"@@type": "Organization",
+					"name": "Unifier",
+					"url": "https://github.com/Unifier-of-Systems",
+					"logo": "https://avatars.githubusercontent.com/u/227248375?s=200&v=4",
+					"founder": {
+						"@@id": "@currentUrl#person",
+						"@@type": "Person",
+						"name": "Dvurechensky Pro",
+						"url": "https://sites.google.com/view/dvurechensky"
+					},
+					"sameAs": [
+						"https://github.com/Dvurechensky",
+						"https://www.linkedin.com/in/dvurechensky-pro/",
+						"https://vk.com/dvurechensky_pro"
+					],
+					"description": "Unifier — система для централизованного мониторинга и управления устройствами, разработка Dvurechensky Pro."
+				},
+				{
+					"@@type": "Organization",
+					"name": "Lizerium",
+					"url": "https://github.com/Lizerium",
+					"logo": "https://avatars.githubusercontent.com/u/213873170?s=200&v=4",
+					"founder": {
+						"@@id": "@currentUrl#person",
+						"@@type": "Person",
+						"name": "Dvurechensky Pro",
+						"url": "https://sites.google.com/view/dvurechensky"
+					},
+					"sameAs": [
+						"https://github.com/Dvurechensky",
+						"https://www.linkedin.com/in/dvurechensky-pro/",
+						"https://vk.com/dvurechensky_pro",
+						"https://www.youtube.com/@@lizerium_game",
+						"https://vk.com/lizerium_game",
+						"https://rutube.ru/channel/44085490/"
+					],
+					"description": "Lizerium — IT-проекты дополняющие игру Freelancer (2003), а также пересоздание игры в Unity версию и в модификацию оригинала от Dvurechensky Pro."
+				}
+			]
+		}
+	</script>
+</head>
+
+@{
+    string currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    string currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+}
+
+<body>
+    <div class="position-fixed pointer-eveb bottom-0 end-0 m-4 p-4" style="z-index: 1100; pointer-events: none;">
+        <div id="copyToast" class="toast align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    Скопировано!
+                </div>
+                <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="preloader">
+        <div class="lds-ripple"><div></div><div></div></div>
+    </div>
+    <header>
+        <div class="header_icon_lang_block">
+            <div class="icon" onclick="window.location.href='@Url.Action("Index", "Home")'"><img src="~/img/Main.png" alt="Вернуться" class="logo"><h1 class="icon-color-lizerium fw-bold">Lizerium</h1></div>
+            <form id="cultureForm" method="post" asp-controller="Culture" asp-action="SetLanguage">
+                <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
+                <select name="culture" onchange="document.getElementById('cultureForm').submit()" class="form-select">
+                    <option value="ru" selected="@((CultureInfo.CurrentUICulture.Name == "ru") ? "selected" : null)">Русский</option>
+                    <option value="en" selected="@((CultureInfo.CurrentUICulture.Name == "en") ? "selected" : null)">English</option>
+                </select>
+            </form>
+        </div>
+        <hr />
+        <div class="lizerium-sidebar">
+            <div class="lizerium-logo" title="Главная" onclick="window.location.href='/'">
+                <img src="@Url.Content("~/img/Main.png")" alt="Lizerium">
+            </div>
+            <div class="lizerium-menu-item @(currentController == "Home" && currentAction == "Index" ? "active" : "")" title="Главная" onclick="window.location.href='@Url.Action("Index", "Home")'">
+                🔮
+            </div>
+            <div class="lizerium-menu-item @(currentController == "Home" && currentAction == "Launcher" ? "active" : "")" title="Новости" onclick="window.location.href='@Url.Action("Launcher", "Home")'">
+                📰
+            </div>
+            <div class="lizerium-menu-item @(currentController == "Home" && currentAction == "Game" ? "active" : "")" title="Игры" onclick="window.location.href='@Url.Action("Game", "Home")'">
+                🎮
+            </div>
+            <div class="lizerium-menu-item @(currentController == "Documents" ? "active" : "")" title="Знания" onclick="window.location.href='@Url.Action("all", "docs")'">
+                ⚙️
+            </div>
+            @* <div class="lizerium-menu-item @(currentController == "Forum" && currentAction == "ForumMain" ? "active" : "")" title="Форум" onclick="window.location.href='@Url.Action("ForumMain", "Forum")'"> *@
+@*                 💬
+            </div> *@
+            <div class="lizerium-menu-item @(currentController == "Home" && currentAction == "Wish" ? "active" : "")" title="Пожелания пользователей" onclick="window.location.href='@Url.Action("Wish", "Home")'">
+                ❓
+            </div>
+        </div>
+        <div class="mobile-nav">
+            <div class="mobile-nav-item @(currentController == "Home" && currentAction == "Index" ? "active" : "")" title="Главная" onclick="window.location.href='@Url.Action("Index", "Home")'">
+                🔮
+            </div>
+            <div class="mobile-nav-item @(currentController == "Home" && currentAction == "Launcher" ? "active" : "")" title="Новости" onclick="window.location.href='@Url.Action("Launcher", "Home")'">
+                📰
+            </div>
+            <div class="mobile-nav-item @(currentController == "Home" && currentAction == "Game" ? "active" : "")" title="Игры" onclick="window.location.href='@Url.Action("Game", "Home")'">
+                🎮
+            </div>
+            <div class="mobile-nav-item @(currentController == "Documents" ? "active" : "")" title="Знания" onclick="window.location.href='@Url.Action("all", "docs")'">
+                ⚙️
+            </div>
+@*             <div class="mobile-nav-item @(currentController == "Forum" && currentAction == "ForumMain" ? "active" : "")" title="Форум" onclick="window.location.href='@Url.Action("ForumMain", "Forum")'">
+                💬
+            </div> *@
+            <div class="mobile-nav-item @(currentController == "Home" && currentAction == "Wish" ? "active" : "")" title="Пожелания пользователей" onclick="window.location.href='@Url.Action("Wish", "Home")'">
+                ❓
+            </div>
+        </div>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+	<nav aria-label="breadcrumb">
+		<ol class="breadcrumb">
+			@if(breadcrumbs.Count > 1)
+			{
+				@for (int i = 0; i < breadcrumbs.Count; i++)
+				{
+					var b = breadcrumbs[i];
+					var isLast = i == breadcrumbs.Count - 1;
+					<li class="breadcrumb-item @(isLast ? "active" : "")" @(isLast ? "aria-current=\"page\"" : "")>
+						@if (isLast)
+						{
+							@b.Name
+						}
+						else
+						{
+							<a href="@b.Url">@b.Name</a>
+						}
+					</li>
+				}
+			}
+		</ol>
+	</nav>
+    <footer>
+        <img id="vk-link custom-cursor-hover" width="20px" height="20px" src="~/img/VK.svg.png" onclick="window.open('https://vk.com/lizerium_game', '_blank', 'noopener,noreferrer')" />
+        <img id="git-link custom-cursor-hover" width="20px" height="20px" src="~/img/git.png" onclick="window.open('https://github.com/Lizerium', '_blank', 'noopener,noreferrer')" />
+        <img id="me-link custom-cursor-hover" width="20px" height="20px" src="~/img/my.png" onclick="window.open('https://dvurechensky.pro', '_blank', 'noopener,noreferrer')" />
+    </footer>
+    <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true"
+         class="copy-docs-icon hidden">
+        <path fill-rule="evenodd"
+              d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z">
+        </path>
+        <path fill-rule="evenodd"
+              d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z">
+        </path>
+    </svg>
+    <script src="~/js/app.min.js" asp-append-version="true"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

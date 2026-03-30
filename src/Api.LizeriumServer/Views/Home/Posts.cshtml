@@ -1,0 +1,69 @@
+﻿@model MainModel
+@{
+    ViewData["Title"] = @"Посты";
+}
+
+<div class="container top with_left_side">
+    <h2>Обращения пользователей</h2>
+    <input type="hidden" id="last_user_id" value="@Model.Posts.LastUserId" />
+    <div class="block status_page">
+        <div class="filter">
+            <select id="status">
+                <option value="0">Все</option>
+                <option value="1">Новое</option>
+                <option value="2">Прочитано</option>
+                <option value="3">В работе</option>
+                <option value="4">Отказано</option>
+                <option value="5">Выполнено</option>
+            </select>
+        </div>
+    </div>
+    <div style="overflow-y: auto;" class="panel round_shadow">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Пользователь</th>
+                    <th>Время, (МСК)</th>
+                    <th>Сообщение</th>
+                    <th>Статус</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var postData in Model.Posts.Posts)
+                {
+                    <tr>
+                        <td>@postData.Id</td>
+                        <td>
+                            <div class="user_in_table">
+                                <div>
+                                    <img src="~/img/my-account-icon.png" alt="@postData.Autor" />
+                                </div>
+                                <div>
+                                    <span>@postData.Autor</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="times">
+                                <span>Регистрация</span>
+                                <span>@postData.DateTimeUnixString</span>
+                            </div>
+                        </td>
+                        <td>@postData.Message</td>
+                        <td>
+                            <select id="status" asp-for="@postData.Status" user="@postData.Id">
+                                <option value="-1">Обработка</option>
+                                <option value="1">Новое</option>
+                                <option value="2">Прочитано</option>
+                                <option value="3">В работе</option>
+                                <option value="4">Отказано</option>
+                                <option value="5">Выполнено</option>
+                            </select>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

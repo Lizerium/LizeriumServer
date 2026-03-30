@@ -1,0 +1,23 @@
+﻿@using LizeriumUtilities.FormatsData.DataBase.Response
+@model List<BuildComponent>
+
+<ul class="list-unstyled p-0">
+@foreach (var component in Model)
+{
+     <li class="d-flex align-items-center rounded-3 flex-row flex-wrap">
+        <h5 class="loader status-complete mb-1 ms-1 mt-1 p-2">
+                @{
+                    var itemName = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName switch
+                    {
+                        "en" => component.TranslationsNameComponent.English ?? "unknown",
+                        _ => component.TranslationsNameComponent.Russian ?? "unknown"
+                    };
+                }
+                @itemName
+        </h5>
+        <label class="loader status-job mb-0 mt-0 p-0" style="display: flex; flex-direction: row; justify-content: center;">
+            <span class="px-2">@component.Count</span>
+        </label>
+    </li>
+}
+</ul>

@@ -1,0 +1,66 @@
+﻿@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["Index_title_site"];
+}
+@Html.ReCaptcha()
+
+<article>
+    <div class="main-news">
+        <section class="news-section">
+            <h1 class="h-color-2 w-100 fw-bold mb-3 mt-5 text-center">🔮 @Localizer["Index_title"]</h1>
+            <div class="card-row">
+                <div class="card custom-cursor-hover" onclick="window.location.href = '/Home/Launcher'">
+                    <div class="card-icon"><div class="border-1 w-25 icon-style">⭐</div></div>
+                    <div class="card-title">@Localizer["Index_News"]</div>
+                    <div class="card-sub">@Localizer["Index_News_Author"]</div>
+                </div>
+                <div class="card custom-cursor-hover" onclick="window.location.href = '/Home/Game'">
+                    <div class="card-icon"><div class="border-1 w-25 icon-style">🎮</div></div>
+                    <div class="card-title">@Localizer["Index_Games"]<br>Lizerium</div>
+                </div>
+                <div class="card custom-cursor-hover" onclick="window.location.href = '/docs/all'">
+                    <div class="card-icon"><div class="border-1 w-25 icon-style">⚙️</div></div>
+                    <div class="card-title">@Localizer["Index_Info"]</div>
+                </div>
+@*                 <div class="card custom-cursor-hover" onclick="window.location.href = '/Forum'">
+                    <div class="card-icon"><div class="border-1 w-25 icon-style">💬</div></div>
+                    <div class="card-title">@Localizer["Index_Forum"]</div>
+                </div> *@
+            </div>
+
+            <div class="card full">
+                <div class="card-title purple"><span>🔥 @Localizer["Index_Links_Title"]</span></div>
+                <div class="card-row small">
+                    <div class="subcard custom-cursor-hover" onclick="window.open('https://discoverygc.com/', '_blank', 'noopener,noreferrer')">
+                        <div class="subcard-icon icon-style">📀</div>
+                        <div class="subcard-text">Freelancer Discovery</div>
+                    </div>
+                    <div class="subcard custom-cursor-hover" onclick="window.open('https://fl-sr.eu/', '_blank', 'noopener,noreferrer')">
+                        <div class="subcard-icon icon-style">💎</div>
+                        <div class="subcard-text">Freelancer Sirius Revival</div>
+                    </div>
+                    <div class="subcard custom-cursor-hover" onclick="window.open('https://freelancer2.space/en/', '_blank', 'noopener,noreferrer')">
+                        <div class="subcard-icon icon-style">🎆</div>
+                        <div class="subcard-text">Freelancer Nomad Legacy</div>
+                    </div>
+                    <div class="subcard custom-cursor-hover" onclick="window.open('https://swat-portal.com/forum/cms/wiki/crossfire/', '_blank', 'noopener,noreferrer')">
+                        <div class="subcard-icon icon-style">💥</div>
+                        <div class="subcard-text">Freelancer Crossfire 2.0</div>
+                    </div>
+                    <div class="subcard custom-cursor-hover" onclick="window.open('https://www.moddb.com/mods/freelancer-hd-edition', '_blank', 'noopener,noreferrer')">
+                        <div class="subcard-icon icon-style">🔅</div>
+                        <div class="subcard-text">Freelancer HD Edition</div>
+                    </div>
+                    <div class="subcard custom-cursor-hover" onclick="window.open('https://freelancerothe.ucoz.ru/', '_blank', 'noopener,noreferrer')">
+                        <div class="subcard-icon icon-style">💫</div>
+                        <div class="subcard-text">Freelancer Rebirth</div>
+                    </div>
+                    <div class="subcard custom-cursor-hover" onclick="window.open('http://fl-orion.ucoz.ru/', '_blank', 'noopener,noreferrer')">
+                        <div class="subcard-icon icon-style">🌏</div>
+                        <div class="subcard-text">Freelancer Orion</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</article>

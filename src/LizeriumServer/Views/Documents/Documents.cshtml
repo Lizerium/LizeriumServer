@@ -1,0 +1,34 @@
+﻿@inject IViewLocalizer Localizer
+@model DocumentViewModel
+@{
+    ViewData["Title"] = Localizer["Documents_Title_Site"];
+}
+
+@Html.ReCaptcha()
+
+<div class="main-news">
+    <section class="news-section">
+        <h1 class="h-color-2 w-100 fw-bold mb-3 mt-5 text-center">⚙️ @Localizer["Documents_Header"]</h1>
+        <div class="card-row">
+            <div class="card custom-cursor-hover" onclick="window.location.href = '/wiki'">
+                <div class="card-icon"><div class="border-1 w-25 icon-style">📔</div></div>
+                <div class="card-title">@Localizer["Documents_Wiki"]</div>
+            </div>
+            <div class="card custom-cursor-hover" onclick="window.location.href = '/docs/install'">
+                <div class="card-icon"><div class="border-1 w-25 icon-style">🎯</div></div>
+                <div class="card-title">@Localizer["Documents_Install"]</div>
+                <div class="card-sub">@Localizer["Documents_Install_Sub"]</div>
+            </div>
+            <div class="card custom-cursor-hover" onclick="window.location.href = '/docs/hook'">
+                <div class="card-icon"><div class="border-1 w-25 icon-style">💨</div></div>
+                <div class="card-title">@Localizer["Documents_Commands_Hook"]</div>
+                <div class="card-sub">@Localizer["Documents_Commands_Hook_Sub"]</div>
+            </div>
+            <div class="card custom-cursor-hover" onclick="window.location.href = '/docs/builds'">
+                <div class="card-icon"><div class="border-1 w-25 icon-style">⛽</div></div>
+                <div class="card-title">@Localizer["Documents_Builds"]</div>
+                <div class="card-sub">@Localizer["Documents_Builds_Sub"]</div>
+            </div>
+        </div>
+    </section>
+</div>

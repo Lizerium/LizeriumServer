@@ -1,0 +1,180 @@
+﻿@model WikiPageViewModel
+@inject IViewLocalizer Localizer
+@using LizeriumServer.FormatsData.AppWikiData
+@using Microsoft.AspNetCore.Html
+@section PageStyle {
+    <link rel="stylesheet" href="/css/wiki.min.css" />
+}
+@{
+	Layout = "_Layout";
+	ViewData["Title"] = Model.Title;
+	ViewData["Description"] = string.IsNullOrEmpty(Model.Description) ? SharedLocalizer["Shared_Desc_Site"] : Model.Description;
+	var currentUrl = Model.Url;
+	var Culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+}
+
+<head>
+	<title>@Model.Title</title>
+	@if (!string.IsNullOrEmpty(Model.Description))
+	{
+		<meta name="description" content="@Model.Description" />
+	}
+
+	<!-- Open Graph -->
+	<meta property="og:title" content="@Model.Title" />
+	<meta property="og:description" content="@(string.IsNullOrEmpty(Model.Description) ? SharedLocalizer["Shared_Desc_Site"] : Model.Description)" />
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content="@currentUrl" />
+	<meta property="og:image" content="https://lizup.ru/img/Main.png" />
+	<meta property="og:site_name" content="Lizerium" />
+	<meta property="og:locale" content="ru_RU" />
+</head>
+
+<div class="custombody">
+	@functions {
+		string Culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+		public IHtmlContent RenderMenu(WikiPage node, bool isRoot = true, int level = 0)
+		{
+			var sb = new System.Text.StringBuilder();
+
+			var ulClass = isRoot ? "menu" : "submenu";
+			// Определяем цвет фона по уровню вложенности
+
+			var borderColors = new string[]
+			{
+				"#6b6b7f", // светлые границы, контрастные для #5c5c72
+				"#606073",
+				"#555566",
+				"#4a4a59",
+				"#40404d",
+				"#383843",
+				"#30303c",
+				"#2a2a33"  // светлые относительно тёмного фона #19191e
+			};
+
+			var index = level % borderColors.Length;
+			var bgColor3 = borderColors[index];
+
+			int marginLeft = 0;
+			if (level >= 1)
+				marginLeft = 10;
+
+			sb.AppendLine($"<ul class=\"{ulClass}\" style=\"margin-left: {marginLeft}px;border-left:{index / 2}px solid {bgColor3};border-radius: 10px;\">");
+
+			var children = isRoot ? node.Children.AsEnumerable().Reverse() : node.Children;
+
+			foreach (var child in children)
+			{
+				if (child == null) continue;
+				if (child.Children.Count > 0)
+				{
+					sb.AppendLine("<li>");
+					sb.AppendLine($"<button class=\"submenu-toggle\">{child.Title} ▸</button>");
+					sb.Append(RenderMenu(child, false, level + 1).ToString()); // рекурсия для детей
+					sb.AppendLine("</li>");
+				}
+				else
+				{
+					sb.AppendLine($"<li><a href=\"/wiki/KnowledgeBase/{child.Slug}\">{child.Title}</a></li>");
+				}
+			}
+
+			sb.AppendLine("</ul>");
+			return new HtmlString(sb.ToString());
+		}
+	}
+	<nav class="sidebar">
+		@RenderMenu((WikiPage)ViewData["WikiMenu"])
+	</nav>
+
+	<div class="content">
+		<article>
+			<div id="prism" class="theme-doc-markdown markdown">
+				@Html.Raw(Model.HtmlContent)
+			</div>
+		</article>
+
+		<nav class="pagination-nav docusaurus-mt-lg" aria-label="Docs pages">
+			@if (ViewData["PrevPage"] is WikiPage prev)
+			{
+				<a class="pagination-nav__link pagination-nav__link--prev custom-cursor-hover"
+				   href="/wiki/KnowledgeBase/@prev.Slug">
+					<div class="pagination-nav__sublabel">@Localizer["Knowledge_Prev"]</div>
+					<div class="pagination-nav__label">@prev.Title</div>
+				</a>
+			}
+			@if (ViewData["NextPage"] is WikiPage next)
+			{
+				<a class="pagination-nav__link pagination-nav__link--next custom-cursor-hover"
+				   href="/wiki/KnowledgeBase/@next.Slug">
+					<div class="pagination-nav__sublabel">@Localizer["Knowledge_Next"]</div>
+					<div class="pagination-nav__label">@next.Title</div>
+				</a>
+			}
+		</nav>
+	</div>
+</div>
+
+<button class="button-copy-code hidden"></button>
+<svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true"
+	 class="copy-docs-icon hidden">
+	<path fill-rule="evenodd"
+		  d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z">
+	</path>
+	<path fill-rule="evenodd"
+		  d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z">
+	</path>
+</svg>
+<script>
+	const copyIcon = `<svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" fill="#f1f1f1" class="copy-docs-icon">
+				  <path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+				  <path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+				</svg>`;
+
+	const copiedIcon = `<svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" fill="#f1f1f1" class="docs-copied-icon">
+				  <path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path>
+				</svg>`;
+
+	const blocks = document.querySelectorAll("pre");
+
+	blocks.forEach((block) => {
+		if (!navigator.clipboard) {
+			return;
+		}
+		if (block.classList.contains("mermaid")) {
+			return; // Пропускаем Mermaid
+		}
+
+		let button = document.createElement("button");
+		button.className = "button-copy-code";
+		button.style.visibility = "visible";
+		button.style.backgroundColor = "#383838";
+		button.innerHTML = copyIcon;
+		block.appendChild(button);
+
+		button.addEventListener("click", async () => {
+			await copyCode(block);
+		});
+	});
+
+	async function copyCode(block) {
+		let copiedCode = block.cloneNode(true);
+		copiedCode.removeChild(copiedCode.querySelector("button.button-copy-code"));
+
+		const html = copiedCode.outerHTML.replace(/<[^>]*>?/gm, "");
+
+		block.querySelector("button.button-copy-code").innerHTML = copiedIcon;
+		setTimeout(function () {
+			block.querySelector("button.button-copy-code").innerHTML = copyIcon;
+		}, 2000);
+
+		const parsedHTML = htmlDecode(html);
+
+		await navigator.clipboard.writeText(parsedHTML);
+	}
+
+	function htmlDecode(input) {
+		const doc = new DOMParser().parseFromString(input, "text/html");
+		return doc.documentElement.textContent;
+	}
+</script>

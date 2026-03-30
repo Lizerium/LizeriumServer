@@ -1,0 +1,125 @@
+﻿.icon-color-lizerium {
+    background: linear-gradient(to top, var(--i-liz-color), var(--h-color-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.header_icon_lang_block {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .icon {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-content: center;
+        justify-content: flex-start;
+        align-items: center;
+        margin-left: 75px;
+        margin-top: 10px;
+
+        @media (max-width: 768px) {
+            margin: 3px;
+        }
+    }
+
+    .icon img {
+        width: 32px;
+        margin: 2px 10px;
+        cursor: pointer;
+    }
+
+    .icon h1 {
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+    }
+
+    form select.form-select {
+        font-family: 'Montserrat', 'CJK', sans-serif;
+        background-color: transparent;
+        color: #fff; // или другой нужный цвет
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 0 30px 0 10px;
+        appearance: none; // Скрывает дефолтную стрелку
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23fff' class='bi bi-caret-down-fill' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658c-.566-.678-.106-1.658.753-1.658h9.592c.86 0 1.32.98.753 1.658L8.753 11.14a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.5rem center;
+        background-size: 1em;
+        font-size: 18px;
+        font-weight: 600;
+
+        @media (max-width: 768px) {
+            font-size: 12px;
+        }
+    }
+
+    form select, ::picker(select) {
+        appearance: base-select;
+        border: none;
+        opacity: 0;
+        transition: all 0.4s allow-discrete;
+        top: calc(anchor(bottom) + 1px);
+        left: anchor(10%);
+    }
+
+    form select:hover,
+    form select:focus {
+        background: linear-gradient(to top, var(--h-color-2), var(--i-liz-color));
+    }
+
+    form select, ::picker(select):popover-open {
+        opacity: 1;
+    }
+
+    form select option:first-of-type {
+        border-radius: 8px 8px 0 0;
+    }
+
+    form select option:last-of-type {
+        border-radius: 0 0 8px 8px;
+    }
+
+    form select option:not(option:last-of-type) {
+        border-bottom: none;
+    }
+
+    form select option {
+        font-family: 'Montserrat', 'CJK', sans-serif;
+        border-radius: 10px;
+        display: flex;
+        justify-content: flex-start;
+        gap: 10px;
+        background: #eee;
+        padding: 5px;
+        transition: 0.4s;
+    }
+
+    form select option:checked {
+        font-weight: bold;
+    }
+}
+
+footer {
+    text-align: center;
+    padding: 5px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    z-index: 150;
+    background: rgba(20, 20, 30, 1);
+    display: flex;
+    justify-content: center;
+
+    @media (max-width: 768px) {
+        display: none;
+    }
+}
+
+footer img {
+    cursor: url('~img/cursor-active.png') 4 4, auto !important;
+}

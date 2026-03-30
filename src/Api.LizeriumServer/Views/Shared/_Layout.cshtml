@@ -1,0 +1,51 @@
+﻿@model MainModel
+@using AspNetCore.ReCaptcha
+@Html.ReCaptcha()
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/app.min.css" />
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" crossorigin="anonymous"></script>
+    <script src="~/js/app.min.js"></script>
+</head>
+<body>
+    @if (Model.ShowLeftSide) //если флаг показывать левую часть
+    {
+        <partial name="_LeftSide" />
+    }
+    <partial name="_Header" />
+    @RenderBody()
+    <button id="scrollButton" style="position: fixed; bottom: 150px; left: 20px; z-index: 1000;">
+        ⬆⬇
+    </button>
+
+    <!--Start Modal Form-->
+    <div id="modal_form" class="modal" style="display:none">
+        <div class="modal_content">
+            <div class="modal_header">
+                <span class="close_model">&times;</span>
+                <h3></h3>
+            </div>
+            <div class="modal_body"></div>
+        </div>
+    </div>
+    <!-- Button trigger modal -->
+    <!--Start svg icons-->
+    <div class="hiddenall">
+        <svg xmlns="http://www.w3.org/2000/svg">
+            <symbol viewBox="0 0 24 24" id="check_mark">
+                <path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z" />
+            </symbol>
+            <symbol viewBox="0 0 24 24" id="reply_icon">
+                <path d="M22 12l-20 12 5-12-5-12z" />
+            </symbol>
+        </svg>
+    </div>
+    <!--End svg icons-->
+</body>
+</html>

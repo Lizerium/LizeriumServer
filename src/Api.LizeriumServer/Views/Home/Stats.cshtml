@@ -1,0 +1,50 @@
+﻿@model MainModel
+@{
+    ViewData["Title"] = @"Статистика Lizerium Server API";
+}
+
+<div class="container top with_left_side">
+    <h2>Общая статистика</h2>
+    <a href="/cabinet">Назад</a>
+    @if (Model.UserDataStats != null && Model.UserDataStats.Count > 0)
+    {
+        var ip = @Model.UserDataStats[0].IP;
+        <a target="_blank" href="http://ipwho.is/@ip">ipwho</a>
+        <a target="_blank" href="https://ru.infobyip.com/">infobyip</a>
+        <a target="_blank" href="https://2ip.ru/whois/">2ip</a>
+        <a target="_blank" href="https://xseo.in/ipinfo">xseo</a>
+        <a target="_blank" href="http://www.whois-service.ru/lookup/">whois-service</a>
+        <a target="_blank" href="https://www.wservice.info/">wservice</a>
+        <a target="_blank" href="https://www.ipaddress.my/">ipaddress</a>
+    }
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>IP</th>
+                <th>DATE</th>
+                <th>LANG</th>
+                <th>AGENT</th>
+                <th>PATH</th>
+                <th>COUNT</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.UserDataStats != null)
+            {
+                @foreach (var user in Model.UserDataStats)
+                {
+                    <tr>
+                        <td>@user.Id</td>
+                        <td><a href="/stats/@user.IP/info"></a>@user.IP</td>
+                        <td>@user.Date</td>
+                        <td>@user.Lang</td>
+                        <td>@user.Agent</td>
+                        <td>@user.Path</td>
+                        <td>@user.Count</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

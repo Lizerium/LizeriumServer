@@ -1,0 +1,50 @@
+﻿@model MainModel
+@{
+    ViewData["Title"] = @"Кабинет Lizerium Server API";
+}
+
+<div class="container top with_left_side">
+    <h2>Общая статистика</h2>
+    <h2>Всего посещений за день: @Model.AllUsersPerDay</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>IP</th>
+                <th>DATE</th>
+                <th>LANG</th>
+                <th>AGENT</th>
+                <th>PATH</th>
+                <th>COUNT</th>
+                <th>F</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.MonitorData != null)
+            {
+                @foreach (var user in Model.MonitorData)
+                {
+                    var style = (user.Banned) ? "blocked" : "unblocked";
+                    <tr class="@style">
+                        <td>@user.Id</td>
+                        <td><a href="/stats/@user.IP/info">@user.IP</a></td>
+                        <td>@user.Date</td>
+                        <td>@user.Lang</td>
+                        <td>@user.Agent</td>
+                        <td>@user.Path</td>
+                        <td>@user.Count</td>
+                        <td>@if (!user.Banned)
+                            {
+                                <a href="/block/@user.IP">B</a>
+                            }
+                            else
+                            {
+                                <a href="/unblock/@user.IP">U</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
