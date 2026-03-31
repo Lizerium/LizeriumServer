@@ -1,4 +1,12 @@
-﻿namespace LizeriumUtilities.FormatsData.AppUserData;
+﻿/*
+ * Author: Nikolay Dvurechensky
+ * Site: https://dvurechensky.pro/
+ * Gmail: dvurechenskysoft@gmail.com
+ * Last Updated: 31 марта 2026 11:07:00
+ * Version: 1.0.1
+ */
+
+namespace LizeriumUtilities.FormatsData.AppUserData;
 
 /// <summary>
 /// Объект данных о ключе API пользователя
