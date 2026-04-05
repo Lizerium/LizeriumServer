@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 04 апреля 2026 13:12:50
- * Version: 1.0.6
+ * Last Updated: 05 апреля 2026 15:17:47
+ * Version: 1.0.7
  */
 
 namespace Api.LizeriumServer.FormatsData.Stats;
