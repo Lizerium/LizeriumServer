@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 11 апреля 2026 13:54:51
- * Version: 1.0.13
+ * Last Updated: 12 апреля 2026 14:31:14
+ * Version: 1.0.14
  */
 
 using LizeriumDatabase.Services.AppDataBaseService;
