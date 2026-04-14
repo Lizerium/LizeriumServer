@@ -1,5 +1,7 @@
 # Api.LizeriumServer
 
+- [Назад](BUILDS.ru.md)
+
 ## `app_configuration.json`
 
 1. Создайте свой `Api.LizeriumServer/app_configuration.json`

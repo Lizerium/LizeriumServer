@@ -1,5 +1,7 @@
 # LizeriumServer
 
+- [Назад](BUILDS.md)
+
 ## `appsettings.json`
 
 1. Create your own `LizeriumServer/appsettings.json`

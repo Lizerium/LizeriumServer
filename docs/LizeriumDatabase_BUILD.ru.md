@@ -1,5 +1,7 @@
 # LizeriumDatabase
 
+- [Назад](BUILDS.ru.md)
+
 ## `database_configuration.json`
 
 1. Создайте свой `LizeriumDatabase/database_configuration.json`
