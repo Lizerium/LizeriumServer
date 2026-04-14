@@ -2,20 +2,12 @@
 
 ## `email_configuration.json`
 
-1. Create your own `LizeriumEmail/email_configuration.json`
-2. In `email_configuration.json`, configure the following:
-   1. `smtpSettings` — email configurations for three categories:
-      - transactional
-      - administrator
-      - notification
+1. Создайте свой `LizeriumEmail/email_configuration.json`
+2. В `email_configuration.json` занесите свои пути до
+   1. `smtpSettings` - свои почты под три категории
+   2. Свои почты - админская - `emailAdmin` и поддержка `emailSupport`
 
-   2. Define your email addresses:
-      - `emailAdmin` — administrator email
-      - `emailSupport` — support email
-
----
-
-### Example `email_configuration.json`
+### Пример конфигурации `email_configuration.json`
 
 ```json
 {

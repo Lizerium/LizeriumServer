@@ -2,12 +2,17 @@
 
 ## `common_configuration.json`
 
-1. Создайте свой `LizeriumUtilities/common_configuration.json`
-2. В `common_configuration.json` занесите свои пути до
-   1. `mainDomain` - адрес до домена сервера (нужен при работе почты)
-   2. `knownProxies` - массив прокси серверов для работы LizeriumServer при необходимости настроить Docker, Cloudfare и другое
+1. Create your own `LizeriumUtilities/common_configuration.json`
+2. In `common_configuration.json`, configure the following:
+   1. `mainDomain` — server domain address
+      - used for email-related functionality
 
-### Пример конфигурации `common_configuration.json`
+   2. `knownProxies` — list of proxy servers
+      - used when running behind Docker, Cloudflare, or other reverse proxy setups
+
+---
+
+### Example `common_configuration.json`
 
 ```json
 {

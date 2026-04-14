@@ -2,13 +2,18 @@
 
 ## `database_configuration.json`
 
-1. Создайте свой `LizeriumDatabase/database_configuration.json`
-2. В `database_configuration.json` занесите свои пути до
-   1. `path` - полный путь до файла с базой данных `application.db` - как правило он генерируется при первом запуске с пустыми таблицами в корне рядом с `.exe` сервера
-   2. `private_path` - полный путь до админской базы данных `private.db`
-   3. `GifPath` - полный путь до папки с гифками для страницы документации команд
+1. Create your own `LizeriumDatabase/database_configuration.json`
+2. In `database_configuration.json`, specify the following paths:
+   1. `path` — full path to the main database file `application.db`
+      - typically generated on first server run with empty tables in the same directory as the server `.exe`
 
-### Пример конфигурации `database_configuration.json`
+   2. `private_path` — full path to the administrative database `private.db`
+
+   3. `GifPath` — full path to the folder containing GIFs used on the command documentation page
+
+---
+
+### Example `database_configuration.json`
 
 ```json
 {

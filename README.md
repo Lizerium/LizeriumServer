@@ -1,7 +1,7 @@
 <h1 align="center">🌐 Lizerium Server</h1>
 
 <p align="center">
-  <b>Модульный ASP.NET Core MVC сервер для игровых порталов, админки, документации, динамического контента и инфраструктурных сервисов.</b>
+  <b>Modular ASP.NET Core MVC server for game portals, admin panels, documentation, dynamic content, and infrastructure services.</b>
 </p>
 
 <p align="center">
@@ -13,42 +13,54 @@
   <img src="https://shields.dvurechensky.pro/badge/Status-Open%20Source-00C853?style=for-the-badge" />
 </p>
 
+<div align="center" style="margin: 20px 0; padding: 10px; background: #1c1917; border-radius: 10px;">
+  <strong>🌐 Language: </strong>
+  
+  <a href="./README.ru.md" style="color: #F5F752; margin: 0 10px;">
+    🇷🇺 Russian
+  </a>
+  | 
+  <span style="color: #0891b2; margin: 0 10px;">
+    ✅ 🇺🇸 English (current)
+  </span>
+</div>
+
 ---
 
 > [!NOTE]
-> Этот проект является частью экосистемы **Lizerium** и относится к направлению:
+> This project is part of the **Lizerium** ecosystem and belongs to the following direction:
 >
-> * [`Lizerium.Software.Structs`](https://github.com/Lizerium/Lizerium.Software.Structs)
+> - [`Lizerium.Software.Structs`](https://github.com/Lizerium/Lizerium.Software.Structs)
 >
-> Если вы ищете связанные инженерные и вспомогательные инструменты, начните оттуда.
+> If you are looking for related engineering and supporting tools, start there.
 
-# 📖 О проекте
+# 📖 About the Project
 
-**Lizerium Server** — это модульный серверный проект, разработанный как ядро для игрового портала, административной панели и связанной инфраструктуры.
+**Lizerium Server** is a modular server platform designed as the core for a game portal, administrative panel, and supporting infrastructure.
 
-Изначально проект создавался под экосистему **Lizerium**, однако по мере развития превратился в более широкую серверную платформу, объединяющую:
+Originally created for the **Lizerium** ecosystem, the project evolved into a broader server platform combining:
 
-- публичный веб-портал,
-- административную часть,
-- работу с базами данных,
-- почтовую инфраструктуру,
-- внутренние сервисы,
-- систему документации,
-- динамическую загрузку контента,
-- сетевую защиту и фильтрацию,
-- мультиязычную подачу данных.
+- public web portal
+- administrative backend
+- database integration
+- email infrastructure
+- internal services
+- documentation system
+- dynamic content delivery
+- network security and filtering
+- multilingual content support
 
-Проект ориентирован на сценарии, где нужен не просто сайт, а **центральный серверный узел**, способный обслуживать как пользователей, так и внутренние административные процессы.
+The project targets scenarios where you need not just a website, but a **central server node** capable of handling both user-facing and internal administrative processes.
 
 ---
 
-- [📖 О проекте](#-о-проекте)
-- [✨ Возможности](#-возможности)
-  - [🌍 Публичная часть](#-публичная-часть)
-  - [🛠 Административная часть](#-административная-часть)
-  - [⚙️ Инфраструктурные возможности](#️-инфраструктурные-возможности)
-- [🧱 Архитектура](#-архитектура)
-- [📦 Состав решения](#-состав-решения)
+- [📖 About the Project](#-about-the-project)
+- [✨ Features](#-features)
+  - [🌍 Public Layer](#-public-layer)
+  - [🛠 Admin Layer](#-admin-layer)
+  - [⚙️ Infrastructure Features](#️-infrastructure-features)
+- [🧱 Architecture](#-architecture)
+- [📦 Solution Structure](#-solution-structure)
   - [`LizeriumServer`](#lizeriumserver)
   - [`Api.LizeriumServer`](#apilizeriumserver)
   - [`LizeriumDatabase`](#lizeriumdatabase)
@@ -57,208 +69,215 @@
   - [`LizeriumNetSecurity`](#lizeriumnetsecurity)
   - [`LizeriumUtilities`](#lizeriumutilities)
   - [`TranslationService`](#translationservice)
-- [🚀 Быстрый старт](#-быстрый-старт)
-  - [Клонирование репозитория](#клонирование-репозитория)
-  - [Сборка решения](#сборка-решения)
-  - [Запуск основного сервера](#запуск-основного-сервера)
-  - [Запуск административной части](#запуск-административной-части)
-- [🧪 Тестирование](#-тестирование)
-  - [Входящие тестовые проекты](#входящие-тестовые-проекты)
-    - [Запуск тестов](#запуск-тестов)
-- [🧰 Скрипты](#-скрипты)
-  - [Примеры](#примеры)
-- [🔗 Связанные проекты](#-связанные-проекты)
-- [📜 История изменений](#-история-изменений)
-- [⚖️ Лицензия](#️-лицензия)
-- [💬 Примечание](#-примечание)
+- [🚀 Quick Start](#-quick-start)
+  - [Documents](#documents)
+  - [Clone repository](#clone-repository)
+  - [Build solution](#build-solution)
+  - [Run main server](#run-main-server)
+  - [Run admin backend](#run-admin-backend)
+- [🧪 Testing](#-testing)
+  - [Test projects](#test-projects)
+    - [Run tests](#run-tests)
+- [🧰 Scripts](#-scripts)
+  - [Examples](#examples)
+- [🔗 Related Projects](#-related-projects)
+- [📜 Changelog](#-changelog)
+- [⚖️ License](#️-license)
+- [💬 Notes](#-notes)
 
 ---
 
-# ✨ Возможности
+# ✨ Features
 
-## 🌍 Публичная часть
+## 🌍 Public Layer
 
-- Главная страница проекта
-- Информационные и служебные страницы
-- Публикации и новостные блоки
-- Отображение пользовательских обращений
-- Документация по Freelancer (2003)
-- Отображение рецептов сборки игровых предметов
-- Поддержка мультиязычности:
-  - Русский
-  - Английский
-
----
-
-## 🛠 Административная часть
-
-- Отдельный административный backend
-- Авторизация администратора
-- Динамическая загрузка и отображение команд из JSON
-- Управление внутренними данными проекта
-- Поддержка локального или внешнего сервиса перевода
+- Project landing page
+- Informational and service pages
+- News and publication system
+- User request display
+- Freelancer (2003) documentation
+- Crafting recipes visualization
+- Multilingual support:
+  - Russian
+  - English
 
 ---
 
-## ⚙️ Инфраструктурные возможности
+## 🛠 Admin Layer
 
-- Модульная архитектура решения
-- Разделение проекта на независимые сервисные библиотеки
-- Работа с внешними конфигурациями
-- Централизованное логирование
-- Почтовый сервис
-- Слой работы с базой данных
-- Утилиты общего назначения
-- Поддержка reverse proxy / trusted proxies
-- Защита от DoS-атак
-- Поддержка внешних директорий для модов, лаунчера и игровых данных
+- Separate administrative backend
+- Admin authentication
+- Dynamic command loading from JSON
+- Internal data management
+- Support for local or external translation services
 
 ---
 
-# 🧱 Архитектура
+## ⚙️ Infrastructure Features
 
-Проект разбит на независимые компоненты, каждый из которых отвечает за отдельную область серверной логики.
+- Modular architecture
+- Separation into independent service libraries
+- External configuration support
+- Centralized logging
+- Email service
+- Database abstraction layer
+- Utility modules
+- Reverse proxy / trusted proxy support
+- DoS protection
+- Support for external directories (mods, launcher, game data)
 
-# 📦 Состав решения
+---
+
+# 🧱 Architecture
+
+The project is divided into independent components, each responsible for a specific domain of server logic.
+
+---
+
+# 📦 Solution Structure
 
 ## `LizeriumServer`
 
-Основной серверный проект.
+Main server project.
 
-Отвечает за:
+Responsible for:
 
-- публичный портал,
-- маршрутизацию,
-- пользовательские страницы,
-- игровые данные,
-- документацию,
-- интеграцию с сервисами.
+- public portal
+- routing
+- user-facing pages
+- game data
+- documentation
+- service integration
 
 ---
 
 ## `Api.LizeriumServer`
 
-Административная часть проекта.
+Administrative backend.
 
-Отвечает за:
+Responsible for:
 
-- внутреннюю панель,
-- конфигурационные данные,
-- административные сценарии,
-- управление динамическим контентом.
+- internal panel
+- configuration data
+- admin workflows
+- dynamic content management
 
 ---
 
 ## `LizeriumDatabase`
 
-Модуль работы с базой данных.
+Database module.
 
-Используется для:
+Used for:
 
-- основной БД,
-- приватной БД,
-- хранения данных проекта.
+- primary database
+- private database
+- project data storage
 
 ---
 
 ## `LizeriumEmail`
 
-Почтовый модуль проекта.
+Email module.
 
-Используется для:
+Used for:
 
-- уведомлений,
-- системных писем,
-- административной почты.
+- notifications
+- system emails
+- administrative communication
 
 ---
 
 ## `LizeriumLogging`
 
-Модуль логирования.
+Logging module.
 
-Используется для:
+Used for:
 
-- централизованного логирования,
-- диагностики,
-- сопровождения серверной части.
+- centralized logging
+- diagnostics
+- server maintenance
 
 ---
 
 ## `LizeriumNetSecurity`
 
-Сетевой и защитный слой.
+Network and security layer.
 
-Используется для:
+Used for:
 
-- фильтрации,
-- защитных ограничений,
-- обработки сетевой инфраструктуры.
+- filtering
+- protection mechanisms
+- network infrastructure handling
 
 ---
 
 ## `LizeriumUtilities`
 
-Общие утилиты проекта.
+Utility module.
 
-Используется для:
+Used for:
 
-- вспомогательной логики,
-- общих расширений,
-- конфигурационных помощников.
+- helper logic
+- shared extensions
+- configuration helpers
 
 ---
 
 ## `TranslationService`
 
-Сервис перевода текста.
+Text translation service.
 
-Используется для:
+Used for:
 
-- мультиязычного контента,
-- интеграции локального или внешнего переводчика.
+- multilingual content
+- integration with local or external translators
 
 ---
 
-# 🚀 Быстрый старт
+# 🚀 Quick Start
 
-## Клонирование репозитория
+## Documents
+
+- [BUILDS](docs/BUILDS.md)
+
+## Clone repository
 
 ```bash
 git clone https://github.com/Lizerium/LizeriumServer.git
 cd LizeriumServer
 ```
 
-## Сборка решения
+## Build solution
 
 ```bash
 dotnet build LizeriumServer.sln
 ```
 
-## Запуск основного сервера
+## Run main server
 
 ```bash
 dotnet run --project src/LizeriumServer
 ```
 
-## Запуск административной части
+## Run admin backend
 
 ```bash
 dotnet run --project src/Api.LizeriumServer
 ```
 
 > [!IMPORTANT]
-> Перед запуском необходимо подготовить конфигурационные файлы и инфраструктурные зависимости.
+> Configuration files and infrastructure dependencies must be prepared before running.
 
-📄 Подробная документация по сборке и настройке находится в папке [`docs`](docs).
+📄 Full setup documentation is available in the [`docs`](docs) folder.
 
 ---
 
-# 🧪 Тестирование
+# 🧪 Testing
 
-В проекте присутствуют как модульные, так и интеграционные тесты.
+The project includes both unit and integration tests.
 
-## Входящие тестовые проекты
+## Test projects
 
 - `Lizerium.DDoS.Tests`
 - `LizeriumDatabase.Tests`
@@ -266,7 +285,7 @@ dotnet run --project src/Api.LizeriumServer
 - `LizeriumServer.IntegrationTests`
 - `TranslationService.Tests`
 
-### Запуск тестов
+### Run tests
 
 ```bash
 dotnet test
@@ -274,43 +293,41 @@ dotnet test
 
 ---
 
-# 🧰 Скрипты
+# 🧰 Scripts
 
-В проекте присутствуют вспомогательные скрипты для подготовки, перевода и обработки игровых данных.
+The project includes helper scripts for processing and preparing game data.
 
-## Примеры
+## Examples
 
-- перевод payload-структур,
-- перевод craft JSON-файлов,
-- вспомогательные реконфигурационные утилиты.
+- payload translation
+- crafting JSON translation
+- reconfiguration utilities
 
-📄 Подробнее: [`scripts`](scripts)
-
----
-
-# 🔗 Связанные проекты
-
-- [KnowledgeBase](https://github.com/Lizerium/KnowledgeBase)
-- [LizeriumModManager](https://github.com/Lizerium/LizeriumModManager)
+📄 More details: [`scripts`](scripts)
 
 ---
 
-# 📜 История изменений
+# 🔗 Related Projects
 
-История обновлений проекта ведётся отдельно.
-
-📄 См.: [`CHANGELOG.md`](CHANGELOG.md)
-
----
-
-# ⚖️ Лицензия
-
-Проект распространяется в соответствии с лицензией, указанной в файле [`LICENSE`](LICENSE).
+- [https://github.com/Lizerium/KnowledgeBase](https://github.com/Lizerium/KnowledgeBase)
+- [https://github.com/Lizerium/LizeriumModManager](https://github.com/Lizerium/LizeriumModManager)
 
 ---
 
-# 💬 Примечание
+# 📜 Changelog
 
-Этот проект — не просто сайт, а результат длительной инженерной эволюции в сторону модульной серверной платформы.
+See: [`CHANGELOG`](CHANGELOG.md)
 
-Он сохранил в себе прикладную направленность, но при этом был постепенно приведён к более чистой, открытой и расширяемой структуре.
+---
+
+# ⚖️ License
+
+Distributed under the license specified in [`LICENSE`](LICENSE)
+
+---
+
+# 💬 Notes
+
+This project is not just a website, but the result of a long engineering evolution toward a modular server platform.
+
+It retains practical use while being gradually transformed into a cleaner, more open, and extensible architecture.

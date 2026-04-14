@@ -2,13 +2,17 @@
 
 ## `app_configuration.json`
 
-1. Создайте свой `Api.LizeriumServer/app_configuration.json`
-2. В `app_configuration.json` занесите свои пути до
-   1. `appHost` - адрес до сервера с админкой
-   2. `landingSecret` - секретный ключ для лендинга (не используется)
-   3. `admins` - `секретный ключ` и `email` администратора при входе
+1. Create your own `Api.LizeriumServer/app_configuration.json`
+2. In `app_configuration.json`, define the following:
+   1. `appHost` — address of the admin server
+   2. `landingSecret` — secret key for the landing page (currently unused)
+   3. `admins` — administrator credentials:
+      - `secretKey`
+      - `emailAdmin`
 
-### Пример конфигурации `app_configuration.json`
+---
+
+### Example `app_configuration.json`
 
 ```json
 {
@@ -25,11 +29,16 @@
 }
 ```
 
-## Импорт в проект списка команд проходит из json в адиминке
+---
 
-- Сами команды динамически подгружаются пользователю в портале
+## Command List Import
 
-### Пример `CommandsAll.json`
+- Commands are imported into the admin panel from a JSON file
+- They are then dynamically loaded and displayed to users in the portal
+
+---
+
+### Example `CommandsAll.json`
 
 ```json
 {
@@ -48,7 +57,7 @@
 			"commands": [
 				{
 					"name": "/set diemsg [visibility]",
-					"desc": "Устанавливает видимость сообщений о смерти. Параметры: all, system, self, none.",
+					"desc": "Sets visibility of death messages. Options: all, system, self, none.",
 					"ex": "",
 					"status": 1
 				}
