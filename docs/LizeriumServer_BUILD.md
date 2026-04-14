@@ -59,7 +59,7 @@
 
 ### Example crafting configs (`craft_build*.json`)
 
-```json id="v3u9mk"
+```json
 {
 	"nameFile": "builda",
 	"translationsNameCategory": {
