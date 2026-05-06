@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 05 мая 2026 07:21:45
- * Version: 1.0.40
+ * Last Updated: 06 мая 2026 10:50:31
+ * Version: 1.0.41
  */
 
 using LizeriumServer.FormatsData.AppUploaderGameData;
