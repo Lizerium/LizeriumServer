@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 07 мая 2026 15:46:31
- * Version: 1.0.42
+ * Last Updated: 08 мая 2026 07:07:23
+ * Version: 1.0.43
  */
 
 using Api.LizeriumServer;
