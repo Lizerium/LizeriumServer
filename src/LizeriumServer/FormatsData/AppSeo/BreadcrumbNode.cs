@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 10 мая 2026 08:03:40
- * Version: 1.0.45
+ * Last Updated: 11 мая 2026 10:57:48
+ * Version: 1.0.46
  */
 
 namespace LizeriumServer.FormatsData.AppSeo
