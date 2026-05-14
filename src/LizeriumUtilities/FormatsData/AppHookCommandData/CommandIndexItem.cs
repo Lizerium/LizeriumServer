@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 13 мая 2026 13:35:34
- * Version: 1.0.48
+ * Last Updated: 14 мая 2026 10:55:37
+ * Version: 1.0.49
  */
 
 namespace LizeriumUtilities.FormatsData.AppHookCommandData;
