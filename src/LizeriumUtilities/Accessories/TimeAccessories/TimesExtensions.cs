@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 18 мая 2026 13:09:59
- * Version: 1.0.52
+ * Last Updated: 19 мая 2026 10:36:19
+ * Version: 1.0.53
  */
 
 using LizeriumLogging.Accessories.LoggingAccessories;
