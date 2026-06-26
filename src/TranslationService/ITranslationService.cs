@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 25 июня 2026 16:51:00
- * Version: 1.0.90
+ * Last Updated: 26 июня 2026 07:11:33
+ * Version: 1.0.91
  */
 
 namespace TranslationService
