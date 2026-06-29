@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 28 июня 2026 12:06:36
- * Version: 1.0.93
+ * Last Updated: 29 июня 2026 07:16:51
+ * Version: 1.0.94
  */
 
 using LizeriumCrypt.Accessories;
