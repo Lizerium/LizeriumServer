@@ -18,7 +18,10 @@ src/LizeriumServer/dev_mode.json
 src/LizeriumServer/46722929.ini
 Build
 InputData
+scripts/README_DEPLOY.md
 scripts/*.json
+scripts/deploy-*.ps1
+.deploy/
 pre_commit.log
 pre_commit.ps1
 

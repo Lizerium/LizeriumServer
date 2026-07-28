@@ -68,7 +68,7 @@ public class LoggingService : ILoggingService
         try
         {
             //генерируем путь к директории логирования
-            var logDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Path.Combine(LoggingExtensions.AppDir, NameLogDir));
+            var logDirectory = Path.Combine(LoggingExtensions.AppDir, NameLogDir);
 
             //получаем информацию о директории логирования
             var logDirectoryInfo = new DirectoryInfo(logDirectory);
@@ -150,9 +150,9 @@ public class LoggingService : ILoggingService
                 InitializeLogging(nameProject);
             };
         }
-        catch
+        catch (Exception exception)
         {
-            //Ignore
+            Console.Error.WriteLine($"Logging initialization failed: {exception}");
         }
     }
 
@@ -184,8 +184,6 @@ public class LoggingService : ILoggingService
             CurrentLogFilePath = null;
             CurrentLogLineCount = 0;
 
-            //уничтожаем блокиратор
-            Locker?.Dispose();
         }
         catch
         {
@@ -291,9 +289,9 @@ public class LoggingService : ILoggingService
             trimmedLines.Insert(0, $"{DateTime.Now:dd.MM.yy HH:mm:ss}: LOG FILE TRIMMED. Kept last {TrimmedLogLines} lines from {lines.Count}.");
             File.WriteAllLines(filePath, trimmedLines, new UTF8Encoding(false));
         }
-        catch
+        catch (Exception exception)
         {
-            //Ignore
+            Console.Error.WriteLine($"Log trimming failed: {exception}");
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿@inject IBreadcrumbService BreadcrumbService
 @inject IViewLocalizer Localizer
+@inject LizeriumServer.Helpers.ServerVersionProvider ServerVersionProvider
 @{
 	var breadcrumbs = BreadcrumbService.GetBreadcrumbs(ViewContext.RouteData, Localizer, ViewData);
 }
@@ -274,6 +275,7 @@
 @{
     string currentController = ViewContext.RouteData.Values["controller"]?.ToString();
     string currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+    string versionPrefix = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ru" ? "вер." : "ver.";
 }
 
 <body>
@@ -379,6 +381,10 @@
         <img id="git-link custom-cursor-hover" width="20px" height="20px" src="~/img/git.png" onclick="window.open('https://github.com/Lizerium', '_blank', 'noopener,noreferrer')" />
         <img id="me-link custom-cursor-hover" width="20px" height="20px" src="~/img/my.png" onclick="window.open('https://dvurechensky.pro', '_blank', 'noopener,noreferrer')" />
     </footer>
+    <div class="server-version-badge" aria-label="@versionPrefix #@ServerVersionProvider.Version">
+        <span>@versionPrefix</span>
+        <strong>#@ServerVersionProvider.Version</strong>
+    </div>
     <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true"
          class="copy-docs-icon hidden">
         <path fill-rule="evenodd"

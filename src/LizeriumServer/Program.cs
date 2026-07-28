@@ -21,6 +21,7 @@ using LizeriumNetSecurity.Services.SecurityService;
 using LizeriumNetSecurity.Services.SecurityService.Implements;
 
 using LizeriumServer.Accessories.AuthAccessories;
+using LizeriumServer.Helpers;
 using LizeriumServer.Middleware;
 using LizeriumServer.Options;
 using LizeriumServer.Services.Breadcrumb;
@@ -40,6 +41,9 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
+
+builder.Services.AddSingleton<ServerVersionProvider>();
 
 builder.Services.Configure<StoragePathsOptions>(
     builder.Configuration.GetSection("StoragePaths"));
@@ -119,14 +123,7 @@ var baseDir = AppContext.BaseDirectory;
 var dbPath = Path.Combine(baseDir, "application.db");
 builder.Services.AddDbContext<IDataBaseService, DataBaseService>(options =>
 {
-    options.UseSqlite($"Data Source={dbPath}")
-           .EnableSensitiveDataLogging()
-           .LogTo(message =>
-           {
-               // можно писать и в Debug Output
-               System.Diagnostics.Debug.WriteLine(message);
-               Console.WriteLine(message); // на случай запуска из терминала
-           }, LogLevel.Information);
+    options.UseSqlite($"Data Source={dbPath}");
 });
 
 

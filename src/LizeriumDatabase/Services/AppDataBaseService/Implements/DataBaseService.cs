@@ -945,7 +945,6 @@ public class DataBaseService : DbContext, IDataBaseService
             //логируем исключение
             ("DatabasePath: " + path).LogMessage();
             optionsBuilder.UseSqlite("Data Source=" + path);
-            optionsBuilder.LogTo(Console.WriteLine, new[] { RelationalEventId.CommandExecuted });
         }
         catch (Exception ex)
         {

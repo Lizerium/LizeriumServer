@@ -123,3 +123,37 @@ footer {
 footer img {
     cursor: url('~img/cursor-active.png') 4 4, auto !important;
 }
+
+.server-version-badge {
+    position: fixed;
+    right: 18px;
+    bottom: 10px;
+    z-index: 170;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 24px;
+    padding: 3px 10px;
+    border: 1px solid rgba(127, 116, 255, 0.45);
+    border-radius: 6px;
+    background: linear-gradient(180deg, rgba(22, 22, 32, 0.92), rgba(12, 12, 20, 0.96));
+    box-shadow: 0 0 12px rgba(0, 184, 221, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    color: rgba(199, 247, 255, 0.82);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    pointer-events: none;
+
+    span {
+        color: rgba(182, 176, 255, 0.78);
+    }
+
+    strong {
+        color: #9beeff;
+        font-weight: 700;
+    }
+
+    @media (max-width: 768px) {
+        display: none;
+    }
+}

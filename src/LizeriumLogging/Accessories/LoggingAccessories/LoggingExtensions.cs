@@ -8,8 +8,6 @@
 
 using LizeriumLogging.Services.AppLoggingService;
 using LizeriumLogging.Services.AppLoggingService.Implements;
-using System.Reflection;
-
 namespace LizeriumLogging.Accessories.LoggingAccessories;
 
 /// <summary>
@@ -25,7 +23,7 @@ public static class LoggingExtensions
     /// <summary>
     /// Обертка полного пути к рабочей директории приложения
     /// </summary>
-    public static string AppDir => _appDir ??= Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location);
+    public static string AppDir => _appDir ??= AppContext.BaseDirectory;
 
     /// <summary>
     /// Интерфейс логирования
