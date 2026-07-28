@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 27 июля 2026 15:17:11
- * Version: 1.0.121
+ * Last Updated: 28 июля 2026 10:29:56
+ * Version: 1.0.122
  */
 
 using System.Globalization;
@@ -13,6 +13,8 @@ using AspNetCore.ReCaptcha;
 
 using LizeriumDatabase.Services.AppDataBaseService;
 using LizeriumDatabase.Services.AppDataBaseService.Implements;
+
+using LizeriumLogging.Accessories.LoggingAccessories;
 
 using LizeriumNetSecurity.Middleware;
 using LizeriumNetSecurity.Services.SecurityService;
@@ -144,6 +146,16 @@ builder.Services.AddSingleton(sp =>
 });
 
 var app = builder.Build();
+
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    LoggingExtensions.Logging.InitializeLogging("Lizerium Server");
+});
+
+app.Lifetime.ApplicationStopping.Register(() =>
+{
+    LoggingExtensions.Logging.DeinitializeLogging();
+});
 
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {

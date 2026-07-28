@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 27 июля 2026 15:17:11
- * Version: 1.0.121
+ * Last Updated: 28 июля 2026 10:29:56
+ * Version: 1.0.122
  */
 
 using LizeriumLogging.Accessories.LoggingAccessories;
@@ -17,6 +17,9 @@ namespace LizeriumLogging.Services.AppLoggingService.Implements;
 /// </summary>
 public class LoggingService : ILoggingService
 {
+    private const int MaxLogLines = 100_000;
+    private const int TrimmedLogLines = 50_000;
+
     /// <summary>
     /// Имя директории хранения логов
     /// </summary>
@@ -31,6 +34,16 @@ public class LoggingService : ILoggingService
     /// TextWriter логирования
     /// </summary>
     private TextWriter LoggingWriter { get; set; }
+
+    /// <summary>
+    /// Путь к текущему файлу логирования
+    /// </summary>
+    private string CurrentLogFilePath { get; set; }
+
+    /// <summary>
+    /// Количество строк в текущем файле логирования
+    /// </summary>
+    private int CurrentLogLineCount { get; set; }
 
     /// <summary>
     /// Таймер изменения текущих файлов лога
@@ -86,6 +99,7 @@ public class LoggingService : ILoggingService
 
             //генерируем полный путь к файлу лога
             var fullPathLogExceptionFile = Path.GetFullPath($"{logDirectory}/log_{DateTime.Now:dd.MM.yy}.log");
+            CurrentLogFilePath = fullPathLogExceptionFile;
 
             //проверяем наличие файлов логов
             if (!File.Exists(fullPathLogExceptionFile))
@@ -93,6 +107,9 @@ public class LoggingService : ILoggingService
                 //создаем и закрываем файл логов
                 File.Create(fullPathLogExceptionFile).Close();
             }
+
+            TrimLogFileIfNeeded(fullPathLogExceptionFile);
+            CurrentLogLineCount = File.ReadLines(fullPathLogExceptionFile).Count();
 
             //инициализируем TextWriter логирования
             LoggingWriter = TextWriter.Synchronized(new StreamWriter(fullPathLogExceptionFile, true, new UTF8Encoding(false)));
@@ -164,6 +181,8 @@ public class LoggingService : ILoggingService
 
             //присваиваем null TextWriter логирования
             LoggingWriter = null;
+            CurrentLogFilePath = null;
+            CurrentLogLineCount = 0;
 
             //уничтожаем блокиратор
             Locker?.Dispose();
@@ -194,9 +213,12 @@ public class LoggingService : ILoggingService
 
             //пишем строку лога
             await LoggingWriter.WriteLineAsync(textLog);
+            CurrentLogLineCount++;
 
             //из памяти
             await LoggingWriter.FlushAsync();
+
+            TrimCurrentLogFileIfNeeded();
         }
         finally
         {
@@ -226,14 +248,52 @@ public class LoggingService : ILoggingService
 
             //пишем строку лога
             await LoggingWriter.WriteLineAsync(textException);
+            CurrentLogLineCount++;
 
             //из памяти
             await LoggingWriter.FlushAsync();
+
+            TrimCurrentLogFileIfNeeded();
         }
         finally
         {
             //освобождаем блокировку потока
             Locker.Release();
+        }
+    }
+
+    private void TrimCurrentLogFileIfNeeded()
+    {
+        if (CurrentLogLineCount <= MaxLogLines || string.IsNullOrEmpty(CurrentLogFilePath))
+            return;
+
+        LoggingWriter?.Close();
+        LoggingWriter?.Dispose();
+        LoggingWriter = null;
+
+        TrimLogFileIfNeeded(CurrentLogFilePath);
+        CurrentLogLineCount = File.ReadLines(CurrentLogFilePath).Count();
+        LoggingWriter = TextWriter.Synchronized(new StreamWriter(CurrentLogFilePath, true, new UTF8Encoding(false)));
+    }
+
+    private static void TrimLogFileIfNeeded(string filePath)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+                return;
+
+            var lines = File.ReadLines(filePath).ToList();
+            if (lines.Count <= MaxLogLines)
+                return;
+
+            var trimmedLines = lines.Skip(Math.Max(0, lines.Count - TrimmedLogLines)).ToList();
+            trimmedLines.Insert(0, $"{DateTime.Now:dd.MM.yy HH:mm:ss}: LOG FILE TRIMMED. Kept last {TrimmedLogLines} lines from {lines.Count}.");
+            File.WriteAllLines(filePath, trimmedLines, new UTF8Encoding(false));
+        }
+        catch
+        {
+            //Ignore
         }
     }
 }
