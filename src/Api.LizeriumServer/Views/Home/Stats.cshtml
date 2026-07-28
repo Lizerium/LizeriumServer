@@ -1,50 +1,108 @@
 ﻿@model MainModel
 @{
     ViewData["Title"] = @"Статистика Lizerium Server API";
+    var currentIp = Model.UserDataStats?.FirstOrDefault()?.IP ?? string.Empty;
+    var totalHits = Model.UserDataStats?.Sum(item => item.Count) ?? 0;
+    var uniquePaths = Model.UserDataStats?.Select(item => item.Path).Distinct().Count() ?? 0;
+    var lastVisit = Model.UserDataStats?.FirstOrDefault()?.Date ?? "нет данных";
 }
 
 <div class="container top with_left_side">
-    <h2>Общая статистика</h2>
-    <a href="/cabinet">Назад</a>
-    @if (Model.UserDataStats != null && Model.UserDataStats.Count > 0)
-    {
-        var ip = @Model.UserDataStats[0].IP;
-        <a target="_blank" href="http://ipwho.is/@ip">ipwho</a>
-        <a target="_blank" href="https://ru.infobyip.com/">infobyip</a>
-        <a target="_blank" href="https://2ip.ru/whois/">2ip</a>
-        <a target="_blank" href="https://xseo.in/ipinfo">xseo</a>
-        <a target="_blank" href="http://www.whois-service.ru/lookup/">whois-service</a>
-        <a target="_blank" href="https://www.wservice.info/">wservice</a>
-        <a target="_blank" href="https://www.ipaddress.my/">ipaddress</a>
-    }
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>IP</th>
-                <th>DATE</th>
-                <th>LANG</th>
-                <th>AGENT</th>
-                <th>PATH</th>
-                <th>COUNT</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.UserDataStats != null)
-            {
-                @foreach (var user in Model.UserDataStats)
+    <section class="admin-dashboard">
+        <div class="dashboard-header ip-details-header">
+            <div>
+                <span class="dashboard-kicker">IP profile</span>
+                <h2>Статистика IP</h2>
+                @if (!string.IsNullOrWhiteSpace(currentIp))
                 {
-                    <tr>
-                        <td>@user.Id</td>
-                        <td><a href="/stats/@user.IP/info"></a>@user.IP</td>
-                        <td>@user.Date</td>
-                        <td>@user.Lang</td>
-                        <td>@user.Agent</td>
-                        <td>@user.Path</td>
-                        <td>@user.Count</td>
-                    </tr>
+                    <strong class="ip-details-address">@currentIp</strong>
                 }
-            }
-        </tbody>
-    </table>
+            </div>
+            <a class="action-link" href="/cabinet">Назад</a>
+        </div>
+
+        <div class="dashboard-metrics">
+            <article class="metric-card">
+                <span>Хитов за 24 часа</span>
+                <strong>@totalHits</strong>
+            </article>
+            <article class="metric-card">
+                <span>Уникальные пути</span>
+                <strong>@uniquePaths</strong>
+            </article>
+            <article class="metric-card">
+                <span>Последний визит</span>
+                <strong class="metric-date">@lastVisit</strong>
+            </article>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(currentIp))
+        {
+            <div class="monitor-panel">
+                <div class="monitor-panel-header">
+                    <h3>Внешняя проверка</h3>
+                    <span>быстрые ссылки</span>
+                </div>
+                <div class="ip-tools-grid">
+                    <a target="_blank" href="http://ipwho.is/@currentIp">ipwho</a>
+                    <a target="_blank" href="https://ru.infobyip.com/">infobyip</a>
+                    <a target="_blank" href="https://2ip.ru/whois/">2ip</a>
+                    <a target="_blank" href="https://xseo.in/ipinfo">xseo</a>
+                    <a target="_blank" href="http://www.whois-service.ru/lookup/">whois-service</a>
+                    <a target="_blank" href="https://www.wservice.info/">wservice</a>
+                    <a target="_blank" href="https://www.ipaddress.my/">ipaddress</a>
+                </div>
+            </div>
+        }
+
+        <div class="monitor-panel">
+            <div class="monitor-panel-header">
+                <h3>Маршруты за последние 24 часа</h3>
+                <span>группировка по path</span>
+            </div>
+
+            <div class="monitor-table-wrap">
+                <table class="monitor-table stats-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>IP</th>
+                            <th>Дата</th>
+                            <th>Язык</th>
+                            <th>Тип</th>
+                            <th>Agent</th>
+                            <th>Path</th>
+                            <th>Hits</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.UserDataStats != null && Model.UserDataStats.Count > 0)
+                        {
+                            @foreach (var user in Model.UserDataStats)
+                            {
+                                <tr>
+                                    <td>@user.Id</td>
+                                    <td><a class="ip-link" href="/stats/@user.IP/info">@user.IP</a></td>
+                                    <td>@user.Date</td>
+                                    <td>@user.Lang</td>
+                                    <td><span class="visitor-pill @(user.IsBot ? "bot" : "human")">@(user.IsBot ? "Bot" : "Human")</span></td>
+                                    <td class="text-clamp">@user.Agent</td>
+                                    <td class="path-cell">@user.Path</td>
+                                    <td><span class="hit-pill">@user.Count</span></td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8">
+                                    <div class="empty-state">Нет данных по этому IP за последние 24 часа</div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
 </div>

@@ -63,58 +63,8 @@ class Commands {
      * Метод запускает управление пользователями
      */
     startCommands(): void {
-        //Создать команду
-        var newCategory = document.querySelector("#newCategory") as HTMLTextAreaElement;
-        var newName = document.querySelector("#newName") as HTMLTextAreaElement;
-        var newExampleInput = document.querySelector("#newExampleInput") as HTMLTextAreaElement;
-        var newDescription = document.querySelector("#newDescription") as HTMLTextAreaElement;
-        var newGif = document.querySelector("#newGif") as HTMLTextAreaElement;
-        var newLikes = document.querySelector("#newLikes") as HTMLTextAreaElement;
-        var buttonCreate = document.querySelector("#createCommand") as HTMLButtonElement;
-        var newStatus = document.querySelector("#newStatus") as HTMLSelectElement;
-
-        buttonCreate.addEventListener('click', async () => {
-            console.log("Create Command Start");
-            // Получаем значение выбранного статуса
-            const selectedStatusId: number = parseInt(newStatus.value);
-            console.log(newCategory.value);
-            console.log(newName.value);
-            console.log(newDescription.value);
-            console.log(newGif.value);
-            console.log(newExampleInput.value);
-            console.log(parseInt(newLikes.value));
-            console.log(selectedStatusId);
-
-            //создаем объект запроса
-            const dataRequest = {
-                "newCategory": newCategory.value,
-                "newName": newName.value,
-                "newDescription": newDescription.value,
-                "newGif": newGif.value,
-                "newExampleInput": newExampleInput.value,
-                "newLikes": parseInt(newLikes.value),
-                "newStatus": selectedStatusId,
-            };
-
-            //создаем экземпляр Ajax
-            const ajax = new Ajax("saveCommand", this.cookies);
-
-            //отправляем запрос
-            const response = await ajax.sendRequest(dataRequest);
-
-            //если ответ не успешный
-            if (response !== "ok") {
-
-                //редиректим на ошибку
-                document.location.href = "/Home/Error";
-
-                //не продолжаем
-                return;
-            }
-            else {
-                document.location.href = "/Commands";
-            }
-        });
+        this.bindFilters();
+        this.bindCreateCommandModal();
 
         //получаем все кнопки изменения
         const allSelects = document.querySelectorAll("#changeCommand") as NodeListOf<HTMLButtonElement>;
@@ -138,6 +88,64 @@ class Commands {
         //this.statusSelect.addEventListener("change", async () => {
         //    await this.loadTablePosts()
         //});
+    }
+
+    private bindFilters(): void {
+        const filterForm = document.querySelector(".admin-toolbar") as HTMLFormElement;
+
+        if (!filterForm || !this.statusSelect || !this.categorySelect) return;
+
+        this.statusSelect.addEventListener("change", () => filterForm.submit());
+        this.categorySelect.addEventListener("change", () => filterForm.submit());
+    }
+
+    private bindCreateCommandModal(): void {
+        const openButton = document.getElementById("openCreateCommandModal") as HTMLButtonElement;
+        const template = document.getElementById("createCommandTemplate") as HTMLTemplateElement;
+
+        if (!openButton || !template) return;
+
+        openButton.addEventListener("click", () => {
+            const modal = new ModalForm("Новая команда", "column", "command-create-modal");
+            modal.showModalWithHtml(template.innerHTML);
+
+            const buttonCreate = document.querySelector("#createCommand") as HTMLButtonElement;
+            if (!buttonCreate) return;
+
+            buttonCreate.addEventListener("click", async () => await this.createCommandAsync());
+        });
+    }
+
+    private async createCommandAsync(): Promise<void> {
+        const newCategory = document.querySelector("#newCategory") as HTMLTextAreaElement;
+        const newName = document.querySelector("#newName") as HTMLTextAreaElement;
+        const newExampleInput = document.querySelector("#newExampleInput") as HTMLTextAreaElement;
+        const newDescription = document.querySelector("#newDescription") as HTMLTextAreaElement;
+        const newGif = document.querySelector("#newGif") as HTMLTextAreaElement;
+        const newLikes = document.querySelector("#newLikes") as HTMLInputElement;
+        const newStatus = document.querySelector("#newStatus") as HTMLSelectElement;
+
+        if (!newCategory || !newName || !newExampleInput || !newDescription || !newGif || !newLikes || !newStatus) return;
+
+        const dataRequest = {
+            "newCategory": newCategory.value,
+            "newName": newName.value,
+            "newDescription": newDescription.value,
+            "newGif": newGif.value,
+            "newExampleInput": newExampleInput.value,
+            "newLikes": parseInt(newLikes.value || "0"),
+            "newStatus": parseInt(newStatus.value),
+        };
+
+        const ajax = new Ajax("saveCommand", this.cookies);
+        const response = await ajax.sendRequest(dataRequest);
+
+        if (response !== "ok") {
+            document.location.href = "/Home/Error";
+            return;
+        }
+
+        document.location.href = "/Commands";
     }
 
     /**

@@ -8,10 +8,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
-    <link rel="stylesheet" href="~/css/app.min.css" />
+    <link rel="stylesheet" href="~/css/app.min.css" asp-append-version="true" />
     <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" crossorigin="anonymous"></script>
-    <script src="~/js/app.min.js"></script>
+    <script src="~/js/app.min.js" asp-append-version="true"></script>
 </head>
 <body>
     @if (Model.ShowLeftSide) //если флаг показывать левую часть
@@ -20,9 +20,12 @@
     }
     <partial name="_Header" />
     @RenderBody()
-    <button id="scrollButton" style="position: fixed; bottom: 150px; left: 20px; z-index: 1000;">
-        ⬆⬇
-    </button>
+    @if (Model.ShowLeftSide)
+    {
+        <button id="scrollButton" class="scroll-toggle" type="button" aria-label="Прокрутить страницу">
+            <span>↕</span>
+        </button>
+    }
 
     <!--Start Modal Form-->
     <div id="modal_form" class="modal" style="display:none">

@@ -1,6 +1,6 @@
 ﻿(() => {
     //по загрузке окна
-    window.addEventListener("load", async () => {
+    window.addEventListener("DOMContentLoaded", async () => {
 
         //создаем экземпляр класса утилит
         const utilities = new Utilities();
@@ -62,6 +62,16 @@
         const buttonScroll = document.getElementById("scrollButton") as HTMLButtonElement;
         //проверяем ссылку выхода
         if (buttonScroll) {
+            const updateScrollButton = () => {
+                const scrollPosition = window.scrollY;
+                const pageHeight = document.documentElement.scrollHeight;
+                const windowHeight = window.innerHeight;
+                buttonScroll.classList.toggle("is-up", scrollPosition > (pageHeight - windowHeight) / 2);
+            };
+
+            updateScrollButton();
+            window.addEventListener("scroll", updateScrollButton);
+
             buttonScroll.addEventListener("click", () => {
                 const scrollPosition = window.scrollY;
                 const pageHeight = document.documentElement.scrollHeight;
@@ -74,6 +84,28 @@
                     // Иначе — вниз
                     window.scrollTo({ top: pageHeight, behavior: "smooth" });
                 }
+            });
+        }
+
+        const sidebarToggle = document.getElementById("sidebarToggle") as HTMLButtonElement;
+        if (sidebarToggle) {
+            const isCollapsed = localStorage.getItem("api-sidebar-collapsed") === "true";
+            document.body.classList.toggle("sidebar-collapsed", isCollapsed);
+
+            sidebarToggle.addEventListener("click", () => {
+                const nextState = !document.body.classList.contains("sidebar-collapsed");
+                document.body.classList.toggle("sidebar-collapsed", nextState);
+                localStorage.setItem("api-sidebar-collapsed", nextState.toString());
+            });
+        }
+
+        const fileInputs = document.querySelectorAll("input[type='file']") as NodeListOf<HTMLInputElement>;
+        for (let i = 0; i < fileInputs.length; i++) {
+            const input = fileInputs[i];
+            input.addEventListener("change", () => {
+                input.setAttribute("data-file-name", input.files && input.files.length > 0
+                    ? input.files[0].name
+                    : "Файл не выбран");
             });
         }
 

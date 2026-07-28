@@ -1,8 +1,18 @@
-﻿@{
+@{
     ViewData["Title"] = @"Confirmation Lizerium API";
 }
 
-<div class="container center">
-    <input type="text" placeholder="Код подтверждения" id="confirm_record" class="input round_shadow" />
-    <button type="button" class="btn big lizerium round_shadow" id="send_confirm">Отправить</button>
+<div class="container center auth-screen">
+    <section class="auth-card">
+        <div class="auth-card-header">
+            <span class="dashboard-kicker">Lizerium API</span>
+            <h2>Подтверждение</h2>
+            <p>Введите код подтверждения входа</p>
+        </div>
+
+        <div class="auth-form">
+            <input type="text" placeholder="Код подтверждения" id="confirm_record" class="auth-input" autocomplete="one-time-code" />
+            <button type="button" class="auth-button" id="send_confirm">Отправить</button>
+        </div>
+    </section>
 </div>

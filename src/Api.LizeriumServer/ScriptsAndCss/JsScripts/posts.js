@@ -12,12 +12,12 @@ class Posts {
         this.utilities = utilities;
         this.cookies = cookies;
         this.inputLastUserId = document.getElementById("last_user_id");
-        this.statusSelect = document.querySelector("#status");
+        this.statusSelect = document.querySelector("#postsStatus");
         this.ajaxInProgress = false;
-        this.statusSelect = document.querySelector("#status");
+        this.statusSelect = document.querySelector("#postsStatus");
     }
     startPosts() {
-        const allSelects = document.querySelectorAll("#status");
+        const allSelects = document.querySelectorAll(".post-status-select");
         for (let i = 0; i < allSelects.length; i++) {
             allSelects[i].addEventListener('change', () => __awaiter(this, void 0, void 0, function* () { return yield this.updateSelectStatusAsync(allSelects[i]); }));
         }
@@ -107,7 +107,7 @@ class Posts {
                 const selectTd = document.createElement("td");
                 const select = document.createElement("select");
                 select.setAttribute("user", posts[i].Id);
-                select.id = `status`;
+                select.classList.add("post-status-select");
                 const options = [
                     { value: "-1", text: "Обработка" },
                     { value: "1", text: "Новое" },

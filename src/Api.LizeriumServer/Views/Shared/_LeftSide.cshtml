@@ -1,16 +1,45 @@
-﻿<div class="left_side round_shadow">
+@{
+    var path = Context.Request.Path.Value?.ToLowerInvariant() ?? "/";
+    var isCabinet = path == "/" || path.StartsWith("/cabinet");
+    var isPosts = path.StartsWith("/posts");
+    var isCommands = path.StartsWith("/commands");
+    var isTranslates = path.StartsWith("/command-translates");
+}
+
+<aside class="left_side round_shadow" id="leftSide">
+    <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Свернуть меню">
+        <span>&#9776;</span>
+    </button>
     <ul>
         <li>
-            <a href="/posts">Посты</a>
+            <a class="@(isCabinet ? "active" : string.Empty)" href="/cabinet" title="Главная">
+                <span class="nav-icon" aria-hidden="true">&#8962;</span>
+                <span class="nav-label">Главная</span>
+            </a>
         </li>
         <li>
-            <a href="/commands">Команды</a>
+            <a class="@(isPosts ? "active" : string.Empty)" href="/posts" title="Посты">
+                <span class="nav-icon" aria-hidden="true">&#9993;</span>
+                <span class="nav-label">Посты</span>
+            </a>
         </li>
         <li>
-            <a href="/command-translates">Переводы команд</a>
+            <a class="@(isCommands ? "active" : string.Empty)" href="/commands" title="Команды">
+                <span class="nav-icon" aria-hidden="true">&#9881;</span>
+                <span class="nav-label">Команды</span>
+            </a>
         </li>
         <li>
-            <a id="logout">Выход</a>
+            <a class="@(isTranslates ? "active" : string.Empty)" href="/command-translates" title="Переводы команд">
+                <span class="nav-icon" aria-hidden="true">&#8644;</span>
+                <span class="nav-label">Переводы команд</span>
+            </a>
+        </li>
+        <li>
+            <a id="logout" title="Выход">
+                <span class="nav-icon" aria-hidden="true">&#10005;</span>
+                <span class="nav-label">Выход</span>
+            </a>
         </li>
     </ul>
-</div>
+</aside>

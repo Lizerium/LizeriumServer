@@ -45,12 +45,12 @@ class Posts {
         //получаем input с крайним полученным идентификатором пользователя
         this.inputLastUserId = document.getElementById("last_user_id") as HTMLInputElement;
 
-        this.statusSelect = document.querySelector("#status") as HTMLSelectElement;
+        this.statusSelect = document.querySelector("#postsStatus") as HTMLSelectElement;
 
         //ставим что ajax не в процессе
         this.ajaxInProgress = false;
 
-        this.statusSelect = document.querySelector("#status") as HTMLSelectElement;
+        this.statusSelect = document.querySelector("#postsStatus") as HTMLSelectElement;
     }
 
     /**
@@ -58,7 +58,7 @@ class Posts {
      */
     startPosts(): void {
         //получаем все кнопки сохранения
-        const allSelects = document.querySelectorAll("#status") as NodeListOf<HTMLSelectElement>;
+        const allSelects = document.querySelectorAll(".post-status-select") as NodeListOf<HTMLSelectElement>;
 
         //обходим все боксы с выбором статуса
         for (let i = 0; i < allSelects.length; i++) {
@@ -232,7 +232,7 @@ class Posts {
                 const selectTd = document.createElement("td");
                 const select = document.createElement("select");
                 select.setAttribute("user", posts[i].Id);
-                select.id = `status`; //  Уникальный  id  для  select
+                select.classList.add("post-status-select");
 
                 //  Добавление  option  в  select
                 const options = [

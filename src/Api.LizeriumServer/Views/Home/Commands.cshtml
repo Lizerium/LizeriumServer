@@ -1,38 +1,97 @@
 ﻿@model MainModel
 @{
     ViewData["Title"] = @"Команды";
+    var selectedStatus = Model.SelectedCommandStatus;
+    var selectedCategory = Model.SelectedCommandCategory ?? "all";
 }
 
 <div class="top with_left_side container">
-    <h2>Команды</h2>
-    <input type="hidden" id="last_user_id" value="@Model.Commands?.LastId" />
-    <div class="status_page block">
-        <div class="filter">
-            <select id="status">
-                <option value="1">Активна</option>
-                <option value="2">Выключена</option>
-                <option value="3">В разработке</option>
-            </select>
+    <section class="admin-workspace">
+        <div class="dashboard-header">
+            <div>
+                <span class="dashboard-kicker">Lizerium API</span>
+                <h2>Команды</h2>
+            </div>
+            <div class="command-header-actions">
+                <button class="admin-button primary" id="openCreateCommandModal" type="button">Новая команда</button>
+                <div class="dashboard-status">@((Model.Commands?.Commands?.Count ?? 0)) записей</div>
+            </div>
         </div>
-        <div class="category">
-            <select id="categories">
-                @if(Model.Commands != null)
+
+    <input type="hidden" id="last_user_id" value="@Model.Commands?.LastId" />
+    <form class="admin-toolbar" method="get" action="/commands">
+        <label class="field-inline">
+            <span>Статус</span>
+            <select id="status" name="status">
+                <option value="0" selected="@(selectedStatus == 0 ? "selected" : null)">Все</option>
+                <option value="1" selected="@(selectedStatus == 1 ? "selected" : null)">Активна</option>
+                <option value="2" selected="@(selectedStatus == 2 ? "selected" : null)">Выключена</option>
+                <option value="3" selected="@(selectedStatus == 3 ? "selected" : null)">В разработке</option>
+            </select>
+        </label>
+        <label class="field-inline">
+            <span>Категория</span>
+            <select id="categories" name="category">
+                <option value="all" selected="@(selectedCategory == "all" ? "selected" : null)">Все</option>
+                @if(Model.CommandCategories != null)
                 {
-                    @if (Model.Commands.Categories != null)
+                    @foreach (var category in Model.CommandCategories)
                     {
-                        int i = 0;
-                        @foreach (var category in Model.Commands.Categories)
-                        {
-                            i++;
-                            <option value="@i">@category</option>
-                        }
+                        <option value="@category" selected="@(selectedCategory == category ? "selected" : null)">@category</option>
                     }
                 }
             </select>
+        </label>
+        <button class="admin-button primary" type="submit">Показать</button>
+    </form>
+
+    <template id="createCommandTemplate">
+        <div class="command-create-form">
+            <label>
+                <span>Категория</span>
+                <textarea id="newCategory" placeholder="HOOK"></textarea>
+            </label>
+            <label>
+                <span>Имена</span>
+                <textarea id="newName" placeholder="/command, alias"></textarea>
+            </label>
+            <label>
+                <span>Пример</span>
+                <textarea id="newExampleInput" placeholder="/command value"></textarea>
+            </label>
+            <label>
+                <span>Описание</span>
+                <textarea id="newDescription" placeholder="Описание команды"></textarea>
+            </label>
+            <label>
+                <span>GIF URL</span>
+                <textarea id="newGif" placeholder="1_1.gif"></textarea>
+            </label>
+            <label>
+                <span>Likes</span>
+                <input id="newLikes" type="number" value="0" min="0" />
+            </label>
+            <label>
+                <span>Статус</span>
+                <select id="newStatus">
+                    <option value="1">Активна</option>
+                    <option value="2">Выключена</option>
+                    <option value="3">В разработке</option>
+                </select>
+            </label>
+            <div class="modal-actions">
+                <button class="admin-button primary" id="createCommand" type="button">Создать команду</button>
+            </div>
         </div>
-    </div>
-    <div style="overflow-y: auto;" class="panel round_shadow">
-        <table>
+    </template>
+
+    <div class="admin-panel">
+        <div class="admin-panel-header">
+            <h3>Список команд</h3>
+            <span>редактирование, gif и статусы</span>
+        </div>
+        <div class="admin-table-wrap">
+        <table class="admin-table commands-table">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -43,27 +102,10 @@
                     <th>GIF</th>
                     <th>Likes</th>
                     <th>Статус</th>
-                    <th>©</th>
+                    <th>Действия</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td></td>
-                    <td><textarea id="newCategory"></textarea></td>
-                    <td><textarea id="newName"></textarea></td>
-                    <td><textarea id="newExampleInput"></textarea></td>
-                    <td><textarea id="newDescription"></textarea></td>
-                    <td><textarea id="newGif"></textarea></td>
-                    <td><textarea id="newLikes">0</textarea></td>
-                    <td>
-                        <select id="newStatus">
-                            <option value="1">Активна</option>
-                            <option value="2">Выключена</option>
-                            <option value="3">В разработке</option>
-                        </select>
-                    </td>
-                    <td><button id="createCommand">Создать</button></td>
-                </tr>
                 @if(Model.Commands != null)
                 {
                     @foreach (var commandData in Model.Commands.Commands)
@@ -79,33 +121,38 @@
                                 <form method="post" enctype="multipart/form-data" action="/Ajax/UploadGifCommand">
                                     <input type="file" name="file" accept=".gif">
                                     <input type="hidden" name="id" value="@commandData.Id">
-                                    <button type="submit">Загрузить GIF</button>
+                                    <button class="admin-button" type="submit">Загрузить GIF</button>
                                 </form>
                             </td>
                             <td><textarea id="@(commandData.Id)_CountLike">@commandData.CountLike</textarea></td>
                             <td>
-                                <select id="@(commandData.Id)_status" asp-for="@commandData.Status" id="(@commandData.Id)_Status" user="@commandData.Id">
+                                <select id="@(commandData.Id)_status" asp-for="@commandData.Status" user="@commandData.Id">
                                     <option value="1">Активна</option>
                                     <option value="2">Выключена</option>
                                     <option value="3">В разработке</option>
                                 </select>
                             </td>
-                            <td><button IdC="@commandData.Id" id="changeCommand">Изменить</button></td>
-                            <td><button IdC="@commandData.Id" id="deleteCommand">💢</button></td>
+                            <td class="command-actions-cell">
+                                <button class="admin-button" IdC="@commandData.Id" id="changeCommand" type="button">Сохранить</button>
+                                <button class="admin-button danger" IdC="@commandData.Id" id="deleteCommand" type="button">Удалить</button>
+                            </td>
                         </tr>
                     }
                 }
             </tbody>
         </table>
+        </div>
+    </div>
+
+    <div class="admin-actions-grid">
         <form method="post" enctype="multipart/form-data" action="/Ajax/UploadCommandsJson">
             <input type="file" name="file" accept=".json">
-            <button type="submit">Загрузить JSON c командами</button>
+            <button class="admin-button primary" type="submit">Загрузить JSON c командами</button>
         </form>
         <form method="post" enctype="multipart/form-data" action="/Ajax/UploadCategoriesCommandsJson">
             <input type="file" name="file" accept=".json">
-            <button type="submit">Загрузить JSON с категориями</button>
+            <button class="admin-button primary" type="submit">Загрузить JSON с категориями</button>
         </form>
-        <!-- Форма для перевода всех команд -->
         <form method="get" action="/Admin/TranslatedAllCommands">
             <label for="langTo">Перевести все команды на язык:</label>
             <select id="langTo" name="langTo" required>
@@ -116,9 +163,10 @@
                 <!-- Добавь другие языки при необходимости -->
             </select>
 
-            <input type="hidden" name="langFrom" value="ru" /> <!-- исходный язык всегда русский -->
+            <input type="hidden" name="langFrom" value="ru" />
 
-            <button type="submit">Перевести все команды</button>
+            <button class="admin-button primary" type="submit">Перевести все команды</button>
         </form>
     </div>
+    </section>
 </div>

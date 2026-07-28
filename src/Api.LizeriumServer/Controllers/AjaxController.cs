@@ -10,6 +10,7 @@ using System;
 using System.Text.Json;
 
 using Api.LizeriumServer.FormatsData.AppAdminData;
+using Api.LizeriumServer.Services.AdminAccess;
 using Api.LizeriumServer.Services.AppAuthService;
 using Api.LizeriumServer.Services.AppAuthService.Implements;
 
@@ -63,6 +64,9 @@ public class AjaxController : Controller
     {
         try
         {
+            if (!AdminAccessGuard.IsAllowed(HttpContext))
+                return StatusCode(404);
+
             //проверяем блокировку
             var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString();
             if (await securityService.IsBlocked(HttpContext?.Connection?.RemoteIpAddress?.ToString()))

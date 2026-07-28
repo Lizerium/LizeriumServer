@@ -4,11 +4,20 @@
 }
 
 <div class="container top with_left_side">
-    <h2>Обращения пользователей</h2>
+    <section class="admin-workspace">
+        <div class="dashboard-header">
+            <div>
+                <span class="dashboard-kicker">Lizerium API</span>
+                <h2>Обращения пользователей</h2>
+            </div>
+            <div class="dashboard-status">@((Model.Posts?.Posts?.Count ?? 0)) последних</div>
+        </div>
+
     <input type="hidden" id="last_user_id" value="@Model.Posts.LastUserId" />
-    <div class="block status_page">
-        <div class="filter">
-            <select id="status">
+    <div class="admin-toolbar">
+        <label class="field-inline">
+            <span>Фильтр</span>
+            <select id="postsStatus">
                 <option value="0">Все</option>
                 <option value="1">Новое</option>
                 <option value="2">Прочитано</option>
@@ -16,10 +25,16 @@
                 <option value="4">Отказано</option>
                 <option value="5">Выполнено</option>
             </select>
-        </div>
+        </label>
     </div>
-    <div style="overflow-y: auto;" class="panel round_shadow">
-        <table>
+
+    <div class="admin-panel">
+        <div class="admin-panel-header">
+            <h3>Список обращений</h3>
+            <span>подгрузка продолжится при прокрутке</span>
+        </div>
+        <div class="admin-table-wrap">
+        <table class="admin-table posts-table">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -52,7 +67,7 @@
                         </td>
                         <td>@postData.Message</td>
                         <td>
-                            <select id="status" asp-for="@postData.Status" user="@postData.Id">
+                            <select class="post-status-select" asp-for="@postData.Status" user="@postData.Id">
                                 <option value="-1">Обработка</option>
                                 <option value="1">Новое</option>
                                 <option value="2">Прочитано</option>
@@ -65,5 +80,7 @@
                 }
             </tbody>
         </table>
+        </div>
     </div>
+    </section>
 </div>

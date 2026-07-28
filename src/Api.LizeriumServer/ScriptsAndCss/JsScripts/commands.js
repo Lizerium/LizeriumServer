@@ -18,43 +18,8 @@ class Commands {
         this.statusSelect = document.querySelector("#status");
     }
     startCommands() {
-        var newCategory = document.querySelector("#newCategory");
-        var newName = document.querySelector("#newName");
-        var newExampleInput = document.querySelector("#newExampleInput");
-        var newDescription = document.querySelector("#newDescription");
-        var newGif = document.querySelector("#newGif");
-        var newLikes = document.querySelector("#newLikes");
-        var buttonCreate = document.querySelector("#createCommand");
-        var newStatus = document.querySelector("#newStatus");
-        buttonCreate.addEventListener('click', () => __awaiter(this, void 0, void 0, function* () {
-            console.log("Create Command Start");
-            const selectedStatusId = parseInt(newStatus.value);
-            console.log(newCategory.value);
-            console.log(newName.value);
-            console.log(newDescription.value);
-            console.log(newGif.value);
-            console.log(newExampleInput.value);
-            console.log(parseInt(newLikes.value));
-            console.log(selectedStatusId);
-            const dataRequest = {
-                "newCategory": newCategory.value,
-                "newName": newName.value,
-                "newDescription": newDescription.value,
-                "newGif": newGif.value,
-                "newExampleInput": newExampleInput.value,
-                "newLikes": parseInt(newLikes.value),
-                "newStatus": selectedStatusId,
-            };
-            const ajax = new Ajax("saveCommand", this.cookies);
-            const response = yield ajax.sendRequest(dataRequest);
-            if (response !== "ok") {
-                document.location.href = "/Home/Error";
-                return;
-            }
-            else {
-                document.location.href = "/Commands";
-            }
-        }));
+        this.bindFilters();
+        this.bindCreateCommandModal();
         const allSelects = document.querySelectorAll("#changeCommand");
         for (let i = 0; i < allSelects.length; i++) {
             allSelects[i].addEventListener('click', () => __awaiter(this, void 0, void 0, function* () { return yield this.updateChangeAsync(allSelects[i]); }));
@@ -63,6 +28,56 @@ class Commands {
         for (let i = 0; i < buttonDelete.length; i++) {
             buttonDelete[i].addEventListener('click', () => __awaiter(this, void 0, void 0, function* () { return yield this.deleteAsync(buttonDelete[i]); }));
         }
+    }
+    bindFilters() {
+        const filterForm = document.querySelector(".admin-toolbar");
+        if (!filterForm || !this.statusSelect || !this.categorySelect)
+            return;
+        this.statusSelect.addEventListener("change", () => filterForm.submit());
+        this.categorySelect.addEventListener("change", () => filterForm.submit());
+    }
+    bindCreateCommandModal() {
+        const openButton = document.getElementById("openCreateCommandModal");
+        const template = document.getElementById("createCommandTemplate");
+        if (!openButton || !template)
+            return;
+        openButton.addEventListener("click", () => {
+            const modal = new ModalForm("Новая команда", "column", "command-create-modal");
+            modal.showModalWithHtml(template.innerHTML);
+            const buttonCreate = document.querySelector("#createCommand");
+            if (!buttonCreate)
+                return;
+            buttonCreate.addEventListener("click", () => __awaiter(this, void 0, void 0, function* () { return yield this.createCommandAsync(); }));
+        });
+    }
+    createCommandAsync() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const newCategory = document.querySelector("#newCategory");
+            const newName = document.querySelector("#newName");
+            const newExampleInput = document.querySelector("#newExampleInput");
+            const newDescription = document.querySelector("#newDescription");
+            const newGif = document.querySelector("#newGif");
+            const newLikes = document.querySelector("#newLikes");
+            const newStatus = document.querySelector("#newStatus");
+            if (!newCategory || !newName || !newExampleInput || !newDescription || !newGif || !newLikes || !newStatus)
+                return;
+            const dataRequest = {
+                "newCategory": newCategory.value,
+                "newName": newName.value,
+                "newDescription": newDescription.value,
+                "newGif": newGif.value,
+                "newExampleInput": newExampleInput.value,
+                "newLikes": parseInt(newLikes.value || "0"),
+                "newStatus": parseInt(newStatus.value),
+            };
+            const ajax = new Ajax("saveCommand", this.cookies);
+            const response = yield ajax.sendRequest(dataRequest);
+            if (response !== "ok") {
+                document.location.href = "/Home/Error";
+                return;
+            }
+            document.location.href = "/Commands";
+        });
     }
     updateChangeAsync(button) {
         return __awaiter(this, void 0, void 0, function* () {

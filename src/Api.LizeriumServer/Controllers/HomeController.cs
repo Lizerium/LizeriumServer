@@ -13,6 +13,8 @@ using Api.LizeriumServer.Accessories.AuthExtensions;
 using Api.LizeriumServer.FormatsData.AppAdminData;
 using Api.LizeriumServer.FormatsData.Stats;
 using Api.LizeriumServer.Models;
+using Api.LizeriumServer.Services.AdminAccess;
+using Api.LizeriumServer.Services.BotDetection;
 
 using LizeriumDatabase.Accessories.DataBaseAccessories;
 using LizeriumDatabase.Services.AppDataBaseService;
@@ -34,6 +36,9 @@ namespace Api.LizeriumServer.Controllers;
 [Route("[action]")]
 public class HomeController : Controller
 {
+    private const int DashboardRowsLimit = 100;
+    private const int DashboardRecentRowsScanLimit = 5000;
+
     private IDataBaseService appDb { get; set; }
     private IAppSecurityService securityService { get; set; }
 
@@ -51,6 +56,9 @@ public class HomeController : Controller
     [Route("/")]
     public async Task<IActionResult> Index()
     {
+        if (!AdminAccessGuard.IsAllowed(HttpContext))
+            return View("AccessClosed", new MainModel(null, null) { ShowLeftSide = false });
+
         //проверяем блокировку
         var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString();
         if (await securityService.IsBlocked(HttpContext?.Connection?.RemoteIpAddress?.ToString()))
@@ -74,6 +82,9 @@ public class HomeController : Controller
     {
         try
         {
+            if (!AdminAccessGuard.IsAllowed(HttpContext))
+                return View("AccessClosed", new MainModel(null, null) { ShowLeftSide = false });
+
             //проверяем блокировку
             var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString();
             if (await securityService.IsBlocked(HttpContext?.Connection?.RemoteIpAddress?.ToString()))
@@ -141,6 +152,9 @@ public class HomeController : Controller
     {
         try
         {
+            if (!AdminAccessGuard.IsAllowed(HttpContext))
+                return View("AccessClosed", new MainModel(null, null) { ShowLeftSide = false });
+
             //проверяем блокировку
             var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString();
             if (await securityService.IsBlocked(HttpContext?.Connection?.RemoteIpAddress?.ToString()))
@@ -152,7 +166,6 @@ public class HomeController : Controller
             //если сессии нет или администратор не авторизован редиректим на главную страницу
             if (adminSession is not { IsAuth: true }) return RedirectPermanent("~/");
 
-            int countPerDay = 0;
             List<MonitorData> MonitorD = new List<MonitorData>();
             var dataSecretRecords = DatabaseExtensions.Configuration.GetValue<string>("private_path");
             try
@@ -199,13 +212,14 @@ public class HomeController : Controller
                                 Lang = Lang,
                                 Agent = Agent,
                                 Path = Path,
+                                IsBot = BotDetectionService.IsBot(Agent),
                                 Count = Count
                             });
                         }
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
             }
 
@@ -230,10 +244,13 @@ public class HomeController : Controller
     /// Страница кабинета администратора
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> Cabinet()
+    public async Task<IActionResult> Cabinet(int page = 1)
     {
         try
         {
+            if (!AdminAccessGuard.IsAllowed(HttpContext))
+                return View("AccessClosed", new MainModel(null, null) { ShowLeftSide = false });
+
             // IP текущего клиента
             var currentIp = HttpContext?.Connection?.RemoteIpAddress?.ToString();
 
@@ -248,8 +265,15 @@ public class HomeController : Controller
             if (adminSession is not { IsAuth: true })
                 return Redirect("~/");
 
+            page = Math.Max(1, page);
             var monitorDataList = new List<MonitorData>();
+            var hourlyDataList = new List<MonitorHourlyData>();
             int countPerDay = 0;
+            int visitsPerDay = 0;
+            int humanUsersPerDay = 0;
+            int botUsersPerDay = 0;
+            int botVisitsPerDay = 0;
+            int totalMonitorRows = 0;
 
             var databasePath = DatabaseExtensions.Configuration.GetValue<string>("private_path");
 
@@ -261,7 +285,13 @@ public class HomeController : Controller
                 {
                     ShowLeftSide = true,
                     MonitorData = monitorDataList,
-                    AllUsersPerDay = countPerDay
+                    MonitorHourlyData = hourlyDataList,
+                    AllUsersPerDay = countPerDay,
+                    AllVisitsPerDay = visitsPerDay,
+                    CurrentPage = page,
+                    PageSize = DashboardRowsLimit,
+                    TotalPages = 1,
+                    TotalMonitorRows = totalMonitorRows
                 });
             }
 
@@ -270,82 +300,206 @@ public class HomeController : Controller
             using var connection = new SQLiteConnection(connectionString);
             await connection.OpenAsync();
 
-            // ----------------------------
-            // 1. Получаем последние 100 IP
-            // ----------------------------
-            const string latestIpsQuery = @"
-                SELECT 
-                    m.Id,
-                    m.DateT,
-                    m.IP,
-                    m.LANG,
-                    m.AGENT,
-                    m.PATH,
-                    stats.TotalCount
-                FROM monitor m
-                INNER JOIN (
-                    SELECT IP, MAX(DateT) AS LatestDate, COUNT(*) AS TotalCount
+            const string normalizedMonitorDateSql = @"
+                datetime(
+                    substr(replace(DateT, '.', '/'), 7, 4) || '-' ||
+                    CASE
+                        WHEN CAST(substr(replace(DateT, '.', '/'), 1, 2) AS INTEGER) > 12
+                            THEN substr(replace(DateT, '.', '/'), 4, 2)
+                        ELSE substr(replace(DateT, '.', '/'), 1, 2)
+                    END || '-' ||
+                    CASE
+                        WHEN CAST(substr(replace(DateT, '.', '/'), 1, 2) AS INTEGER) > 12
+                            THEN substr(replace(DateT, '.', '/'), 1, 2)
+                        ELSE substr(replace(DateT, '.', '/'), 4, 2)
+                    END ||
+                    substr(replace(DateT, '.', '/'), 11)
+                )";
+
+            const string totalLatestIpsQuery = @"
+                WITH recent AS (
+                    SELECT IP
                     FROM monitor
-                    GROUP BY IP
-                ) stats
-                    ON m.IP = stats.IP AND m.DateT = stats.LatestDate
-                ORDER BY m.DateT DESC
-                LIMIT 100;";
-
-            using (var command = new SQLiteCommand(latestIpsQuery, connection))
-            using (var reader = await command.ExecuteReaderAsync())
-            {
-                while (await reader.ReadAsync())
-                {
-                    var id = reader["Id"] != DBNull.Value ? Convert.ToInt32(reader["Id"]) : 0;
-                    var date = reader["DateT"]?.ToString() ?? string.Empty;
-                    var ip = reader["IP"]?.ToString() ?? string.Empty;
-                    var lang = reader["LANG"]?.ToString() ?? string.Empty;
-                    var agent = reader["AGENT"]?.ToString() ?? string.Empty;
-                    var path = reader["PATH"]?.ToString() ?? string.Empty;
-                    var count = reader["TotalCount"] != DBNull.Value ? Convert.ToInt32(reader["TotalCount"]) : 0;
-
-                    monitorDataList.Add(new MonitorData
-                    {
-                        Id = id,
-                        IP = ip,
-                        Date = date,
-                        Lang = lang,
-                        Agent = agent,
-                        Path = path,
-                        Banned = !string.IsNullOrWhiteSpace(ip) && await securityService.IsBlocked(ip),
-                        Count = count
-                    });
-                }
-            }
-
-            // ---------------------------------------
-            // 2. Считаем уникальные IP за последние 24 часа
-            // ---------------------------------------
-            var yesterday = DateTime.UtcNow.AddHours(-24);
-
-            const string countPerDayQuery = @"
+                    ORDER BY Id DESC
+                    LIMIT @RecentRowsLimit
+                )
                 SELECT COUNT(DISTINCT IP)
-                FROM monitor
-                WHERE DateT >= @Yesterday;";
+                FROM recent
+                WHERE IP IS NOT NULL AND IP <> '';";
 
-            using (var commandPerDay = new SQLiteCommand(countPerDayQuery, connection))
+            using (var totalCommand = new SQLiteCommand(totalLatestIpsQuery, connection))
             {
-                // Лучше хранить дату в ISO формате
-                commandPerDay.Parameters.AddWithValue("@Yesterday", yesterday.ToString("yyyy-MM-dd HH:mm:ss"));
-
-                var result = await commandPerDay.ExecuteScalarAsync();
-                countPerDay = result != null && result != DBNull.Value
+                totalCommand.Parameters.AddWithValue("@RecentRowsLimit", DashboardRecentRowsScanLimit);
+                var result = await totalCommand.ExecuteScalarAsync();
+                totalMonitorRows = result != null && result != DBNull.Value
                     ? Convert.ToInt32(result)
                     : 0;
             }
+
+            const string latestIpsQuery = @"
+                WITH recent AS (
+                    SELECT Id, DateT, IP, LANG, AGENT, PATH
+                    FROM monitor
+                    ORDER BY Id DESC
+                    LIMIT @RecentRowsLimit
+                ),
+                stats AS (
+                    SELECT IP, MAX(Id) AS LatestId, COUNT(*) AS TotalCount
+                    FROM recent
+                    WHERE IP IS NOT NULL AND IP <> ''
+                    GROUP BY IP
+                )
+                SELECT
+                    recent.Id,
+                    recent.DateT,
+                    recent.IP,
+                    recent.LANG,
+                    recent.AGENT,
+                    recent.PATH,
+                    stats.TotalCount
+                FROM recent
+                INNER JOIN stats ON recent.Id = stats.LatestId
+                ORDER BY recent.Id DESC
+                LIMIT @DashboardRowsLimit OFFSET @Offset;";
+
+            using (var command = new SQLiteCommand(latestIpsQuery, connection))
+            {
+                command.Parameters.AddWithValue("@RecentRowsLimit", DashboardRecentRowsScanLimit);
+                command.Parameters.AddWithValue("@DashboardRowsLimit", DashboardRowsLimit);
+                command.Parameters.AddWithValue("@Offset", (page - 1) * DashboardRowsLimit);
+
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        var id = reader["Id"] != DBNull.Value ? Convert.ToInt32(reader["Id"]) : 0;
+                        var date = reader["DateT"]?.ToString() ?? string.Empty;
+                        var ip = reader["IP"]?.ToString() ?? string.Empty;
+                        var lang = reader["LANG"]?.ToString() ?? string.Empty;
+                        var agent = reader["AGENT"]?.ToString() ?? string.Empty;
+                        var path = reader["PATH"]?.ToString() ?? string.Empty;
+                        var count = reader["TotalCount"] != DBNull.Value ? Convert.ToInt32(reader["TotalCount"]) : 0;
+
+                        monitorDataList.Add(new MonitorData
+                        {
+                            Id = id,
+                            IP = ip,
+                            Date = date,
+                            Lang = lang,
+                            Agent = agent,
+                            Path = path,
+                            Banned = !string.IsNullOrWhiteSpace(ip) && await securityService.IsBlocked(ip),
+                            IsBot = BotDetectionService.IsBot(agent),
+                            Count = count
+                        });
+                    }
+                }
+            }
+
+            var yesterday = DateTime.Now.AddHours(-24);
+
+            var hourlyPoints = new Dictionary<string, MonitorHourlyData>();
+            var hourlyUniqueIps = new Dictionary<string, HashSet<string>>();
+            var hourlyHumanIps = new Dictionary<string, HashSet<string>>();
+            var hourlyBotIps = new Dictionary<string, HashSet<string>>();
+            var allUniqueIps = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var humanUniqueIps = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var botUniqueIps = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            var hourlyQuery = $@"
+                WITH recent AS (
+                    SELECT DateT, IP, AGENT
+                    FROM monitor
+                    ORDER BY Id DESC
+                    LIMIT @RecentRowsLimit
+                )
+                SELECT
+                    strftime('%Y-%m-%d %H', {normalizedMonitorDateSql}) AS HourKey,
+                    strftime('%H:00', {normalizedMonitorDateSql}) AS HourLabel,
+                    IP,
+                    AGENT
+                FROM recent
+                WHERE {normalizedMonitorDateSql} >= datetime(@Yesterday)
+                    AND IP IS NOT NULL
+                    AND IP <> ''
+                ORDER BY strftime('%Y-%m-%d %H', {normalizedMonitorDateSql});";
+
+            using (var hourlyCommand = new SQLiteCommand(hourlyQuery, connection))
+            {
+                hourlyCommand.Parameters.AddWithValue("@Yesterday", yesterday.ToString("yyyy-MM-dd HH:mm:ss"));
+                hourlyCommand.Parameters.AddWithValue("@RecentRowsLimit", DashboardRecentRowsScanLimit);
+
+                using var reader = await hourlyCommand.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    var hourKey = reader["HourKey"]?.ToString() ?? string.Empty;
+                    var hourLabel = reader["HourLabel"]?.ToString() ?? string.Empty;
+                    var ip = reader["IP"]?.ToString() ?? string.Empty;
+                    var agent = reader["AGENT"]?.ToString() ?? string.Empty;
+                    var isBot = BotDetectionService.IsBot(agent);
+
+                    if (string.IsNullOrWhiteSpace(hourKey) || string.IsNullOrWhiteSpace(ip))
+                        continue;
+
+                    if (!hourlyPoints.TryGetValue(hourKey, out var point))
+                    {
+                        point = new MonitorHourlyData { Label = hourLabel };
+                        hourlyPoints[hourKey] = point;
+                        hourlyUniqueIps[hourKey] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        hourlyHumanIps[hourKey] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        hourlyBotIps[hourKey] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    }
+
+                    visitsPerDay++;
+                    point.Visits++;
+                    allUniqueIps.Add(ip);
+                    hourlyUniqueIps[hourKey].Add(ip);
+
+                    if (isBot)
+                    {
+                        botVisitsPerDay++;
+                        point.BotVisits++;
+                        botUniqueIps.Add(ip);
+                        hourlyBotIps[hourKey].Add(ip);
+                    }
+                    else
+                    {
+                        point.HumanVisits++;
+                        humanUniqueIps.Add(ip);
+                        hourlyHumanIps[hourKey].Add(ip);
+                    }
+                }
+            }
+
+            foreach (var item in hourlyPoints)
+            {
+                item.Value.UniqueIps = hourlyUniqueIps[item.Key].Count;
+                item.Value.HumanUniqueIps = hourlyHumanIps[item.Key].Count;
+                item.Value.BotUniqueIps = hourlyBotIps[item.Key].Count;
+                hourlyDataList.Add(item.Value);
+            }
+
+            countPerDay = allUniqueIps.Count;
+            humanUsersPerDay = humanUniqueIps.Count;
+            botUsersPerDay = botUniqueIps.Count;
+
+            var totalPages = Math.Max(1, (int)Math.Ceiling(totalMonitorRows / (double)DashboardRowsLimit));
 
             // Отдаём страницу панели администратора
             return View(new MainModel(null, null)
             {
                 ShowLeftSide = true,
                 MonitorData = monitorDataList,
-                AllUsersPerDay = countPerDay
+                MonitorHourlyData = hourlyDataList,
+                AllUsersPerDay = countPerDay,
+                AllVisitsPerDay = visitsPerDay,
+                HumanUsersPerDay = humanUsersPerDay,
+                BotUsersPerDay = botUsersPerDay,
+                BotVisitsPerDay = botVisitsPerDay,
+                CurrentPage = page,
+                PageSize = DashboardRowsLimit,
+                TotalPages = totalPages,
+                TotalMonitorRows = totalMonitorRows
             });
         }
         catch (Exception ex)
@@ -363,6 +517,9 @@ public class HomeController : Controller
     {
         try
         {
+            if (!AdminAccessGuard.IsAllowed(HttpContext))
+                return View("AccessClosed", new MainModel(null, null) { ShowLeftSide = false });
+
             //проверяем блокировку
             var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString();
             if (await securityService.IsBlocked(HttpContext?.Connection?.RemoteIpAddress?.ToString()))
@@ -397,10 +554,13 @@ public class HomeController : Controller
     /// Страница управления пользователями
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> Commands()
+    public async Task<IActionResult> Commands(int status = 1, string category = "all")
     {
         try
         {
+            if (!AdminAccessGuard.IsAllowed(HttpContext))
+                return View("AccessClosed", new MainModel(null, null) { ShowLeftSide = false });
+
             //проверяем блокировку
             var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString();
             if (await securityService.IsBlocked(HttpContext?.Connection?.RemoteIpAddress?.ToString()))
@@ -412,13 +572,27 @@ public class HomeController : Controller
             //если сессии нет или администратор не авторизован редиректим на главную страницу
             if (adminSession is not { IsAuth: true }) return RedirectPermanent("~/");
 
-            //используем базу приложения
-            var commands = await appDb.GetAllAdminCommandsAsync();
+            var commands = await appDb.GetAllAdminCommandsAsync() ?? new();
+            var categories = commands
+                .Select(command => command.Category)
+                .Where(commandCategory => !string.IsNullOrWhiteSpace(commandCategory))
+                .Distinct()
+                .OrderBy(commandCategory => commandCategory)
+                .ToList();
+
+            if (status > 0)
+                commands = commands.Where(command => command.Status == status).ToList();
+
+            if (!string.IsNullOrWhiteSpace(category) && !string.Equals(category, "all", StringComparison.OrdinalIgnoreCase))
+                commands = commands.Where(command => command.Category == category).ToList();
 
             //отдаем страницу управления пользователями
             return View(new MainModel(null, commands)
             {
-                ShowLeftSide = true
+                ShowLeftSide = true,
+                SelectedCommandStatus = status,
+                SelectedCommandCategory = category,
+                CommandCategories = categories
             });
         }
         catch (Exception exception)
@@ -440,6 +614,9 @@ public class HomeController : Controller
     {
         try
         {
+            if (!AdminAccessGuard.IsAllowed(HttpContext))
+                return View("AccessClosed", new MainModel(null, null) { ShowLeftSide = false });
+
             //проверяем блокировку
             var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString();
             if (await securityService.IsBlocked(HttpContext?.Connection?.RemoteIpAddress?.ToString()))

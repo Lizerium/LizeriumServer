@@ -18,5 +18,17 @@ public class MonitorData
     public string Agent { get; set; }
     public string Path { get; set; }
     public bool Banned { get; set; }
+    public bool IsBot { get; set; }
     public int Count { get; set; }
+}
+
+public class MonitorHourlyData
+{
+    public string Label { get; set; }
+    public int Visits { get; set; }
+    public int UniqueIps { get; set; }
+    public int HumanVisits { get; set; }
+    public int BotVisits { get; set; }
+    public int HumanUniqueIps { get; set; }
+    public int BotUniqueIps { get; set; }
 }

@@ -1,8 +1,18 @@
-﻿@{
+@{
     ViewData["Title"] = "Авторизация в Lizerium API";
 }
 
-<div class="container center">
-    <input type="text" placeholder="Ваш секретный ключ" id="secret_key" class="input round_shadow" />
-    <button type="button" class="btn big lizerium round_shadow" id="sign_in">Авторизоваться</button>
+<div class="container center auth-screen">
+    <section class="auth-card">
+        <div class="auth-card-header">
+            <span class="dashboard-kicker">Lizerium API</span>
+            <h2>Вход в админку</h2>
+            <p>Введите секретный ключ доступа</p>
+        </div>
+
+        <div class="auth-form">
+            <input type="password" placeholder="Ваш секретный ключ" id="secret_key" class="auth-input" autocomplete="current-password" />
+            <button type="button" class="auth-button" id="sign_in">Авторизоваться</button>
+        </div>
+    </section>
 </div>

@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 (() => {
-    window.addEventListener("load", () => __awaiter(this, void 0, void 0, function* () {
+    window.addEventListener("DOMContentLoaded", () => __awaiter(this, void 0, void 0, function* () {
         const utilities = new Utilities();
         const cookies = new Cookies();
         const currentUrl = new URL(document.location.href);
@@ -44,6 +44,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         }
         const buttonScroll = document.getElementById("scrollButton");
         if (buttonScroll) {
+            const updateScrollButton = () => {
+                const scrollPosition = window.scrollY;
+                const pageHeight = document.documentElement.scrollHeight;
+                const windowHeight = window.innerHeight;
+                buttonScroll.classList.toggle("is-up", scrollPosition > (pageHeight - windowHeight) / 2);
+            };
+            updateScrollButton();
+            window.addEventListener("scroll", updateScrollButton);
             buttonScroll.addEventListener("click", () => {
                 const scrollPosition = window.scrollY;
                 const pageHeight = document.documentElement.scrollHeight;
@@ -54,6 +62,25 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 else {
                     window.scrollTo({ top: pageHeight, behavior: "smooth" });
                 }
+            });
+        }
+        const sidebarToggle = document.getElementById("sidebarToggle");
+        if (sidebarToggle) {
+            const isCollapsed = localStorage.getItem("api-sidebar-collapsed") === "true";
+            document.body.classList.toggle("sidebar-collapsed", isCollapsed);
+            sidebarToggle.addEventListener("click", () => {
+                const nextState = !document.body.classList.contains("sidebar-collapsed");
+                document.body.classList.toggle("sidebar-collapsed", nextState);
+                localStorage.setItem("api-sidebar-collapsed", nextState.toString());
+            });
+        }
+        const fileInputs = document.querySelectorAll("input[type='file']");
+        for (let i = 0; i < fileInputs.length; i++) {
+            const input = fileInputs[i];
+            input.addEventListener("change", () => {
+                input.setAttribute("data-file-name", input.files && input.files.length > 0
+                    ? input.files[0].name
+                    : "Файл не выбран");
             });
         }
         const logout = document.getElementById("logout");

@@ -3,36 +3,57 @@
     ViewData["Title"] = "Переводы команд";
 }
 
-@for (int i = 0; i < Model.Commands.CommandTranslations.Count; i++)
-{
-    <form asp-controller="Home" asp-action="SaveCommandTranslation" method="post">
-        @Html.AntiForgeryToken()
-        <input type="hidden" name="commandId" value="@Model.Commands.CommandTranslations[i].CommandId" />
-        <table class="table" style="display: flex;margin-left: 300px;margin-top: 100px;">
-            <tr>
-                <td>
-                    <input name="CommandId" value="@Model.Commands.CommandTranslations[i].CommandId" />
-                    <textarea name="baseDescription" class="form-control">@Model.Commands.CommandTranslations[i].BaseDescription</textarea>
+<div class="container top with_left_side">
+    <section class="admin-workspace">
+        <div class="dashboard-header">
+            <div>
+                <span class="dashboard-kicker">Lizerium API</span>
+                <h2>Переводы команд</h2>
+            </div>
+            <div class="dashboard-status">@((Model.Commands?.CommandTranslations?.Count ?? 0)) команд</div>
+        </div>
+
+        <div class="translation-grid">
+            @for (int i = 0; i < Model.Commands.CommandTranslations.Count; i++)
+            {
+                <form class="translation-card" asp-controller="Home" asp-action="SaveCommandTranslation" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="commandId" value="@Model.Commands.CommandTranslations[i].CommandId" />
+                    <div class="translation-card-header">
+                        <span>Command ID</span>
+                        <input name="CommandId" value="@Model.Commands.CommandTranslations[i].CommandId" />
+                    </div>
+
+                    <label>
+                        <span>Базовое описание</span>
+                        <textarea name="baseDescription" class="form-control">@Model.Commands.CommandTranslations[i].BaseDescription</textarea>
+                    </label>
+
                     @for (int j = 0; j < Model.Commands.CommandTranslations[i].Translations.Count; j++)
                     {
                         <input type="hidden" name="Translations[@j].CommandId" value="@Model.Commands.CommandTranslations[i].Translations[j].CommandId" />
-                        <input type="text" name="Translations[@j].LanguageCode" value="@Model.Commands.CommandTranslations[i].Translations[j].LanguageCode" />
-                        <textarea name="Translations[@(j)].Description" class="form-control">@Model.Commands.CommandTranslations[i].Translations[j].Description</textarea>
+                        <div class="translation-pair">
+                            <input type="text" name="Translations[@j].LanguageCode" value="@Model.Commands.CommandTranslations[i].Translations[j].LanguageCode" />
+                            <textarea name="Translations[@(j)].Description" class="form-control">@Model.Commands.CommandTranslations[i].Translations[j].Description</textarea>
+                        </div>
                     }
                     @if (Model.Commands.CommandTranslations[i].Translations.Count == 0)
                     {
                         <input type="hidden" name="Translations[0].CommandId" value="@Model.Commands.CommandTranslations[i].CommandId" />
-                        <input type="text" name="Translations[0].LanguageCode" value="ru" />
-                        <textarea name="Translations[0].Description" class="form-control"></textarea>
+                        <div class="translation-pair">
+                            <input type="text" name="Translations[0].LanguageCode" value="ru" />
+                            <textarea name="Translations[0].Description" class="form-control"></textarea>
+                        </div>
                         <input type="hidden" name="Translations[1].CommandId" value="@Model.Commands.CommandTranslations[i].CommandId" />
-                        <input type="text" name="Translations[1].LanguageCode" value="en" />
-                        <textarea name="Translations[1].Description" class="form-control"></textarea>
+                        <div class="translation-pair">
+                            <input type="text" name="Translations[1].LanguageCode" value="en" />
+                            <textarea name="Translations[1].Description" class="form-control"></textarea>
+                        </div>
                     }
-                </td>
-                <td>
-                    <button type="submit" class="btn btn-success btn-sm">Сохранить</button>
-                </td>
-            </tr>
-        </table>
-    </form>
-}
+
+                    <button type="submit" class="admin-button primary">Сохранить</button>
+                </form>
+            }
+        </div>
+    </section>
+</div>

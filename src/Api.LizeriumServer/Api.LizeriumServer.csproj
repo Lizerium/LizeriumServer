@@ -29,6 +29,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="NetCrawlerDetect" Version="1.2.113" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.119" />
   </ItemGroup>
@@ -90,5 +91,9 @@
 	<ItemGroup>
 	  <None Include="Views\Home\Confirmation.cshtml" />
 	  <None Include="wwwroot\svg\down_arrow.svg" />
+	  <None Update="app_configuration.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+	  </None>
 	</ItemGroup>
 </Project>

@@ -188,43 +188,8 @@ class Commands {
         this.statusSelect = document.querySelector("#status");
     }
     startCommands() {
-        var newCategory = document.querySelector("#newCategory");
-        var newName = document.querySelector("#newName");
-        var newExampleInput = document.querySelector("#newExampleInput");
-        var newDescription = document.querySelector("#newDescription");
-        var newGif = document.querySelector("#newGif");
-        var newLikes = document.querySelector("#newLikes");
-        var buttonCreate = document.querySelector("#createCommand");
-        var newStatus = document.querySelector("#newStatus");
-        buttonCreate.addEventListener('click', () => __awaiter(this, void 0, void 0, function* () {
-            console.log("Create Command Start");
-            const selectedStatusId = parseInt(newStatus.value);
-            console.log(newCategory.value);
-            console.log(newName.value);
-            console.log(newDescription.value);
-            console.log(newGif.value);
-            console.log(newExampleInput.value);
-            console.log(parseInt(newLikes.value));
-            console.log(selectedStatusId);
-            const dataRequest = {
-                "newCategory": newCategory.value,
-                "newName": newName.value,
-                "newDescription": newDescription.value,
-                "newGif": newGif.value,
-                "newExampleInput": newExampleInput.value,
-                "newLikes": parseInt(newLikes.value),
-                "newStatus": selectedStatusId,
-            };
-            const ajax = new Ajax("saveCommand", this.cookies);
-            const response = yield ajax.sendRequest(dataRequest);
-            if (response !== "ok") {
-                document.location.href = "/Home/Error";
-                return;
-            }
-            else {
-                document.location.href = "/Commands";
-            }
-        }));
+        this.bindFilters();
+        this.bindCreateCommandModal();
         const allSelects = document.querySelectorAll("#changeCommand");
         for (let i = 0; i < allSelects.length; i++) {
             allSelects[i].addEventListener('click', () => __awaiter(this, void 0, void 0, function* () { return yield this.updateChangeAsync(allSelects[i]); }));
@@ -233,6 +198,56 @@ class Commands {
         for (let i = 0; i < buttonDelete.length; i++) {
             buttonDelete[i].addEventListener('click', () => __awaiter(this, void 0, void 0, function* () { return yield this.deleteAsync(buttonDelete[i]); }));
         }
+    }
+    bindFilters() {
+        const filterForm = document.querySelector(".admin-toolbar");
+        if (!filterForm || !this.statusSelect || !this.categorySelect)
+            return;
+        this.statusSelect.addEventListener("change", () => filterForm.submit());
+        this.categorySelect.addEventListener("change", () => filterForm.submit());
+    }
+    bindCreateCommandModal() {
+        const openButton = document.getElementById("openCreateCommandModal");
+        const template = document.getElementById("createCommandTemplate");
+        if (!openButton || !template)
+            return;
+        openButton.addEventListener("click", () => {
+            const modal = new ModalForm("Новая команда", "column", "command-create-modal");
+            modal.showModalWithHtml(template.innerHTML);
+            const buttonCreate = document.querySelector("#createCommand");
+            if (!buttonCreate)
+                return;
+            buttonCreate.addEventListener("click", () => __awaiter(this, void 0, void 0, function* () { return yield this.createCommandAsync(); }));
+        });
+    }
+    createCommandAsync() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const newCategory = document.querySelector("#newCategory");
+            const newName = document.querySelector("#newName");
+            const newExampleInput = document.querySelector("#newExampleInput");
+            const newDescription = document.querySelector("#newDescription");
+            const newGif = document.querySelector("#newGif");
+            const newLikes = document.querySelector("#newLikes");
+            const newStatus = document.querySelector("#newStatus");
+            if (!newCategory || !newName || !newExampleInput || !newDescription || !newGif || !newLikes || !newStatus)
+                return;
+            const dataRequest = {
+                "newCategory": newCategory.value,
+                "newName": newName.value,
+                "newDescription": newDescription.value,
+                "newGif": newGif.value,
+                "newExampleInput": newExampleInput.value,
+                "newLikes": parseInt(newLikes.value || "0"),
+                "newStatus": parseInt(newStatus.value),
+            };
+            const ajax = new Ajax("saveCommand", this.cookies);
+            const response = yield ajax.sendRequest(dataRequest);
+            if (response !== "ok") {
+                document.location.href = "/Home/Error";
+                return;
+            }
+            document.location.href = "/Commands";
+        });
     }
     updateChangeAsync(button) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -370,7 +385,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 (() => {
-    window.addEventListener("load", () => __awaiter(this, void 0, void 0, function* () {
+    window.addEventListener("DOMContentLoaded", () => __awaiter(this, void 0, void 0, function* () {
         const utilities = new Utilities();
         const cookies = new Cookies();
         const currentUrl = new URL(document.location.href);
@@ -406,6 +421,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         }
         const buttonScroll = document.getElementById("scrollButton");
         if (buttonScroll) {
+            const updateScrollButton = () => {
+                const scrollPosition = window.scrollY;
+                const pageHeight = document.documentElement.scrollHeight;
+                const windowHeight = window.innerHeight;
+                buttonScroll.classList.toggle("is-up", scrollPosition > (pageHeight - windowHeight) / 2);
+            };
+            updateScrollButton();
+            window.addEventListener("scroll", updateScrollButton);
             buttonScroll.addEventListener("click", () => {
                 const scrollPosition = window.scrollY;
                 const pageHeight = document.documentElement.scrollHeight;
@@ -416,6 +439,25 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                 else {
                     window.scrollTo({ top: pageHeight, behavior: "smooth" });
                 }
+            });
+        }
+        const sidebarToggle = document.getElementById("sidebarToggle");
+        if (sidebarToggle) {
+            const isCollapsed = localStorage.getItem("api-sidebar-collapsed") === "true";
+            document.body.classList.toggle("sidebar-collapsed", isCollapsed);
+            sidebarToggle.addEventListener("click", () => {
+                const nextState = !document.body.classList.contains("sidebar-collapsed");
+                document.body.classList.toggle("sidebar-collapsed", nextState);
+                localStorage.setItem("api-sidebar-collapsed", nextState.toString());
+            });
+        }
+        const fileInputs = document.querySelectorAll("input[type='file']");
+        for (let i = 0; i < fileInputs.length; i++) {
+            const input = fileInputs[i];
+            input.addEventListener("change", () => {
+                input.setAttribute("data-file-name", input.files && input.files.length > 0
+                    ? input.files[0].name
+                    : "Файл не выбран");
             });
         }
         const logout = document.getElementById("logout");
@@ -534,12 +576,12 @@ class Posts {
         this.utilities = utilities;
         this.cookies = cookies;
         this.inputLastUserId = document.getElementById("last_user_id");
-        this.statusSelect = document.querySelector("#status");
+        this.statusSelect = document.querySelector("#postsStatus");
         this.ajaxInProgress = false;
-        this.statusSelect = document.querySelector("#status");
+        this.statusSelect = document.querySelector("#postsStatus");
     }
     startPosts() {
-        const allSelects = document.querySelectorAll("#status");
+        const allSelects = document.querySelectorAll(".post-status-select");
         for (let i = 0; i < allSelects.length; i++) {
             allSelects[i].addEventListener('change', () => __awaiter(this, void 0, void 0, function* () { return yield this.updateSelectStatusAsync(allSelects[i]); }));
         }
@@ -629,7 +671,7 @@ class Posts {
                 const selectTd = document.createElement("td");
                 const select = document.createElement("select");
                 select.setAttribute("user", posts[i].Id);
-                select.id = `status`;
+                select.classList.add("post-status-select");
                 const options = [
                     { value: "-1", text: "Обработка" },
                     { value: "1", text: "Новое" },

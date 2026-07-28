@@ -1,50 +1,140 @@
 ﻿@model MainModel
 @{
     ViewData["Title"] = @"Кабинет Lizerium Server API";
+    var maxHourlyVisits = Math.Max(1, Model.MonitorHourlyData?.Max(item => item.Visits) ?? 1);
+    var previousPage = Math.Max(1, Model.CurrentPage - 1);
+    var nextPage = Math.Min(Model.TotalPages, Model.CurrentPage + 1);
 }
 
 <div class="container top with_left_side">
-    <h2>Общая статистика</h2>
-    <h2>Всего посещений за день: @Model.AllUsersPerDay</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>IP</th>
-                <th>DATE</th>
-                <th>LANG</th>
-                <th>AGENT</th>
-                <th>PATH</th>
-                <th>COUNT</th>
-                <th>F</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.MonitorData != null)
-            {
-                @foreach (var user in Model.MonitorData)
+    <section class="admin-dashboard">
+        <div class="dashboard-header">
+            <div>
+                <span class="dashboard-kicker">Lizerium API</span>
+                <h2>Панель мониторинга</h2>
+            </div>
+            <div class="dashboard-status">Live</div>
+        </div>
+
+        <div class="dashboard-metrics">
+            <article class="metric-card">
+                <span>Уникальные IP за 24 часа</span>
+                <strong>@Model.AllUsersPerDay</strong>
+            </article>
+            <article class="metric-card">
+                <span>Реально уникальные</span>
+                <strong>@Model.HumanUsersPerDay</strong>
+            </article>
+            <article class="metric-card">
+                <span>Боты за 24 часа</span>
+                <strong>@Model.BotUsersPerDay</strong>
+            </article>
+            <article class="metric-card">
+                <span>Визиты за 24 часа</span>
+                <strong>@Model.AllVisitsPerDay</strong>
+            </article>
+            <article class="metric-card">
+                <span>Активные IP в списке</span>
+                <strong>@Model.TotalMonitorRows</strong>
+            </article>
+        </div>
+
+        <div class="monitor-panel">
+            <div class="monitor-panel-header">
+                <h3>Посещаемость за последние 24 часа</h3>
+                <span>люди / боты / уникальные IP</span>
+            </div>
+
+            <div class="traffic-chart">
+                @if (Model.MonitorHourlyData != null && Model.MonitorHourlyData.Count > 0)
                 {
-                    var style = (user.Banned) ? "blocked" : "unblocked";
-                    <tr class="@style">
-                        <td>@user.Id</td>
-                        <td><a href="/stats/@user.IP/info">@user.IP</a></td>
-                        <td>@user.Date</td>
-                        <td>@user.Lang</td>
-                        <td>@user.Agent</td>
-                        <td>@user.Path</td>
-                        <td>@user.Count</td>
-                        <td>@if (!user.Banned)
-                            {
-                                <a href="/block/@user.IP">B</a>
-                            }
-                            else
-                            {
-                                <a href="/unblock/@user.IP">U</a>
-                            }
-                        </td>
-                    </tr>
+                    @foreach (var point in Model.MonitorHourlyData)
+                    {
+                        var height = Math.Max(8, (int)Math.Round(point.Visits / (double)maxHourlyVisits * 100));
+                        var humanHeight = point.Visits > 0 ? Math.Round(point.HumanVisits / (double)point.Visits * 100) : 0;
+                        var botHeight = point.Visits > 0 ? Math.Round(point.BotVisits / (double)point.Visits * 100) : 0;
+                        <div class="traffic-bar" style="--bar-height:@height%" title="@($"{point.Label}: {point.Visits} визитов, {point.UniqueIps} IP, люди {point.HumanUniqueIps}, боты {point.BotUniqueIps}")">
+                            <span class="traffic-total">@point.Visits</span>
+                            <span class="traffic-stack" style="height:@height%">
+                                @if (point.BotVisits > 0)
+                                {
+                                    <span class="traffic-segment bot" style="height:@botHeight%"></span>
+                                }
+                                @if (point.HumanVisits > 0)
+                                {
+                                    <span class="traffic-segment human" style="height:@humanHeight%"></span>
+                                }
+                            </span>
+                            <span class="traffic-ratio">@point.HumanUniqueIps/@point.BotUniqueIps</span>
+                            <small>@point.Label</small>
+                        </div>
+                    }
                 }
-            }
-        </tbody>
-    </table>
+                else
+                {
+                    <div class="empty-state">Нет данных за последние 24 часа</div>
+                }
+            </div>
+        </div>
+
+        <div class="monitor-panel">
+            <div class="monitor-panel-header">
+                <h3>Последняя активность</h3>
+                <span>страница @Model.CurrentPage из @Model.TotalPages</span>
+            </div>
+
+            <div class="monitor-table-wrap">
+                <table class="monitor-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>IP</th>
+                            <th>Дата</th>
+                            <th>Язык</th>
+                            <th>Тип</th>
+                            <th>Agent</th>
+                            <th>Path</th>
+                            <th>Hits</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.MonitorData != null)
+                        {
+                            @foreach (var user in Model.MonitorData)
+                            {
+                                var style = user.Banned ? "is-blocked" : "is-active";
+                                <tr class="@style">
+                                    <td>@user.Id</td>
+                                    <td><a class="ip-link" href="/stats/@user.IP/info">@user.IP</a></td>
+                                    <td>@user.Date</td>
+                                    <td>@user.Lang</td>
+                                    <td><span class="visitor-pill @(user.IsBot ? "bot" : "human")">@(user.IsBot ? "Bot" : "Human")</span></td>
+                                    <td class="text-clamp">@user.Agent</td>
+                                    <td class="path-cell">@user.Path</td>
+                                    <td><span class="hit-pill">@user.Count</span></td>
+                                    <td>
+                                        @if (!user.Banned)
+                                        {
+                                            <a class="action-link danger" href="/block/@user.IP">Block</a>
+                                        }
+                                        else
+                                        {
+                                            <a class="action-link" href="/unblock/@user.IP">Unblock</a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination-bar">
+                <a class="page-link @(Model.CurrentPage <= 1 ? "disabled" : string.Empty)" href="/Cabinet?page=@previousPage">Назад</a>
+                <span>@Model.CurrentPage / @Model.TotalPages</span>
+                <a class="page-link @(Model.CurrentPage >= Model.TotalPages ? "disabled" : string.Empty)" href="/Cabinet?page=@nextPage">Вперед</a>
+            </div>
+        </div>
+    </section>
 </div>
