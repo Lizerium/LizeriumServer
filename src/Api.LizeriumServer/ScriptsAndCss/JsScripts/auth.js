@@ -45,7 +45,7 @@ class Auth {
                     document.location.href = "/cabinet";
                     return;
                 }
-                document.location.href = "/Home/Error";
+                document.location.reload();
             }
             finally {
                 loader.setEnable();
@@ -71,7 +71,7 @@ class Auth {
                     document.location.href = "/cabinet";
                     return;
                 }
-                document.location.href = "/error";
+                document.location.reload();
             }
             finally {
                 loader.setEnable();

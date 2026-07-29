@@ -91,6 +91,12 @@
 	<ItemGroup>
 	  <None Include="Views\Home\Confirmation.cshtml" />
 	  <None Include="wwwroot\svg\down_arrow.svg" />
+	  <Content Update="wwwroot\css\**\*">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Update="wwwroot\js\**\*">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
 	  <None Update="app_configuration.json">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

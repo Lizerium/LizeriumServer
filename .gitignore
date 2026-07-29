@@ -20,6 +20,7 @@ Build
 InputData
 scripts/README_DEPLOY.md
 scripts/*.json
+scripts/backup-*.ps1
 scripts/deploy-*.ps1
 .deploy/
 pre_commit.log

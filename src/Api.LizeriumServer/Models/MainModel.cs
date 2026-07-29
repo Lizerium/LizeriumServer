@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 28 июля 2026 10:29:56
- * Version: 1.0.122
+ * Last Updated: 29 июля 2026 16:02:04
+ * Version: 1.0.125
  */
 
 using Api.LizeriumServer.FormatsData.Stats;
@@ -95,6 +95,23 @@ public class MainModel
     public string SelectedCommandCategory { get; set; } = "all";
 
     public List<string> CommandCategories { get; set; } = new();
+
+    /// <summary>
+    /// Новости Lizerium Launcher.
+    /// </summary>
+    public List<LauncherNewsDataResponse> LauncherNews { get; set; } = new();
+
+    public string NewsSearch { get; set; } = string.Empty;
+
+    public string NewsStatusFilter { get; set; } = "all";
+
+    public int NewsCurrentPage { get; set; } = 1;
+
+    public int NewsTotalPages { get; set; } = 1;
+
+    public int NewsPageSize { get; set; } = 10;
+
+    public int NewsTotalCount { get; set; }
 
     /// <summary>
     /// Объект данных о пользователях

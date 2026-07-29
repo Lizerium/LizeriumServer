@@ -2,11 +2,12 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 28 июля 2026 10:29:56
- * Version: 1.0.122
+ * Last Updated: 29 июля 2026 16:02:04
+ * Version: 1.0.125
  */
 
 using System.ComponentModel.Design;
+using System.Data;
 using System.Data.Common;
 
 using LizeriumDatabase.Accessories.DataBaseAccessories;
@@ -64,6 +65,11 @@ public class DataBaseService : DbContext, IDataBaseService
     public DbSet<CommandTranslation> CommandsTranslations { get; set; }
 
     /// <summary>
+    /// Инициализация таблицы новостей Lizerium Launcher
+    /// </summary>
+    public DbSet<LauncherNewsDataResponse> LauncherNews { get; set; }
+
+    /// <summary>
     /// Событие создания модели
     /// </summary>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -75,6 +81,7 @@ public class DataBaseService : DbContext, IDataBaseService
         modelBuilder.Entity<CommandDataResponse>().ToTable("commands"); // Устанавливаем имя таблицы commands
         modelBuilder.Entity<CommandCategoryInfoResponse>().ToTable("commandCategories"); // Устанавливаем имя таблицы commandCategories
         modelBuilder.Entity<CommandTranslation>().ToTable("command_translations"); // Устанавливаем имя таблицы command_translations
+        modelBuilder.Entity<LauncherNewsDataResponse>().ToTable("launcher_news"); // Устанавливаем имя таблицы launcher_news
     }
 
     /// <summary>
@@ -621,6 +628,311 @@ public class DataBaseService : DbContext, IDataBaseService
         return true;
     }
 
+    /// <summary>
+    /// Проверяет существование таблицы новостей и создает ее при необходимости.
+    /// </summary>
+    public async Task ExistAndCreateLauncherNewsTable()
+    {
+        try
+        {
+            await Database.ExecuteSqlRawAsync(@"
+                CREATE TABLE IF NOT EXISTS launcher_news (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    TitleRu TEXT,
+                    TitleEn TEXT,
+                    MarkdownRu TEXT,
+                    MarkdownEn TEXT,
+                    YoutubeUrl TEXT,
+                    RutubeUrl TEXT,
+                    VkVideoUrl TEXT,
+                    ImageUrl TEXT,
+                    ImageGalleryJson TEXT,
+                    NewsType TEXT,
+                    NewsTypeRu TEXT,
+                    NewsTypeEn TEXT,
+                    IconUrl TEXT,
+                    LikeCount INTEGER NOT NULL DEFAULT 0,
+                    GithubUrl TEXT,
+                    GithubProjectName TEXT,
+                    IsPublished INTEGER NOT NULL DEFAULT 1,
+                    SortOrder INTEGER NOT NULL DEFAULT 0,
+                    PublishedAtUnix INTEGER NOT NULL
+                );"
+            );
+
+            await EnsureLauncherNewsColumnAsync("TitleRu", "TEXT");
+            await EnsureLauncherNewsColumnAsync("TitleEn", "TEXT");
+            await EnsureLauncherNewsColumnAsync("MarkdownRu", "TEXT");
+            await EnsureLauncherNewsColumnAsync("MarkdownEn", "TEXT");
+            await EnsureLauncherNewsColumnAsync("YoutubeUrl", "TEXT");
+            await EnsureLauncherNewsColumnAsync("RutubeUrl", "TEXT");
+            await EnsureLauncherNewsColumnAsync("VkVideoUrl", "TEXT");
+            await EnsureLauncherNewsColumnAsync("ImageUrl", "TEXT");
+            await EnsureLauncherNewsColumnAsync("ImageGalleryJson", "TEXT");
+            await EnsureLauncherNewsColumnAsync("NewsType", "TEXT");
+            await EnsureLauncherNewsColumnAsync("NewsTypeRu", "TEXT");
+            await EnsureLauncherNewsColumnAsync("NewsTypeEn", "TEXT");
+            await EnsureLauncherNewsColumnAsync("IconUrl", "TEXT");
+            await EnsureLauncherNewsColumnAsync("LikeCount", "INTEGER NOT NULL DEFAULT 0");
+            await EnsureLauncherNewsColumnAsync("GithubUrl", "TEXT");
+            await EnsureLauncherNewsColumnAsync("GithubProjectName", "TEXT");
+            await EnsureLauncherNewsColumnAsync("IsPublished", "INTEGER NOT NULL DEFAULT 1");
+            await EnsureLauncherNewsColumnAsync("SortOrder", "INTEGER NOT NULL DEFAULT 0");
+            await EnsureLauncherNewsColumnAsync("PublishedAtUnix", "INTEGER NOT NULL DEFAULT 0");
+
+            if (await LauncherNews.AnyAsync())
+                return;
+
+            var publishedAtUnix = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            await LauncherNews.AddRangeAsync(new List<LauncherNewsDataResponse>
+            {
+                new()
+                {
+                    TitleRu = "Предстоящие обновления в 99.5.1 Freelancer Lizerium",
+                    TitleEn = "Upcoming updates in 99.5.1 Freelancer Lizerium",
+                    RutubeUrl = "https://rutube.ru/video/166b1de79791472c13f79c24838847c3/",
+                    IsPublished = true,
+                    SortOrder = 10,
+                    PublishedAtUnix = publishedAtUnix
+                },
+                new()
+                {
+                    TitleRu = "Официальный русскоязычный трейлер игры Freelancer Lizerium",
+                    TitleEn = "Official Russian trailer of Freelancer Lizerium",
+                    RutubeUrl = "https://rutube.ru/video/f7359c52b38dbfd9eab1426349de6571/",
+                    IsPublished = true,
+                    SortOrder = 20,
+                    PublishedAtUnix = publishedAtUnix
+                },
+                new()
+                {
+                    TitleRu = "Демонстрация второй версии полета, эффектов, звуков Freelancer Lizerium (Unity ver.)",
+                    TitleEn = "Second flight, effects and sound demo for Freelancer Lizerium (Unity ver.)",
+                    RutubeUrl = "https://rutube.ru/video/da9bd6b780314bb96ca23b10110dcfd9/",
+                    IsPublished = true,
+                    SortOrder = 30,
+                    PublishedAtUnix = publishedAtUnix
+                },
+                new()
+                {
+                    TitleRu = "Первое испытание трейлов во Freelancer Lizerium (Unity ver.)",
+                    TitleEn = "First trail test in Freelancer Lizerium (Unity ver.)",
+                    RutubeUrl = "https://rutube.ru/video/0f20131048cc69a38337431fafdc4597/",
+                    IsPublished = true,
+                    SortOrder = 40,
+                    PublishedAtUnix = publishedAtUnix
+                }
+            });
+            await SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            ex.LogException();
+        }
+    }
+
+    private async Task EnsureLauncherNewsColumnAsync(string columnName, string columnDefinition)
+    {
+        if (await ColumnExistsAsync("launcher_news", columnName))
+            return;
+
+        await Database.ExecuteSqlRawAsync($"ALTER TABLE launcher_news ADD COLUMN {columnName} {columnDefinition};");
+    }
+
+    private async Task<bool> ColumnExistsAsync(string tableName, string columnName)
+    {
+        try
+        {
+            if (!await Database.CanConnectAsync())
+                return false;
+
+            var connection = Database.GetDbConnection();
+            var shouldClose = connection.State != ConnectionState.Open;
+
+            if (shouldClose)
+                await connection.OpenAsync();
+
+            try
+            {
+                await using var command = connection.CreateCommand();
+                command.CommandText = $"PRAGMA table_info({tableName});";
+
+                await using var reader = await command.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    if (string.Equals(reader["name"]?.ToString(), columnName, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+
+                return false;
+            }
+            finally
+            {
+                if (shouldClose)
+                    await connection.CloseAsync();
+            }
+        }
+        catch (DbException ex)
+        {
+            ex.LogException();
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Получает опубликованные новости Lizerium Launcher.
+    /// </summary>
+    public async Task<List<LauncherNewsDataResponse>> GetPublishedLauncherNewsAsync(bool checkSecureOperate = true)
+    {
+        try
+        {
+            if (checkSecureOperate)
+                await ExistAndCreateLauncherNewsTable();
+
+            return await LauncherNews
+                .AsNoTracking()
+                .Where(news => news.IsPublished)
+                .OrderByDescending(news => news.PublishedAtUnix)
+                .ThenBy(news => news.SortOrder)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            ex.LogException();
+            return new List<LauncherNewsDataResponse>();
+        }
+    }
+
+    /// <summary>
+    /// Получает все новости для админки.
+    /// </summary>
+    public async Task<List<LauncherNewsDataResponse>> GetAllAdminLauncherNewsAsync(bool checkSecureOperate = true)
+    {
+        try
+        {
+            if (checkSecureOperate)
+                await ExistAndCreateLauncherNewsTable();
+
+            return await LauncherNews
+                .AsNoTracking()
+                .OrderByDescending(news => news.PublishedAtUnix)
+                .ThenBy(news => news.SortOrder)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            ex.LogException();
+            return new List<LauncherNewsDataResponse>();
+        }
+    }
+
+    /// <summary>
+    /// Добавляет или обновляет новость.
+    /// </summary>
+    public async Task<bool> SaveLauncherNewsAsync(LauncherNewsDataResponse news, bool checkSecureOperate = true)
+    {
+        try
+        {
+            if (checkSecureOperate)
+                await ExistAndCreateLauncherNewsTable();
+
+            if (news.Id > 0)
+            {
+                var existingNews = await LauncherNews.FindAsync(news.Id);
+                if (existingNews == null)
+                    return false;
+
+                existingNews.TitleRu = news.TitleRu;
+                existingNews.TitleEn = news.TitleEn;
+                existingNews.MarkdownRu = news.MarkdownRu;
+                existingNews.MarkdownEn = news.MarkdownEn;
+                existingNews.YoutubeUrl = news.YoutubeUrl;
+                existingNews.RutubeUrl = news.RutubeUrl;
+                existingNews.VkVideoUrl = news.VkVideoUrl;
+                existingNews.ImageUrl = news.ImageUrl;
+                existingNews.ImageGalleryJson = news.ImageGalleryJson;
+                existingNews.NewsType = news.NewsType;
+                existingNews.NewsTypeRu = news.NewsTypeRu;
+                existingNews.NewsTypeEn = news.NewsTypeEn;
+                existingNews.IconUrl = news.IconUrl;
+                existingNews.LikeCount = news.LikeCount;
+                existingNews.GithubUrl = news.GithubUrl;
+                existingNews.GithubProjectName = news.GithubProjectName;
+                existingNews.IsPublished = news.IsPublished;
+                existingNews.SortOrder = news.SortOrder;
+                existingNews.PublishedAtUnix = news.PublishedAtUnix > 0
+                    ? news.PublishedAtUnix
+                    : DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            }
+            else
+            {
+                news.PublishedAtUnix = news.PublishedAtUnix > 0
+                    ? news.PublishedAtUnix
+                    : DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+                await LauncherNews.AddAsync(news);
+            }
+
+            await SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            ex.LogException();
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Удаляет новость.
+    /// </summary>
+    public async Task<bool> DeleteLauncherNewsAsync(int id, bool checkSecureOperate = true)
+    {
+        try
+        {
+            if (checkSecureOperate)
+                await ExistAndCreateLauncherNewsTable();
+
+            var news = await LauncherNews.FindAsync(id);
+            if (news == null)
+                return false;
+
+            LauncherNews.Remove(news);
+            await SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            ex.LogException();
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Increments public like counter for a launcher news item.
+    /// </summary>
+    public async Task<int?> IncrementLauncherNewsLikeAsync(int id, bool checkSecureOperate = true)
+    {
+        try
+        {
+            if (checkSecureOperate)
+                await ExistAndCreateLauncherNewsTable();
+
+            var news = await LauncherNews.FindAsync(id);
+            if (news == null || !news.IsPublished)
+                return null;
+
+            news.LikeCount = Math.Max(0, news.LikeCount) + 1;
+            await SaveChangesAsync();
+            return news.LikeCount;
+        }
+        catch (Exception ex)
+        {
+            ex.LogException();
+            return null;
+        }
+    }
+
 
     public async Task ExistAndCreateCommandsTable()
     {
@@ -882,9 +1194,13 @@ public class DataBaseService : DbContext, IDataBaseService
                 return false;
 
             var connection = Database.GetDbConnection();
-            await using (connection)
-            {
+            var shouldClose = connection.State != ConnectionState.Open;
+
+            if (shouldClose)
                 await connection.OpenAsync();
+
+            try
+            {
                 await using var command = connection.CreateCommand();
                 command.CommandText = $"SELECT name FROM sqlite_master WHERE type='table' AND name=@tableName;";
                 var param = command.CreateParameter();
@@ -894,6 +1210,11 @@ public class DataBaseService : DbContext, IDataBaseService
 
                 var result = await command.ExecuteScalarAsync();
                 return result != null;
+            }
+            finally
+            {
+                if (shouldClose)
+                    await connection.CloseAsync();
             }
         }
         catch (DbException ex)

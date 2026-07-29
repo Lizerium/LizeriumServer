@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 28 июля 2026 10:29:56
- * Version: 1.0.122
+ * Last Updated: 29 июля 2026 16:02:04
+ * Version: 1.0.125
  */
 
 using Microsoft.AspNetCore.Http;
@@ -42,18 +42,26 @@ public class ErrorHandlingMiddleware
             await Next(context);
 
             //проверяем код ошибки
-            if (context.Response.StatusCode == 404)
+            if (context.Response.StatusCode == 404 &&
+                !context.Request.Path.Equals("/Home/Error", StringComparison.OrdinalIgnoreCase))
             {
                 //редиректим на страницу ошибки можно еще код ошибки отправлять get параметром
-                context.Response.Redirect("/Home/Error", true);
+                context.Response.Redirect("/Home/Error", false);
             }
         }
         catch (Exception exception)
         {
             //логируем исключение
             exception.LogException();
+
+            if (context.Request.Path.Equals("/Home/Error", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Response.StatusCode = 500;
+                return;
+            }
+
             //редиректим на страницу ошибки можно еще код ошибки отправлять get параметром
-            context.Response.Redirect("/Home/Error", true);
+            context.Response.Redirect("/Home/Error", false);
         }
     }
 }

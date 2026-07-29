@@ -1,0 +1,359 @@
+@model MainModel
+@{
+    ViewData["Title"] = "Новости";
+    var currentStatus = string.IsNullOrWhiteSpace(Model.NewsStatusFilter) ? "all" : Model.NewsStatusFilter;
+}
+@functions {
+    private static string GetNewsPreviewUrl(string imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl))
+            return string.Empty;
+
+        if (Uri.TryCreate(imageUrl, UriKind.Absolute, out _))
+            return imageUrl;
+
+        if (!imageUrl.StartsWith("/img/news/", StringComparison.OrdinalIgnoreCase))
+            return imageUrl;
+
+        var fileName = System.IO.Path.GetFileName(imageUrl);
+        return string.IsNullOrWhiteSpace(fileName) ? imageUrl : $"/news/image/{fileName}";
+    }
+
+    private static string GetNewsDateInputValue(long publishedAtUnix)
+    {
+        return publishedAtUnix > 0
+            ? DateTimeOffset.FromUnixTimeSeconds(publishedAtUnix).ToLocalTime().ToString("yyyy-MM-ddTHH:mm")
+            : string.Empty;
+    }
+
+    private static IReadOnlyList<string> GetGalleryPreviewUrls(string imageGalleryJson)
+    {
+        if (string.IsNullOrWhiteSpace(imageGalleryJson))
+            return Array.Empty<string>();
+
+        try
+        {
+            return System.Text.Json.JsonSerializer.Deserialize<List<string>>(imageGalleryJson)?
+                .Where(url => !string.IsNullOrWhiteSpace(url))
+                .Select(GetNewsPreviewUrl)
+                .ToList() ?? new List<string>();
+        }
+        catch
+        {
+            return imageGalleryJson
+                .Split(new[] { "\r\n", "\n", ";", "," }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(url => url.Trim())
+                .Where(url => !string.IsNullOrWhiteSpace(url))
+                .Select(GetNewsPreviewUrl)
+                .ToList();
+        }
+    }
+}
+
+<div class="container top with_left_side">
+    <section class="admin-workspace news-admin-workspace">
+        <div class="dashboard-header">
+            <div>
+                <span class="dashboard-kicker">Lizerium API</span>
+                <h2>Новости</h2>
+            </div>
+            <div class="dashboard-status">@Model.NewsTotalCount записей</div>
+        </div>
+
+        <form class="admin-toolbar news-admin-toolbar" method="get" action="/news">
+            <label>
+                <span>Поиск</span>
+                <input name="search" value="@Model.NewsSearch" placeholder="Заголовок, текст, GitHub, ссылка..." />
+            </label>
+            <label>
+                <span>Статус</span>
+                <select name="status">
+                    <option value="all" selected="@(currentStatus == "all")">Все</option>
+                    <option value="published" selected="@(currentStatus == "published")">Опубликованные</option>
+                    <option value="hidden" selected="@(currentStatus == "hidden")">Скрытые</option>
+                </select>
+            </label>
+            <button class="admin-button primary" type="submit">Найти</button>
+            <a class="admin-button muted" href="/news">Сбросить</a>
+        </form>
+
+        @if (Context.Request.Query["save"] == "failed")
+        {
+            <div class="admin-alert danger">Новость не сохранена. Проверьте поля и подключение к базе.</div>
+        }
+        @if (Context.Request.Query["delete"] == "failed")
+        {
+            <div class="admin-alert danger">Новость не удалена. Запись уже могла исчезнуть.</div>
+        }
+
+        <details class="news-editor-card news-create-panel" open>
+            <summary>
+                <span>Новая новость</span>
+                <small>Markdown, видео и изображение</small>
+            </summary>
+            <form method="post" action="/news/save" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="PublishedAtUnix" value="0" />
+                <div class="news-editor-grid">
+                    <label>
+                        <span>Заголовок RU</span>
+                        <input name="TitleRu" placeholder="Русский заголовок" />
+                    </label>
+                    <label>
+                        <span>Заголовок EN</span>
+                        <input name="TitleEn" placeholder="English title" />
+                    </label>
+                    <label>
+                        <span>Markdown RU</span>
+                        <textarea name="MarkdownRu" placeholder="Текст новости на русском"></textarea>
+                        <small class="news-field-note">Ctrl+V с картинкой загрузит ее и вставит Markdown прямо в текст.</small>
+                    </label>
+                    <label>
+                        <span>Markdown EN</span>
+                        <textarea name="MarkdownEn" placeholder="News text in English"></textarea>
+                        <small class="news-field-note">Ctrl+V with an image uploads it and inserts Markdown at the cursor.</small>
+                    </label>
+                    <label>
+                        <span>YouTube URL</span>
+                        <input name="YoutubeUrl" placeholder="https://youtube.com/watch?v=..." />
+                    </label>
+                    <label>
+                        <span>Rutube URL</span>
+                        <input name="RutubeUrl" placeholder="https://rutube.ru/video/..." />
+                    </label>
+                    <label>
+                        <span>VK Video URL</span>
+                        <input name="VkVideoUrl" placeholder="https://vk.com/video..." />
+                    </label>
+                    <input type="hidden" name="NewsType" value="" />
+                    <label>
+                        <span>Тип новости RU</span>
+                        <input name="NewsTypeRu" placeholder="Крупное обновление" />
+                    </label>
+                    <label>
+                        <span>Тип новости EN</span>
+                        <input name="NewsTypeEn" placeholder="Major update" />
+                    </label>
+                    <label>
+                        <span>Product icon URL</span>
+                        <input name="IconUrl" placeholder="/img/logo.png или /img/news/icon.webp" />
+                    </label>
+                    <label>
+                        <span>Image URL</span>
+                        <input name="ImageUrl" placeholder="/img/news/example.webp или https://..." />
+                        <small class="news-field-note">Можно вставить готовую ссылку или выбрать файл ниже. Если выбран файл, это поле заполнится локальным путем автоматически.</small>
+                    </label>
+                    <label class="news-image-upload">
+                        <span>Изображение</span>
+                        <input name="imageFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" />
+                        <small class="news-field-note">JPG, PNG, WEBP или GIF до 8 MB. Сервер сохраняет файл как есть: WebP не создается автоматически.</small>
+                    </label>
+                    <label>
+                        <span>Image Gallery</span>
+                        <textarea name="ImageGalleryJson" placeholder="/img/news/one.webp&#10;/img/news/two.webp"></textarea>
+                        <small class="news-field-note">Дополнительные картинки: можно JSON-массив или каждую ссылку с новой строки.</small>
+                    </label>
+                    <label class="news-image-upload">
+                        <span>Gallery Upload</span>
+                        <input name="galleryFiles" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple />
+                        <small class="news-field-note">Можно выбрать сразу несколько картинок. Первая станет обложкой, если Image URL пустой.</small>
+                    </label>
+                    <label>
+                        <span>GitHub проект</span>
+                        <input name="GithubProjectName" placeholder="Lizerium Launcher" />
+                    </label>
+                    <label>
+                        <span>GitHub URL</span>
+                        <input name="GithubUrl" placeholder="https://github.com/..." />
+                    </label>
+                    <label>
+                        <span>Порядок</span>
+                        <input name="SortOrder" type="number" value="100" />
+                    </label>
+                    <label>
+                        <span>Likes</span>
+                        <input name="LikeCount" type="number" value="0" min="0" />
+                    </label>
+                    <label>
+                        <span>Дата публикации</span>
+                        <input name="publishedAtLocal" type="datetime-local" />
+                        <small class="news-field-note">Можно оставить пустой: при создании сервер поставит текущую дату автоматически.</small>
+                    </label>
+                    <label class="checkbox-field">
+                        <input name="IsPublished" type="checkbox" value="true" checked />
+                        <input name="IsPublished" type="hidden" value="false" />
+                        <span>Опубликована</span>
+                    </label>
+                </div>
+                <div class="news-editor-actions">
+                    <button class="admin-button primary" type="submit">Создать новость</button>
+                </div>
+            </form>
+        </details>
+
+        <div class="news-admin-list">
+            @if (Model.LauncherNews != null)
+            {
+                @foreach (var news in Model.LauncherNews)
+                {
+                    var date = news.PublishedAtUnix > 0
+                        ? DateTimeOffset.FromUnixTimeSeconds(news.PublishedAtUnix).ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                        : "без даты";
+
+                    <details class="news-editor-card news-edit-panel">
+                        <summary>
+                            <span>#@news.Id @(!string.IsNullOrWhiteSpace(news.TitleRu) ? news.TitleRu : news.TitleEn)</span>
+                            <small>@date</small>
+                            <em class="@(news.IsPublished ? "published" : "hidden")">@(news.IsPublished ? "опубликована" : "скрыта")</em>
+                        </summary>
+                        <form method="post" action="/news/save" enctype="multipart/form-data">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="Id" value="@news.Id" />
+                            <input type="hidden" name="PublishedAtUnix" value="@news.PublishedAtUnix" />
+                            <div class="news-editor-grid">
+                                <label>
+                                    <span>Заголовок RU</span>
+                                    <input name="TitleRu" value="@news.TitleRu" />
+                                </label>
+                                <label>
+                                    <span>Заголовок EN</span>
+                                    <input name="TitleEn" value="@news.TitleEn" />
+                                </label>
+                                <label>
+                                    <span>Markdown RU</span>
+                                    <textarea name="MarkdownRu">@news.MarkdownRu</textarea>
+                                    <small class="news-field-note">Ctrl+V с картинкой загрузит ее и вставит Markdown прямо в текст.</small>
+                                </label>
+                                <label>
+                                    <span>Markdown EN</span>
+                                    <textarea name="MarkdownEn">@news.MarkdownEn</textarea>
+                                    <small class="news-field-note">Ctrl+V with an image uploads it and inserts Markdown at the cursor.</small>
+                                </label>
+                                <label>
+                                    <span>YouTube URL</span>
+                                    <input name="YoutubeUrl" value="@news.YoutubeUrl" />
+                                </label>
+                                <label>
+                                    <span>Rutube URL</span>
+                                    <input name="RutubeUrl" value="@news.RutubeUrl" />
+                                </label>
+                                <label>
+                                    <span>VK Video URL</span>
+                                    <input name="VkVideoUrl" value="@news.VkVideoUrl" />
+                                </label>
+                                <input type="hidden" name="NewsType" value="@news.NewsType" />
+                                <label>
+                                    <span>Тип новости RU</span>
+                                    <input name="NewsTypeRu" value="@news.NewsTypeRu" placeholder="Крупное обновление" />
+                                </label>
+                                <label>
+                                    <span>Тип новости EN</span>
+                                    <input name="NewsTypeEn" value="@news.NewsTypeEn" placeholder="Major update" />
+                                </label>
+                                <label>
+                                    <span>Product icon URL</span>
+                                    <input name="IconUrl" value="@news.IconUrl" placeholder="/img/logo.png или /img/news/icon.webp" />
+                                </label>
+                                <label>
+                                    <span>Image URL</span>
+                                    <input name="ImageUrl" value="@news.ImageUrl" />
+                                    <small class="news-field-note">Можно оставить текущую ссылку или заменить файлом ниже.</small>
+                                </label>
+                                <label class="news-image-upload">
+                                    <span>Изображение</span>
+                                    <input name="imageFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" />
+                                    <small class="news-field-note">JPG, PNG, WEBP или GIF до 8 MB. При выборе файла Image URL заменится локальным путем.</small>
+                                </label>
+                                <label class="checkbox-field">
+                                    <input name="removeImage" type="checkbox" value="true" />
+                                    <span>Удалить текущую обложку</span>
+                                </label>
+                                <label>
+                                    <span>Image Gallery</span>
+                                    <textarea name="ImageGalleryJson">@news.ImageGalleryJson</textarea>
+                                    <small class="news-field-note">JSON-массив или ссылки с новой строки. Новые файлы ниже добавятся в конец галереи.</small>
+                                </label>
+                                <label class="news-image-upload">
+                                    <span>Gallery Upload</span>
+                                    <input name="galleryFiles" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple />
+                                    <small class="news-field-note">Можно добавить несколько новых картинок к этой новости.</small>
+                                </label>
+                                @if (!string.IsNullOrWhiteSpace(news.ImageUrl))
+                                {
+                                    <div class="news-image-preview">
+                                        <span>Текущая обложка</span>
+                                        <img src="@GetNewsPreviewUrl(news.ImageUrl)" alt="" loading="lazy" onerror="this.closest('.news-image-preview')?.classList.add('broken');" />
+                                    </div>
+                                }
+                                @{
+                                    var galleryPreviewUrls = GetGalleryPreviewUrls(news.ImageGalleryJson);
+                                }
+                                @if (galleryPreviewUrls.Count > 0)
+                                {
+                                    <div class="news-gallery-preview">
+                                        <span>Галерея</span>
+                                        <div>
+                                            @foreach (var imageUrl in galleryPreviewUrls)
+                                            {
+                                                <img src="@imageUrl" alt="" loading="lazy" />
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                                <label>
+                                    <span>GitHub проект</span>
+                                    <input name="GithubProjectName" value="@news.GithubProjectName" />
+                                </label>
+                                <label>
+                                    <span>GitHub URL</span>
+                                    <input name="GithubUrl" value="@news.GithubUrl" />
+                                </label>
+                                <label>
+                                    <span>Порядок</span>
+                                    <input name="SortOrder" type="number" value="@news.SortOrder" />
+                                </label>
+                                <label>
+                                    <span>Likes</span>
+                                    <input name="LikeCount" type="number" value="@news.LikeCount" min="0" />
+                                </label>
+                                <label>
+                                    <span>Дата публикации</span>
+                                    <input name="publishedAtLocal" type="datetime-local" value="@GetNewsDateInputValue(news.PublishedAtUnix)" />
+                                    <small class="news-field-note">Если изменить дату, новость пересортируется по новой дате публикации.</small>
+                                </label>
+                                <label class="checkbox-field">
+                                    <input name="IsPublished" type="checkbox" value="true" checked="@news.IsPublished" />
+                                    <input name="IsPublished" type="hidden" value="false" />
+                                    <span>Опубликована</span>
+                                </label>
+                            </div>
+                            <div class="news-editor-actions">
+                                <button class="admin-button primary" type="submit">Сохранить</button>
+                                <button class="admin-button danger"
+                                        type="submit"
+                                        formaction="/news/delete"
+                                        name="id"
+                                        value="@news.Id">
+                                    Удалить
+                                </button>
+                            </div>
+                        </form>
+                    </details>
+                }
+            }
+        </div>
+
+        @if (Model.NewsTotalPages > 1)
+        {
+            <nav class="admin-pagination">
+                @for (var i = 1; i <= Model.NewsTotalPages; i++)
+                {
+                    <a class="@(i == Model.NewsCurrentPage ? "active" : string.Empty)"
+                       href="/news?search=@Uri.EscapeDataString(Model.NewsSearch ?? string.Empty)&status=@Model.NewsStatusFilter&page=@i">
+                        @i
+                    </a>
+                }
+            </nav>
+        }
+    </section>
+</div>

@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 28 июля 2026 10:29:56
- * Version: 1.0.122
+ * Last Updated: 29 июля 2026 16:02:04
+ * Version: 1.0.125
  */
 
 using LizeriumUtilities.FormatsData.AppUserData;
@@ -33,6 +33,11 @@ public interface IDataBaseService : IDisposable
     /// Инициализация таблицы команд
     /// </summary>
     DbSet<CommandDataResponse> Commands { get; set; }
+
+    /// <summary>
+    /// Инициализация таблицы новостей Lizerium Launcher.
+    /// </summary>
+    DbSet<LauncherNewsDataResponse> LauncherNews { get; set; }
 
 
     /// <summary>
@@ -133,6 +138,36 @@ public interface IDataBaseService : IDisposable
     /// Добавление категории команд (информации о ней)
     /// </summary>
     Task<bool> AddCategoryAsync(CategoriesCommands category, bool checkSecureOperate = true);
+
+    /// <summary>
+    /// Проверяет существование таблицы новостей и создает ее при необходимости.
+    /// </summary>
+    Task ExistAndCreateLauncherNewsTable();
+
+    /// <summary>
+    /// Получает опубликованные новости Lizerium Launcher.
+    /// </summary>
+    Task<List<LauncherNewsDataResponse>> GetPublishedLauncherNewsAsync(bool checkSecureOperate = true);
+
+    /// <summary>
+    /// Получает все новости для админки.
+    /// </summary>
+    Task<List<LauncherNewsDataResponse>> GetAllAdminLauncherNewsAsync(bool checkSecureOperate = true);
+
+    /// <summary>
+    /// Добавляет или обновляет новость.
+    /// </summary>
+    Task<bool> SaveLauncherNewsAsync(LauncherNewsDataResponse news, bool checkSecureOperate = true);
+
+    /// <summary>
+    /// Удаляет новость.
+    /// </summary>
+    Task<bool> DeleteLauncherNewsAsync(int id, bool checkSecureOperate = true);
+
+    /// <summary>
+    /// Increments public like counter for a launcher news item.
+    /// </summary>
+    Task<int?> IncrementLauncherNewsLikeAsync(int id, bool checkSecureOperate = true);
     /// <summary>
     /// Генерировать базовую таблицу
     /// </summary>

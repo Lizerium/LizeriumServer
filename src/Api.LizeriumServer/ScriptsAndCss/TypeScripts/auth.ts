@@ -128,8 +128,8 @@ class Auth {
                 return;
             }
 
-            //редиректим на ошибку
-            document.location.href = "/Home/Error";
+            // Refresh the page if the browser holds stale protection cookies.
+            document.location.reload();
 
         } finally {
 
@@ -183,8 +183,8 @@ class Auth {
                 return;
             }
 
-            //редиректим на ошибку
-            document.location.href = "/error";
+            // Refresh the page if the browser holds stale protection cookies.
+            document.location.reload();
 
         } finally {
 

@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 28 июля 2026 10:29:56
- * Version: 1.0.122
+ * Last Updated: 29 июля 2026 16:02:04
+ * Version: 1.0.125
  */
 
 using System.Globalization;
@@ -35,12 +35,16 @@ using LizeriumUtilities.Services.SecurityService.Implements;
 
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
 builder.Logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
 
 builder.Services.AddSingleton<ServerVersionProvider>();
@@ -53,7 +57,9 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
 {
     options.CheckConsentNeeded = _ => false;            //не требуется согласие, а то даже сессионные куки не устанавливает
     options.MinimumSameSitePolicy = SameSiteMode.None;  //требуется ли согласие Пользователя на несущественные файлы cookie для данного запроса
-    options.Secure = CookieSecurePolicy.Always;         //
+    options.Secure = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.SameAsRequest
+        : CookieSecurePolicy.Always;                    //
 });
 
 //добавляем кэширование сервисов в памяти
@@ -67,6 +73,10 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;                         //доступ только с сервера
     options.Cookie.IsEssential = true;                      //указывает, действительно ли этот файл cookie необходим для правильной работы приложения. Если true, то проверки политики согласия могут быть обойдены
 });
+
+builder.Services.AddDataProtection()
+    .SetApplicationName("LizeriumServer")
+    .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(AppContext.BaseDirectory, "DataProtectionKeys")));
 
 //настройки службы против подделки запросов
 builder.Services.AddAntiforgery(options =>

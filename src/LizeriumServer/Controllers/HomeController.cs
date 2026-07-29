@@ -2,11 +2,14 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 28 июля 2026 10:29:56
- * Version: 1.0.122
+ * Last Updated: 29 июля 2026 16:02:04
+ * Version: 1.0.125
  */
 
 using System.Diagnostics;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Xml;
 
 using AspNetCore.ReCaptcha;
 
@@ -73,9 +76,173 @@ namespace LizeriumServer.Controllers
         /// <summary>
         /// Главная страница загрузчика
         /// </summary>
-        public async Task<IActionResult> Launcher()
+        public async Task<IActionResult> Launcher(string search = "", string order = "new", int page = 1)
         {
-            return View();
+            var news = await AppDb.GetPublishedLauncherNewsAsync();
+            page = Math.Max(1, page);
+            order = string.IsNullOrWhiteSpace(order) ? "new" : order;
+            search = search?.Trim() ?? string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                news = news
+                    .Where(item =>
+                        ContainsText(item.TitleRu, search)
+                        || ContainsText(item.TitleEn, search)
+                        || ContainsText(item.MarkdownRu, search)
+                        || ContainsText(item.MarkdownEn, search)
+                        || ContainsText(item.YoutubeUrl, search)
+                        || ContainsText(item.RutubeUrl, search)
+                        || ContainsText(item.VkVideoUrl, search)
+                        || ContainsText(item.ImageUrl, search)
+                        || ContainsText(item.ImageGalleryJson, search)
+                        || ContainsText(item.NewsType, search)
+                        || ContainsText(item.NewsTypeRu, search)
+                        || ContainsText(item.NewsTypeEn, search)
+                        || ContainsText(item.GithubProjectName, search)
+                        || ContainsText(item.GithubUrl, search))
+                    .ToList();
+            }
+
+            news = string.Equals(order, "old", StringComparison.OrdinalIgnoreCase)
+                ? news.OrderBy(item => item.PublishedAtUnix).ThenBy(item => item.SortOrder).ToList()
+                : news.OrderByDescending(item => item.PublishedAtUnix).ThenBy(item => item.SortOrder).ToList();
+
+            const int pageSize = 6;
+            var totalCount = news.Count;
+            var totalPages = Math.Max(1, (int)Math.Ceiling(totalCount / (double)pageSize));
+            page = Math.Min(page, totalPages);
+            news = news.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+            return View(new LauncherViewModel
+            {
+                News = news,
+                Search = search,
+                SortOrderFilter = order,
+                CurrentPage = page,
+                TotalPages = totalPages,
+                PageSize = pageSize,
+                TotalCount = totalCount
+            });
+        }
+
+        private static bool ContainsText(string value, string search)
+        {
+            return !string.IsNullOrWhiteSpace(value)
+                && value.Contains(search, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// RSS-лента опубликованных новостей Lizerium Launcher.
+        /// </summary>
+        [HttpGet]
+        [Route("/news/rss.xml")]
+        [Route("/rss/news.xml")]
+        public async Task<IActionResult> NewsRss(string lang = "ru")
+        {
+            var isRussian = !string.Equals(lang, "en", StringComparison.OrdinalIgnoreCase);
+            var news = await AppDb.GetPublishedLauncherNewsAsync();
+            news = news
+                .OrderByDescending(item => item.PublishedAtUnix)
+                .ThenBy(item => item.SortOrder)
+                .Take(50)
+                .ToList();
+
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+            var settings = new XmlWriterSettings
+            {
+                Encoding = Encoding.UTF8,
+                Indent = true,
+                Async = true
+            };
+
+            await using var stream = new MemoryStream();
+            await using (var writer = XmlWriter.Create(stream, settings))
+            {
+                await writer.WriteStartDocumentAsync();
+                await writer.WriteStartElementAsync(null, "rss", null);
+                await writer.WriteAttributeStringAsync(null, "version", null, "2.0");
+                await writer.WriteStartElementAsync(null, "channel", null);
+
+                await writer.WriteElementStringAsync(null, "title", null, isRussian ? "Новости Lizerium" : "Lizerium News");
+                await writer.WriteElementStringAsync(null, "link", null, $"{baseUrl}/Home/Launcher");
+                await writer.WriteElementStringAsync(null, "description", null, isRussian
+                    ? "Опубликованные новости Lizerium Launcher"
+                    : "Published Lizerium Launcher news");
+                await writer.WriteElementStringAsync(null, "language", null, isRussian ? "ru" : "en");
+
+                foreach (var item in news)
+                {
+                    var title = PickLocalizedNewsText(item.TitleRu, item.TitleEn, isRussian);
+                    var markdown = PickLocalizedNewsText(item.MarkdownRu, item.MarkdownEn, isRussian);
+                    var description = BuildRssDescription(markdown, item.ImageUrl, baseUrl);
+                    var publishedAt = item.PublishedAtUnix > 0
+                        ? DateTimeOffset.FromUnixTimeSeconds(item.PublishedAtUnix)
+                        : DateTimeOffset.UtcNow;
+
+                    await writer.WriteStartElementAsync(null, "item", null);
+                    await writer.WriteElementStringAsync(null, "title", null, title);
+                    await writer.WriteElementStringAsync(null, "link", null, $"{baseUrl}/Home/Launcher");
+                    await writer.WriteElementStringAsync(null, "guid", null, $"{baseUrl}/Home/Launcher#news-{item.Id}");
+                    await writer.WriteElementStringAsync(null, "pubDate", null, publishedAt.UtcDateTime.ToString("R"));
+                    await writer.WriteElementStringAsync(null, "description", null, description);
+                    await writer.WriteEndElementAsync();
+                }
+
+                await writer.WriteEndElementAsync();
+                await writer.WriteEndElementAsync();
+                await writer.WriteEndDocumentAsync();
+            }
+
+            return File(stream.ToArray(), "application/rss+xml; charset=utf-8");
+        }
+
+        private static string PickLocalizedNewsText(string russian, string english, bool isRussian)
+        {
+            var preferred = isRussian ? russian : english;
+            var fallback = isRussian ? english : russian;
+            return !string.IsNullOrWhiteSpace(preferred) ? preferred : fallback ?? string.Empty;
+        }
+
+        private static string BuildRssDescription(string markdown, string imageUrl, string baseUrl)
+        {
+            var text = StripMarkdown(markdown);
+            if (!string.IsNullOrWhiteSpace(imageUrl))
+            {
+                var fullImageUrl = Uri.TryCreate(imageUrl, UriKind.Absolute, out _)
+                    ? imageUrl
+                    : $"{baseUrl}{imageUrl}";
+
+                return $"<p><img src=\"{fullImageUrl}\" alt=\"\" /></p><p>{text}</p>";
+            }
+
+            return text;
+        }
+
+        private static string StripMarkdown(string markdown)
+        {
+            if (string.IsNullOrWhiteSpace(markdown))
+                return string.Empty;
+
+            var text = Regex.Replace(markdown, @"!\[[^\]]*\]\([^)]+\)", string.Empty);
+            text = Regex.Replace(text, @"\[([^\]]+)\]\([^)]+\)", "$1");
+            text = Regex.Replace(text, @"[#>*_`~\-]+", " ");
+            text = Regex.Replace(text, @"\s+", " ").Trim();
+            return text.Length > 500 ? $"{text[..500]}..." : text;
+        }
+
+        /// <summary>
+        /// Adds one public like to a launcher news item.
+        /// </summary>
+        [HttpPost]
+        [Route("/news/like/{id:int}")]
+        public async Task<IActionResult> LikeNews(int id)
+        {
+            var likeCount = await AppDb.IncrementLauncherNewsLikeAsync(id);
+            if (likeCount == null)
+                return NotFound(new { ok = false });
+
+            return Json(new { ok = true, likeCount });
         }
 
         /// <summary>

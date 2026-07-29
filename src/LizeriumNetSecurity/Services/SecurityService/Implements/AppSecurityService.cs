@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 28 июля 2026 10:29:56
- * Version: 1.0.122
+ * Last Updated: 29 июля 2026 16:02:04
+ * Version: 1.0.125
  */
 
 using System.Collections.Concurrent;
@@ -98,18 +98,26 @@ public class AppSecurityService : IAppSecurityService
         if(!EnsureFileExistsOrLog()) return;
       
         await _lock.WaitAsync();
+        try
+        {
+            if (!_blackList.ContainsKey(ip)) return;
 
-        if (!_blackList.ContainsKey(ip)) return;
+            // запись в память
+            _blackList.TryRemove(ip, out _);
+            _pendingSave = true;
 
-        // запись в память
-        _blackList.TryRemove(ip, out _);
-        _pendingSave = true;
-
-        $"{ip} - разблокирован".LogMessage();
+            $"{ip} - разблокирован".LogMessage();
+        }
+        finally
+        {
+            _lock.Release();
+        }
     }
 
     public async Task ReloadAsync()
     {
+        if (!EnsureFileExistsOrLog()) return;
+
         var lines = await File.ReadAllLinesAsync(_path);
 
         // Очистить и заполнить ConcurrentDictionary из файла
@@ -141,12 +149,28 @@ public class AppSecurityService : IAppSecurityService
 
     private bool EnsureFileExistsOrLog()
     {
-        if (!File.Exists(_path))
+        if (string.IsNullOrWhiteSpace(_path))
         {
             ("Файл конфигурации appsettings.json не имеет ключа \"BlackList\": " +
                 "\"path/to/configSecurity.ini\"").LogMessage();
             return false;
         }
+
+        try
+        {
+            var directory = Path.GetDirectoryName(_path);
+            if (!string.IsNullOrWhiteSpace(directory))
+                Directory.CreateDirectory(directory);
+
+            if (!File.Exists(_path))
+                File.WriteAllText(_path, string.Empty);
+        }
+        catch (Exception ex)
+        {
+            ex.LogException();
+            return false;
+        }
+
         return true;
     }
 }

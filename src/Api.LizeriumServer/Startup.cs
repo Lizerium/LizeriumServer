@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 28 июля 2026 10:29:56
- * Version: 1.0.122
+ * Last Updated: 29 июля 2026 16:02:04
+ * Version: 1.0.125
  */
 
 using System.Net;
@@ -23,6 +23,7 @@ using LizeriumUtilities.Accessories.ConfigurationAccessories;
 using LizeriumUtilities.Middleware;
 using LizeriumUtilities.Services.SecurityService.Implements;
 
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -46,8 +47,8 @@ public class Startup
         services.Configure<CookiePolicyOptions>(options =>
         {
             options.CheckConsentNeeded = _ => false; //не требуется согласие, а то даже сессионные куки не устанавливает
-            options.MinimumSameSitePolicy = SameSiteMode.None; //требуется ли согласие Пользователя на несущественные файлы cookie для данного запроса
-            options.Secure = CookieSecurePolicy.Always; //
+            options.MinimumSameSitePolicy = SameSiteMode.Lax;
+            options.Secure = CookieSecurePolicy.SameAsRequest;
         });
 
         // Получаем конфигурацию из файла appsettings.json
@@ -64,15 +65,24 @@ public class Startup
         services.AddSession(options =>
         {
             options.Cookie.Name = AuthExtensions.NameSessionCookie; //ставим название куку сессии
-            options.IdleTimeout = TimeSpan.FromMinutes(15);         //время хранения сессии при бездействии
+            options.IdleTimeout = TimeSpan.FromHours(8);            //время хранения сессии при бездействии
+            options.Cookie.MaxAge = TimeSpan.FromHours(8);          //админка не должна просить вход заново во время долгого редактирования
             options.Cookie.HttpOnly = true;                         //доступ только с сервера
             options.Cookie.IsEssential = true;                      //указывает, действительно ли этот файл cookie необходим для правильной работы приложения. Если true, то проверки политики согласия могут быть обойдены
+            options.Cookie.SameSite = SameSiteMode.Lax;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
         });
+
+        services.AddDataProtection()
+            .SetApplicationName("Api.LizeriumServer")
+            .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(AppContext.BaseDirectory, "DataProtectionKeys")));
 
         //настройки службы против подделки запросов
         services.AddAntiforgery(options =>
         {
             options.HeaderName = "X-CSRF-TOKEN";
+            options.Cookie.SameSite = SameSiteMode.Lax;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
         });
 
         services.AddAuthorization(options =>

@@ -39,6 +39,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                     yield commands.startCommands();
                 }
                 break;
+            case "news":
+                {
+                    const news = new NewsAdmin();
+                    news.startNews();
+                }
+                break;
             default:
                 break;
         }

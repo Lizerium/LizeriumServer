@@ -122,4 +122,49 @@
 		<value>Lizerium Launcher</value>
 		<comment>Launcher_Title_Site</comment>
 	</data>
+	<data name="Launcher_Search_Placeholder" xml:space="preserve">
+		<value>Search news</value>
+	</data>
+	<data name="Launcher_Order_Label" xml:space="preserve">
+		<value>News order</value>
+	</data>
+	<data name="Launcher_Order_New" xml:space="preserve">
+		<value>New</value>
+	</data>
+	<data name="Launcher_Order_Old" xml:space="preserve">
+		<value>Old</value>
+	</data>
+	<data name="Launcher_Search_Button" xml:space="preserve">
+		<value>Search</value>
+	</data>
+	<data name="Launcher_Previous_Image" xml:space="preserve">
+		<value>Previous image</value>
+	</data>
+	<data name="Launcher_Next_Image" xml:space="preserve">
+		<value>Next image</value>
+	</data>
+	<data name="Launcher_Video_Platforms" xml:space="preserve">
+		<value>Video platforms</value>
+	</data>
+	<data name="Launcher_Like" xml:space="preserve">
+		<value>Like this news</value>
+	</data>
+	<data name="Launcher_Read_Full" xml:space="preserve">
+		<value>Read full story</value>
+	</data>
+	<data name="Launcher_Share" xml:space="preserve">
+		<value>Share</value>
+	</data>
+	<data name="Launcher_News_Navigation" xml:space="preserve">
+		<value>News navigation</value>
+	</data>
+	<data name="Launcher_Close" xml:space="preserve">
+		<value>Close</value>
+	</data>
+	<data name="Launcher_Newer" xml:space="preserve">
+		<value>Newer</value>
+	</data>
+	<data name="Launcher_Older" xml:space="preserve">
+		<value>Older</value>
+	</data>
 </root>

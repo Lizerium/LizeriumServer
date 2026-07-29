@@ -2,6 +2,7 @@
     var path = Context.Request.Path.Value?.ToLowerInvariant() ?? "/";
     var isCabinet = path == "/" || path.StartsWith("/cabinet");
     var isPosts = path.StartsWith("/posts");
+    var isNews = path.StartsWith("/news");
     var isCommands = path.StartsWith("/commands");
     var isTranslates = path.StartsWith("/command-translates");
 }
@@ -21,6 +22,12 @@
             <a class="@(isPosts ? "active" : string.Empty)" href="/posts" title="Посты">
                 <span class="nav-icon" aria-hidden="true">&#9993;</span>
                 <span class="nav-label">Посты</span>
+            </a>
+        </li>
+        <li>
+            <a class="@(isNews ? "active" : string.Empty)" href="/news" title="Новости">
+                <span class="nav-icon" aria-hidden="true">&#9635;</span>
+                <span class="nav-label">Новости</span>
             </a>
         </li>
         <li>

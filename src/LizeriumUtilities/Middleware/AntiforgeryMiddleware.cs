@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 28 июля 2026 10:29:56
- * Version: 1.0.122
+ * Last Updated: 29 июля 2026 16:02:04
+ * Version: 1.0.125
  */
 
 using Microsoft.AspNetCore.Antiforgery;
@@ -47,11 +47,19 @@ public class AntiforgeryMiddleware
     {
         try
         {
-            //генерируем токен против подделки запросов
-            var tokens = Antiforgery.GetAndStoreTokens(context);
+            if (HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsHead(context.Request.Method))
+            {
+                //генерируем токен против подделки запросов
+                var tokens = Antiforgery.GetAndStoreTokens(context);
 
-            //устанавливаем токен в куку
-            context.Response.Cookies.Append("CSRF-TOKEN", tokens.RequestToken ?? string.Empty, new CookieOptions { HttpOnly = false });
+                //устанавливаем токен в куку
+                context.Response.Cookies.Append("CSRF-TOKEN", tokens.RequestToken ?? string.Empty, new CookieOptions
+                {
+                    HttpOnly = false,
+                    SameSite = SameSiteMode.Lax,
+                    Secure = context.Request.IsHttps
+                });
+            }
         }
         catch (Exception exception)
         {

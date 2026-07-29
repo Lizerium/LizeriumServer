@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 28 июля 2026 10:29:56
- * Version: 1.0.122
+ * Last Updated: 29 июля 2026 16:02:04
+ * Version: 1.0.125
  */
 
 using Microsoft.AspNetCore.Antiforgery;
@@ -58,6 +58,12 @@ public class MonitorMiddleware
             var dataSecretRecords = DatabaseExtensions.Configuration.GetValue<string>("private_path"); ;
             // 1. Создание соединения (не регистрируя контекст)
             var path = dataSecretRecords;
+            var directoryPath = Path.GetDirectoryName(path);
+
+            if (!string.IsNullOrWhiteSpace(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
 
             using (var db = new DbContext(new DbContextOptionsBuilder()
                 .UseSqlite($"Data Source={path}").Options))
@@ -66,12 +72,22 @@ public class MonitorMiddleware
                 {
                     try
                     {
+                        db.Database.ExecuteSqlRaw(@"
+                            CREATE TABLE IF NOT EXISTS monitor (
+                                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                DateT TEXT,
+                                IP TEXT,
+                                LANG TEXT,
+                                AGENT TEXT,
+                                PATH TEXT
+                            );");
                         db.Database.ExecuteSqlInterpolated($"INSERT INTO monitor (DateT, IP, LANG, AGENT, PATH) VALUES ({date}, {ip}, {lang}, {agent}, {url});");
                         transaction.Commit(); // Фиксация изменений
                     }
                     catch (Exception ex)
                     {
                         transaction.Rollback(); // Отмена изменений в случае ошибки
+                        ex.LogException("Ошибка записи monitor");
                     }
                 }
             }

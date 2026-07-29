@@ -141,7 +141,8 @@ class Commands {
         const response = await ajax.sendRequest(dataRequest);
 
         if (response !== "ok") {
-            document.location.href = "/Home/Error";
+            // Refresh the page if the browser holds stale protection cookies.
+            document.location.reload();
             return;
         }
 

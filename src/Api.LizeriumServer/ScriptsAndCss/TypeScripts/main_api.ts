@@ -1,4 +1,8 @@
-﻿(() => {
+﻿declare class NewsAdmin {
+    startNews(): void;
+}
+
+(() => {
     //по загрузке окна
     window.addEventListener("DOMContentLoaded", async () => {
 
@@ -53,6 +57,12 @@
 
                     //запускаем управление пользователями
                     await commands.startCommands();
+                }
+                break;
+            case "news":
+                {
+                    const news = new NewsAdmin();
+                    news.startNews();
                 }
                 break;
             default:

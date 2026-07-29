@@ -1,70 +1,523 @@
-﻿@inject IViewLocalizer Localizer
+﻿@model LauncherViewModel
+@using LizeriumServer.Helpers
+@using System.Text.Json
+@using System.Text.RegularExpressions
+@inject IViewLocalizer Localizer
 @{
     ViewData["Title"] = Localizer["Launcher_Title_Site"];
+    var culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+    var isRussian = culture.Equals("ru", StringComparison.OrdinalIgnoreCase);
+    var orderFilter = string.IsNullOrWhiteSpace(Model.SortOrderFilter) ? "new" : Model.SortOrderFilter;
+    var searchPlaceholder = Localizer["Launcher_Search_Placeholder"].Value;
+    var orderLabel = Localizer["Launcher_Order_Label"].Value;
+    var newLabel = Localizer["Launcher_Order_New"].Value;
+    var oldLabel = Localizer["Launcher_Order_Old"].Value;
+    var searchButtonLabel = Localizer["Launcher_Search_Button"].Value;
+    var previousImageLabel = Localizer["Launcher_Previous_Image"].Value;
+    var nextImageLabel = Localizer["Launcher_Next_Image"].Value;
+    var videoPlatformsLabel = Localizer["Launcher_Video_Platforms"].Value;
+    var likeLabel = Localizer["Launcher_Like"].Value;
+    var readFullLabel = Localizer["Launcher_Read_Full"].Value;
+    var shareLabel = Localizer["Launcher_Share"].Value;
+    var newsNavigationLabel = Localizer["Launcher_News_Navigation"].Value;
+    var closeLabel = Localizer["Launcher_Close"].Value;
+    var newerLabel = Localizer["Launcher_Newer"].Value;
+    var olderLabel = Localizer["Launcher_Older"].Value;
+}
+@functions {
+    private sealed class NewsVideoPlatform
+    {
+        public string Key { get; init; } = string.Empty;
+        public string Name { get; init; } = string.Empty;
+        public string IconUrl { get; init; } = string.Empty;
+        public string Url { get; init; } = string.Empty;
+        public string EmbedUrl { get; init; } = string.Empty;
+    }
+
+    private static string PickText(string primary, string fallback)
+    {
+        return !string.IsNullOrWhiteSpace(primary) ? primary : fallback ?? string.Empty;
+    }
+
+    private static string BuildYoutubeEmbedUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            return string.Empty;
+
+        var match = Regex.Match(url, @"(?:youtube\.com/watch\?v=|youtube\.com/embed/|youtu\.be/)([A-Za-z0-9_-]{6,})", RegexOptions.IgnoreCase);
+        return match.Success ? $"https://www.youtube.com/embed/{match.Groups[1].Value}" : string.Empty;
+    }
+
+    private static string BuildRutubeEmbedUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            return string.Empty;
+
+        var match = Regex.Match(url, @"rutube\.ru/(?:video|play/embed)/([A-Za-z0-9]+)", RegexOptions.IgnoreCase);
+        return match.Success ? $"https://rutube.ru/play/embed/{match.Groups[1].Value}/" : string.Empty;
+    }
+
+    private static string BuildVkEmbedUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            return string.Empty;
+
+        var oidMatch = Regex.Match(url, @"(?:video|clip)(-?\d+)_(\d+)", RegexOptions.IgnoreCase);
+        if (oidMatch.Success)
+            return $"https://vk.com/video_ext.php?oid={oidMatch.Groups[1].Value}&id={oidMatch.Groups[2].Value}";
+
+        return string.Empty;
+    }
+
+    private static string PickVideoUrl(LizeriumUtilities.FormatsData.DataBase.Response.LauncherNewsDataResponse news, bool isRussian)
+    {
+        return GetVideoPlatforms(news, isRussian).FirstOrDefault()?.EmbedUrl ?? string.Empty;
+    }
+
+    private static List<NewsVideoPlatform> GetVideoPlatforms(LizeriumUtilities.FormatsData.DataBase.Response.LauncherNewsDataResponse news, bool isRussian)
+    {
+        var platforms = new List<NewsVideoPlatform>();
+        var youtube = BuildYoutubeEmbedUrl(news.YoutubeUrl);
+        var rutube = BuildRutubeEmbedUrl(news.RutubeUrl);
+        var vk = BuildVkEmbedUrl(news.VkVideoUrl);
+
+        if (!string.IsNullOrWhiteSpace(youtube))
+        {
+            platforms.Add(new NewsVideoPlatform
+            {
+                Key = "youtube",
+                Name = "YouTube",
+                IconUrl = "/img/social/youtube.webp",
+                Url = news.YoutubeUrl,
+                EmbedUrl = youtube
+            });
+        }
+
+        if (!string.IsNullOrWhiteSpace(rutube))
+        {
+            platforms.Add(new NewsVideoPlatform
+            {
+                Key = "rutube",
+                Name = "Rutube",
+                IconUrl = "/img/social/rutube.webp",
+                Url = news.RutubeUrl,
+                EmbedUrl = rutube
+            });
+        }
+
+        if (!string.IsNullOrWhiteSpace(vk))
+        {
+            platforms.Add(new NewsVideoPlatform
+            {
+                Key = "vk",
+                Name = "VK",
+                IconUrl = "/img/social/vk.webp",
+                Url = news.VkVideoUrl,
+                EmbedUrl = vk
+            });
+        }
+
+        var preferredOrder = isRussian
+            ? new[] { "rutube", "vk", "youtube" }
+            : new[] { "youtube", "vk", "rutube" };
+
+        return platforms
+            .OrderBy(platform =>
+            {
+                var index = Array.IndexOf(preferredOrder, platform.Key);
+                return index < 0 ? int.MaxValue : index;
+            })
+            .ToList();
+    }
+
+    private static string PickNewsType(LizeriumUtilities.FormatsData.DataBase.Response.LauncherNewsDataResponse news, bool isRussian)
+    {
+        var localized = isRussian ? news.NewsTypeRu : news.NewsTypeEn;
+        if (!string.IsNullOrWhiteSpace(localized))
+            return localized;
+
+        var fallback = isRussian ? news.NewsTypeEn : news.NewsTypeRu;
+        if (!string.IsNullOrWhiteSpace(fallback))
+            return fallback;
+
+        if (!string.IsNullOrWhiteSpace(news.NewsType))
+            return news.NewsType;
+
+        return isRussian ? "\u041d\u043e\u0432\u043e\u0441\u0442\u044c" : "News";
+    }
+    private static string PickIconUrl(LizeriumUtilities.FormatsData.DataBase.Response.LauncherNewsDataResponse news)
+    {
+        var iconUrl = news.IconUrl?.Trim() ?? string.Empty;
+        if (iconUrl.Equals("/img/96_ico_no_fon.ico", StringComparison.OrdinalIgnoreCase))
+            iconUrl = string.Empty;
+
+        return !string.IsNullOrWhiteSpace(iconUrl)
+            ? iconUrl
+            : "/img/Main.png";
+    }
+
+    private static string PickCoverImage(LizeriumUtilities.FormatsData.DataBase.Response.LauncherNewsDataResponse news)
+    {
+        return !string.IsNullOrWhiteSpace(news.ImageUrl) ? news.ImageUrl.Trim() : string.Empty;
+    }
+
+    private static List<string> GetGalleryImages(LizeriumUtilities.FormatsData.DataBase.Response.LauncherNewsDataResponse news, string markdown)
+    {
+        var images = new List<string>();
+        if (!string.IsNullOrWhiteSpace(news.ImageGalleryJson))
+        {
+            try
+            {
+                var gallery = JsonSerializer.Deserialize<List<string>>(news.ImageGalleryJson);
+                if (gallery != null)
+                    images.AddRange(gallery);
+            }
+            catch
+            {
+                images.AddRange(news.ImageGalleryJson.Split(new[] { "\r\n", "\n", ";", "," }, StringSplitOptions.RemoveEmptyEntries));
+            }
+        }
+
+        var cover = PickCoverImage(news);
+        var inlineImages = GetMarkdownImages(markdown);
+
+        return images
+            .Where(image => !string.IsNullOrWhiteSpace(image))
+            .Select(image => image.Trim())
+            .Where(image => !image.Equals(cover, StringComparison.OrdinalIgnoreCase))
+            .Where(image => !inlineImages.Contains(image, StringComparer.OrdinalIgnoreCase))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private static List<string> GetMarkdownImages(string markdown)
+    {
+        if (string.IsNullOrWhiteSpace(markdown))
+            return new List<string>();
+
+        return Regex.Matches(markdown, @"!\[[^\]]*\]\(([^)]+)\)")
+            .Select(match => match.Groups[1].Value.Trim())
+            .Where(image => !string.IsNullOrWhiteSpace(image))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private static string StripNewsText(string markdown)
+    {
+        if (string.IsNullOrWhiteSpace(markdown))
+            return string.Empty;
+
+        var text = Regex.Replace(markdown, @"!\[[^\]]*\]\([^)]+\)", string.Empty);
+        text = Regex.Replace(text, @"\[([^\]]+)\]\([^)]+\)", "$1");
+        text = Regex.Replace(text, @"[#>*_`~\-]+", " ");
+        return Regex.Replace(text, @"\s+", " ").Trim();
+    }
+
+    private static bool ShouldShowFullRead(string markdown, int imageCount, bool hasVideo)
+    {
+        var text = StripNewsText(markdown);
+        if (text.Length == 0)
+            return imageCount > 0 || hasVideo;
+
+        return text.Length > 260 || imageCount > 0 || GetMarkdownImages(markdown).Count > 0 || (hasVideo && text.Length > 80);
+    }
 }
 @Html.ReCaptcha()
 <article>
-    <section class="news-section">
+    <section class="news-section launcher-news-page">
         <div class="container-fluid">
-            <h1 class="h-color-2 w-100 fw-bold mb-3 mt-5 text-center">📰 @Localizer["Launcher_Header"]</h1>
-            <div class="news-grid">
-                <div class="w-100">
-                    <div class="row w-100 gy-3">
-                        <div class="col">
-                            <div class="card h-100">
-                                <div class="w-100 video-block">
-                                    <iframe width="720" height="405" src="https://rutube.ru/play/embed/166b1de79791472c13f79c24838847c3/" frameBorder="0" allow="clipboard-write; autoplay" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>
+            <header class="launcher-news-hero">
+                <span class="launcher-news-hero-icon" aria-hidden="true"></span>
+                <h1>@Localizer["Launcher_Header"]</h1>
+            </header>
+
+            <form class="launcher-news-toolbar" method="get" action="@Url.Action("Launcher", "Home")">
+                <input name="search" value="@Model.Search" placeholder="@searchPlaceholder" />
+                <div class="launcher-news-sort" role="group" aria-label="@orderLabel">
+                    <button class="@(orderFilter == "new" ? "active" : string.Empty)" type="submit" name="order" value="new">
+                        @newLabel
+                    </button>
+                    <button class="@(orderFilter == "old" ? "active" : string.Empty)" type="submit" name="order" value="old">
+                        @oldLabel
+                    </button>
+                </div>
+                <button class="launcher-news-search-button" type="submit" name="order" value="@orderFilter">@searchButtonLabel</button>
+            </form>
+
+            <div class="launcher-news-grid">
+                @foreach (var news in Model.News)
+                {
+                    var title = isRussian
+                        ? PickText(news.TitleRu, news.TitleEn)
+                        : PickText(news.TitleEn, news.TitleRu);
+                    var markdown = isRussian
+                        ? PickText(news.MarkdownRu, news.MarkdownEn)
+                        : PickText(news.MarkdownEn, news.MarkdownRu);
+                    var videoPlatforms = GetVideoPlatforms(news, isRussian);
+                    var videoUrl = videoPlatforms.FirstOrDefault()?.EmbedUrl ?? string.Empty;
+                    var coverImage = PickCoverImage(news);
+                    var galleryImages = GetGalleryImages(news, markdown);
+                    var cardImages = new List<string>();
+                    if (!string.IsNullOrWhiteSpace(coverImage))
+                    {
+                        cardImages.Add(coverImage);
+                    }
+                    else if (galleryImages.Count > 0)
+                    {
+                        cardImages.Add(galleryImages[0]);
+                    }
+                    var hasBody = !string.IsNullOrWhiteSpace(markdown);
+                    var canReadFull = ShouldShowFullRead(markdown, galleryImages.Count, videoPlatforms.Count > 0);
+                    var excerpt = StripNewsText(markdown);
+                    var hasCardMedia = !string.IsNullOrWhiteSpace(videoUrl) || cardImages.Count > 0;
+                    var hasInlineMedia = GetMarkdownImages(markdown).Count > 0;
+                    var date = news.PublishedAtUnix > 0
+                        ? DateTimeOffset.FromUnixTimeSeconds(news.PublishedAtUnix).ToLocalTime().ToString("dd.MM.yyyy")
+                        : string.Empty;
+
+                    <article class="launcher-news-card @(hasBody ? "has-body" : "compact") @(hasCardMedia ? "has-media" : "no-media") @(hasInlineMedia ? "has-inline-media" : string.Empty)" id="news-card-@news.Id">
+                        @if (cardImages.Count > 0)
+                        {
+                            <div class="launcher-news-media image-block launcher-news-carousel" data-news-carousel>
+                                @for (var imageIndex = 0; imageIndex < cardImages.Count; imageIndex++)
+                                {
+                                    <button class="launcher-news-image-button @(imageIndex == 0 ? "active" : string.Empty)"
+                                            type="button"
+                                            data-news-lightbox="@cardImages[imageIndex]"
+                                            data-news-title="@title">
+                                        <img src="@cardImages[imageIndex]" alt="@title" loading="lazy" onerror="var media=this.closest('.launcher-news-media');this.closest('.launcher-news-image-button')?.remove();if(media&&!media.querySelector('img'))media.remove();" />
+                                        @if (imageIndex == 0 && videoPlatforms.Count > 0)
+                                        {
+                                            <span class="launcher-news-card-play" aria-hidden="true">&#9654;</span>
+                                        }
+                                    </button>
+                                }
+                                @if (cardImages.Count > 1)
+                                {
+                                    <button class="launcher-news-carousel-arrow previous" type="button" data-news-carousel-previous aria-label="@previousImageLabel">&lsaquo;</button>
+                                    <button class="launcher-news-carousel-arrow next" type="button" data-news-carousel-next aria-label="@nextImageLabel">&rsaquo;</button>
+                                    <div class="launcher-news-carousel-count"><span data-news-carousel-current>1</span>/@cardImages.Count</div>
+                                }
+                            </div>
+                        }
+                        else if (!string.IsNullOrWhiteSpace(videoUrl))
+                        {
+                            <div class="launcher-news-media video-block">
+                                <iframe data-news-card-video-src="@videoUrl"
+                                        frameborder="0"
+                                        loading="lazy"
+                                        allow="clipboard-write; autoplay; encrypted-media; picture-in-picture"
+                                        allowfullscreen
+                                        webkitallowfullscreen
+                                        mozallowfullscreen>
+                                </iframe>
+                            </div>
+                        }
+                        <div class="launcher-news-content">
+                            @if (!string.IsNullOrWhiteSpace(date))
+                            {
+                                <time>@date</time>
+                            }
+                            <h2>@title</h2>
+                            @if (hasBody && !string.IsNullOrWhiteSpace(excerpt))
+                            {
+                                <div class="launcher-news-markdown">
+                                    <p>@excerpt</p>
                                 </div>
-                                <div class="card-body">
-                                    <h5 class="card-title">@Localizer["Launcher_News_1"] <a href="https://rutube.ru/video/166b1de79791472c13f79c24838847c3/" target="_blank">Freelancer Lizerium</a></h5>
+                            }
+                            @if (videoPlatforms.Count > 0)
+                            {
+                                <div class="launcher-news-video-links" aria-label="@videoPlatformsLabel">
+                                    @foreach (var platform in videoPlatforms)
+                                    {
+                                        <a href="@platform.Url" target="_blank" rel="noopener noreferrer" title="@platform.Name">
+                                            <img src="@platform.IconUrl" alt="@platform.Name" />
+                                            <span>@platform.Name</span>
+                                        </a>
+                                    }
                                 </div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(news.GithubUrl))
+                            {
+                                <a class="launcher-news-github" href="@news.GithubUrl" target="_blank" rel="noopener noreferrer">
+                                    <img src="/img/github-mark.svg" alt="" aria-hidden="true" />
+                                    <span>@PickText(news.GithubProjectName, "GitHub")</span>
+                                </a>
+                            }
+                            <div class="launcher-news-card-actions">
+                                <button class="launcher-news-like-box launcher-news-like-button"
+                                        type="button"
+                                        data-news-like="@news.Id"
+                                            aria-label="@likeLabel">
+                                    <span class="launcher-news-like-icon" aria-hidden="true"></span>
+                                    <strong data-news-like-count>@Math.Max(0, news.LikeCount)</strong>
+                                </button>
+                                @if (canReadFull)
+                                {
+                                    <button class="launcher-news-read-button"
+                                            type="button"
+                                            data-news-reader-open="@news.Id">
+                                        @readFullLabel
+                                    </button>
+                                }
                             </div>
                         </div>
-                        <div class="col">
-                            <div class="card h-100">
-                                <div class="w-100 video-block">
-                                    <iframe width="720" height="405" src="https://rutube.ru/play/embed/f7359c52b38dbfd9eab1426349de6571/" frameBorder="0" allow="clipboard-write; autoplay" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>
+                    </article>
+                }
+            </div>
+
+            <div class="launcher-news-reader" data-news-reader aria-hidden="true">
+                <div class="launcher-news-reader-backdrop" data-news-reader-close></div>
+                <div class="launcher-news-reader-feed" data-news-reader-feed>
+                    @foreach (var news in Model.News)
+                    {
+                        var title = isRussian
+                            ? PickText(news.TitleRu, news.TitleEn)
+                            : PickText(news.TitleEn, news.TitleRu);
+                        var markdown = isRussian
+                            ? PickText(news.MarkdownRu, news.MarkdownEn)
+                            : PickText(news.MarkdownEn, news.MarkdownRu);
+                        var videoPlatforms = GetVideoPlatforms(news, isRussian);
+                        var videoUrl = videoPlatforms.FirstOrDefault()?.EmbedUrl ?? string.Empty;
+                        var coverImage = PickCoverImage(news);
+                        var galleryImages = GetGalleryImages(news, markdown);
+                        var date = news.PublishedAtUnix > 0
+                            ? DateTimeOffset.FromUnixTimeSeconds(news.PublishedAtUnix).ToLocalTime().ToString("dd.MM.yyyy")
+                            : string.Empty;
+                        var newsType = PickNewsType(news, isRussian);
+                        var iconUrl = PickIconUrl(news);
+
+                        <article class="launcher-news-reader-post" data-news-reader-post="@news.Id">
+                            <header class="launcher-news-reader-header">
+                                <div class="launcher-news-reader-titlebar">
+                                    <img class="launcher-news-reader-icon" src="@iconUrl" alt="" loading="lazy" onerror="this.onerror=null;this.src='/img/Main.png';" />
+                                    <div>
+                                        <div class="launcher-news-reader-meta">
+                                            <span>@newsType</span>
+                                            @if (!string.IsNullOrWhiteSpace(date))
+                                            {
+                                                <time>@date</time>
+                                            }
+                                        </div>
+                                        <h2>@title</h2>
+                                    </div>
                                 </div>
-                                <div class="card-body">
-                                    <h5 class="card-title">@Localizer["Launcher_News_2"] <a href="https://rutube.ru/video/f7359c52b38dbfd9eab1426349de6571/" target="_blank">Freelancer Lizerium</a></h5>
-                                </div>
+                                @if (!string.IsNullOrWhiteSpace(coverImage))
+                                {
+                                    <button class="launcher-news-reader-banner"
+                                            type="button"
+                                            data-news-lightbox="@coverImage"
+                                            data-news-title="@title">
+                                        <img data-news-reader-image-src="@coverImage" alt="@title" onerror="this.closest('.launcher-news-reader-banner')?.remove();" />
+                                    </button>
+                                }
+                                else if (videoPlatforms.Count > 0)
+                                {
+                                    <div class="launcher-news-reader-video" data-news-video-player>
+                                        <iframe data-news-reader-video-src="@videoUrl"
+                                                data-news-video-frame
+                                                frameborder="0"
+                                                allow="clipboard-write; autoplay; encrypted-media; picture-in-picture"
+                                                allowfullscreen
+                                                webkitallowfullscreen
+                                                mozallowfullscreen>
+                                        </iframe>
+                                    </div>
+                                }
+                            </header>
+
+                            <div class="launcher-news-reader-body">
+                                @if (!string.IsNullOrWhiteSpace(markdown))
+                                {
+                                    <div class="launcher-news-reader-markdown">
+                                        @Html.Raw(MarkdownHtmlHelper.ToSafeHtml(markdown, true))
+                                    </div>
+                                }
+
+                                @if (galleryImages.Count > 0)
+                                {
+                                    <div class="launcher-news-reader-gallery">
+                                        @foreach (var image in galleryImages)
+                                        {
+                                            <button type="button" data-news-lightbox="@image" data-news-title="@title">
+                                                <img data-news-reader-image-src="@image" alt="@title" onerror="this.closest('button')?.remove();" />
+                                            </button>
+                                        }
+                                    </div>
+                                }
+
+                                @if (videoPlatforms.Count > 0 && !string.IsNullOrWhiteSpace(coverImage))
+                                {
+                                    <div class="launcher-news-reader-video" data-news-video-player>
+                                        <iframe data-news-reader-video-src="@videoUrl"
+                                                data-news-video-frame
+                                                frameborder="0"
+                                                allow="clipboard-write; autoplay; encrypted-media; picture-in-picture"
+                                                allowfullscreen
+                                                webkitallowfullscreen
+                                                mozallowfullscreen>
+                                        </iframe>
+                                    </div>
+                                }
+
+                                <footer class="launcher-news-reader-actions">
+                                    <button class="launcher-news-like-box launcher-news-like-button"
+                                            type="button"
+                                            data-news-like="@news.Id"
+                                            aria-label="@likeLabel">
+                                        <span class="launcher-news-like-icon" aria-hidden="true"></span>
+                                        <strong data-news-like-count>@Math.Max(0, news.LikeCount)</strong>
+                                    </button>
+                                    <button class="launcher-news-action-button" type="button" data-news-reader-share="@news.Id">
+                                        @shareLabel
+                                    </button>
+                                    @if (videoPlatforms.Count > 0)
+                                    {
+                                <div class="launcher-news-video-links compact" aria-label="@videoPlatformsLabel">
+                                    @foreach (var platform in videoPlatforms)
+                                    {
+                                        <button type="button"
+                                                class="@(platform.Key == videoPlatforms[0].Key ? "active" : string.Empty)"
+                                                data-news-video-platform="@platform.Key"
+                                                data-news-video-src="@platform.EmbedUrl"
+                                                title="@platform.Name">
+                                                    <img src="@platform.IconUrl" alt="@platform.Name" />
+                                                </button>
+                                            }
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(news.GithubUrl))
+                                    {
+                                        <a class="launcher-news-github" href="@news.GithubUrl" target="_blank" rel="noopener noreferrer">
+                                            <img src="/img/github-mark.svg" alt="" aria-hidden="true" />
+                                            <span>@PickText(news.GithubProjectName, "GitHub")</span>
+                                        </a>
+                                    }
+                                </footer>
                             </div>
-                        </div>
-                        <div class="col">
-                            <div class="card h-100">
-                                <div class="w-100 video-block">
-                                    <iframe src="https://rutube.ru/play/embed/da9bd6b780314bb96ca23b10110dcfd9/"
-                                            frameborder="0"
-                                            allow="clipboard-write; autoplay"
-                                            allowfullscreen
-                                            webkitallowfullscreen
-                                            mozallowfullscreen>
-                                    </iframe>
-                                </div>
-                                <div class="card-body">
-                                    <h5 class="card-title">@Localizer["Launcher_News_3"] <a href="https://rutube.ru/video/da9bd6b780314bb96ca23b10110dcfd9/" target="_blank">Freelancer Lizerium (Unity ver.)</a></h5>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="card h-100">
-                                <div class="w-100 video-block">
-                                    <iframe src="https://rutube.ru/play/embed/0f20131048cc69a38337431fafdc4597/"
-                                            frameborder="0"
-                                            allow="clipboard-write; autoplay"
-                                            allowfullscreen
-                                            webkitallowfullscreen
-                                            mozallowfullscreen>
-                                    </iframe>
-                                </div>
-                                <div class="card-body">
-                                    <h5 class="card-title">@Localizer["Launcher_News_4"] <a href="https://rutube.ru/video/0f20131048cc69a38337431fafdc4597/" target="_blank">Freelancer Lizerium (Unity ver.)</a></h5>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                        </article>
+                    }
+                </div>
+                <div class="launcher-news-reader-rail" aria-label="@newsNavigationLabel">
+                    <button type="button" class="launcher-news-reader-close" data-news-reader-close aria-label="@closeLabel">&times;</button>
+                    <button type="button" data-news-reader-previous aria-label="@newerLabel">&#9650;</button>
+                    <button type="button" data-news-reader-next aria-label="@olderLabel">&#9660;</button>
+                    <img src="/img/Main.png" alt="" aria-hidden="true" />
                 </div>
             </div>
+
+            @if (Model.TotalPages > 1)
+            {
+                <nav class="launcher-news-pagination">
+                    @for (var i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <a class="@(i == Model.CurrentPage ? "active" : string.Empty)"
+                           href="@Url.Action("Launcher", "Home", new { search = Model.Search, order = orderFilter, page = i })">
+                            @i
+                        </a>
+                    }
+                </nav>
+            }
         </div>
     </section>
 </article>

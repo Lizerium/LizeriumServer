@@ -73,7 +73,7 @@ class Commands {
             const ajax = new Ajax("saveCommand", this.cookies);
             const response = yield ajax.sendRequest(dataRequest);
             if (response !== "ok") {
-                document.location.href = "/Home/Error";
+                document.location.reload();
                 return;
             }
             document.location.href = "/Commands";

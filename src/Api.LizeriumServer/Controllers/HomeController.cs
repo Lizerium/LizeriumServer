@@ -2,12 +2,13 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 28 июля 2026 10:29:56
- * Version: 1.0.122
+ * Last Updated: 29 июля 2026 16:02:04
+ * Version: 1.0.125
  */
 
 using System;
 using System.Data.SQLite;
+using System.Text.Json;
 
 using Api.LizeriumServer.Accessories.AuthExtensions;
 using Api.LizeriumServer.FormatsData.AppAdminData;
@@ -70,7 +71,7 @@ public class HomeController : Controller
         if (adminSession is not { IsAuth: true }) 
             return View(new MainModel(null, null) { ShowLeftSide = false });
 
-        return RedirectPermanent("~/cabinet");
+        return Redirect("~/cabinet");
     }
 
     /// <summary>
@@ -97,7 +98,7 @@ public class HomeController : Controller
             if (adminSession is not { SentOnceCode: true })
             {
                 //редиректим на главную страницу
-                return RedirectPermanent("~/");
+                return Redirect("~/");
             }
 
             //если сессия задана, но администратор не авторизован
@@ -108,7 +109,7 @@ public class HomeController : Controller
             }
 
             //редиректим на страницу кабинета администратора
-            return RedirectPermanent("~/cabinet");
+            return Redirect("~/cabinet");
         }
         catch (Exception exception)
         {
@@ -164,7 +165,7 @@ public class HomeController : Controller
             var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
 
             //если сессии нет или администратор не авторизован редиректим на главную страницу
-            if (adminSession is not { IsAuth: true }) return RedirectPermanent("~/");
+            if (adminSession is not { IsAuth: true }) return Redirect("~/");
 
             List<MonitorData> MonitorD = new List<MonitorData>();
             var dataSecretRecords = DatabaseExtensions.Configuration.GetValue<string>("private_path");
@@ -529,7 +530,7 @@ public class HomeController : Controller
             var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
 
             //если сессии нет или администратор не авторизован редиректим на главную страницу
-            if (adminSession is not { IsAuth: true }) return RedirectPermanent("~/");
+            if (adminSession is not { IsAuth: true }) return Redirect("~/");
 
             //используем базу приложения
             var posts = await appDb.GetAllAdminPostsAsync();
@@ -570,7 +571,7 @@ public class HomeController : Controller
             var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
 
             //если сессии нет или администратор не авторизован редиректим на главную страницу
-            if (adminSession is not { IsAuth: true }) return RedirectPermanent("~/");
+            if (adminSession is not { IsAuth: true }) return Redirect("~/");
 
             var commands = await appDb.GetAllAdminCommandsAsync() ?? new();
             var categories = commands
@@ -606,6 +607,521 @@ public class HomeController : Controller
     }
 
     /// <summary>
+    /// Страница управления новостями Lizerium Launcher.
+    /// </summary>
+    [HttpGet]
+    [Route("/news")]
+    public async Task<IActionResult> News(string search = "", string status = "all", int page = 1)
+    {
+        try
+        {
+            if (!AdminAccessGuard.IsAllowed(HttpContext))
+                return View("AccessClosed", new MainModel(null, null) { ShowLeftSide = false });
+
+            var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString();
+            if (await securityService.IsBlocked(ip))
+                return StatusCode(403);
+
+            var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
+            if (adminSession is not { IsAuth: true }) return Redirect("~/");
+
+            var news = await appDb.GetAllAdminLauncherNewsAsync();
+            page = Math.Max(1, page);
+            status = string.IsNullOrWhiteSpace(status) ? "all" : status;
+            search = search?.Trim() ?? string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                news = news
+                    .Where(item =>
+                        ContainsNewsText(item.TitleRu, search)
+                        || ContainsNewsText(item.TitleEn, search)
+                        || ContainsNewsText(item.MarkdownRu, search)
+                        || ContainsNewsText(item.MarkdownEn, search)
+                        || ContainsNewsText(item.YoutubeUrl, search)
+                        || ContainsNewsText(item.RutubeUrl, search)
+                        || ContainsNewsText(item.VkVideoUrl, search)
+                        || ContainsNewsText(item.ImageUrl, search)
+                        || ContainsNewsText(item.ImageGalleryJson, search)
+                        || ContainsNewsText(item.NewsType, search)
+                        || ContainsNewsText(item.NewsTypeRu, search)
+                        || ContainsNewsText(item.NewsTypeEn, search)
+                        || ContainsNewsText(item.IconUrl, search)
+                        || ContainsNewsText(item.GithubProjectName, search)
+                        || ContainsNewsText(item.GithubUrl, search))
+                    .ToList();
+            }
+
+            if (!string.Equals(status, "all", StringComparison.OrdinalIgnoreCase))
+            {
+                var isPublished = string.Equals(status, "published", StringComparison.OrdinalIgnoreCase);
+                news = news.Where(item => item.IsPublished == isPublished).ToList();
+            }
+
+            const int newsPageSize = 8;
+            var totalCount = news.Count;
+            var totalPages = Math.Max(1, (int)Math.Ceiling(totalCount / (double)newsPageSize));
+            page = Math.Min(page, totalPages);
+            news = news.Skip((page - 1) * newsPageSize).Take(newsPageSize).ToList();
+
+            return View(new MainModel(null, null)
+            {
+                ShowLeftSide = true,
+                LauncherNews = news,
+                NewsSearch = search,
+                NewsStatusFilter = status,
+                NewsCurrentPage = page,
+                NewsTotalPages = totalPages,
+                NewsPageSize = newsPageSize,
+                NewsTotalCount = totalCount
+            });
+        }
+        catch (Exception exception)
+        {
+            exception.LogException();
+            return StatusCode(404);
+        }
+    }
+
+    /// <summary>
+    /// Сохраняет новость Lizerium Launcher.
+    /// </summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Route("/news/save")]
+    public async Task<IActionResult> SaveNews(
+        [FromForm] LauncherNewsDataResponse news,
+        [FromForm] IFormFile imageFile,
+        [FromForm] List<IFormFile> galleryFiles,
+        [FromForm] string publishedAtLocal,
+        [FromForm] bool removeImage)
+    {
+        try
+        {
+            if (!AdminAccessGuard.IsAllowed(HttpContext))
+            {
+                if (WantsJsonResponse())
+                    return StatusCode(404, new { ok = false, message = "access closed" });
+
+                return StatusCode(404);
+            }
+
+            var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString();
+            if (await securityService.IsBlocked(ip))
+            {
+                if (WantsJsonResponse())
+                    return StatusCode(403, new { ok = false, message = "blocked" });
+
+                return StatusCode(403);
+            }
+
+            var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
+            if (adminSession is not { IsAuth: true })
+                return WantsJsonResponse()
+                    ? Unauthorized(new { ok = false, message = "need authorization" })
+                    : Unauthorized("need authorization");
+
+            HttpContext.Session.SetSession("admin", adminSession);
+            await HttpContext.Session.CommitAsync();
+
+            if (removeImage)
+                news.ImageUrl = string.Empty;
+
+            var uploadedImageUrl = await SaveNewsImageAsync(imageFile);
+            if (!string.IsNullOrWhiteSpace(uploadedImageUrl))
+                news.ImageUrl = uploadedImageUrl;
+
+            var uploadedGalleryUrls = await SaveNewsImagesAsync(galleryFiles);
+            if (uploadedGalleryUrls.Count > 0)
+            {
+                var galleryUrls = ParseNewsGallery(news.ImageGalleryJson);
+                galleryUrls.AddRange(uploadedGalleryUrls);
+                news.ImageGalleryJson = SerializeNewsGallery(galleryUrls);
+            }
+
+            var selectedPublishedAt = ParseNewsPublishedAt(publishedAtLocal);
+            if (selectedPublishedAt > 0)
+                news.PublishedAtUnix = selectedPublishedAt;
+
+            if (string.IsNullOrWhiteSpace(news.NewsType))
+                news.NewsType = string.IsNullOrWhiteSpace(news.NewsTypeRu) ? news.NewsTypeEn : news.NewsTypeRu;
+
+            if (!await appDb.SaveLauncherNewsAsync(news))
+            {
+                if (WantsJsonResponse())
+                    return BadRequest(new { ok = false, message = "save failed" });
+
+                return Redirect("~/news?save=failed");
+            }
+
+            if (WantsJsonResponse())
+            {
+                return Json(new
+                {
+                    ok = true,
+                    news.Id,
+                    news.ImageUrl,
+                    news.ImageGalleryJson,
+                    news.NewsType,
+                    news.NewsTypeRu,
+                    news.NewsTypeEn,
+                    news.IconUrl,
+                    news.LikeCount,
+                    PreviewImageUrl = GetNewsPreviewUrl(news.ImageUrl),
+                    news.IsPublished,
+                    news.PublishedAtUnix,
+                    PublishedAtLocal = FormatNewsPublishedAtInput(news.PublishedAtUnix),
+                    Title = string.IsNullOrWhiteSpace(news.TitleRu) ? news.TitleEn : news.TitleRu
+                });
+            }
+
+            return Redirect("~/news");
+        }
+        catch (Exception exception)
+        {
+            exception.LogException();
+            if (WantsJsonResponse())
+                return BadRequest(new { ok = false, message = exception.Message });
+
+            return Redirect("~/news?save=failed");
+        }
+    }
+
+    /// <summary>
+    /// Удаляет новость Lizerium Launcher.
+    /// </summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Route("/news/delete")]
+    public async Task<IActionResult> DeleteNews([FromForm] int id)
+    {
+        try
+        {
+            if (!AdminAccessGuard.IsAllowed(HttpContext))
+            {
+                if (WantsJsonResponse())
+                    return StatusCode(404, new { ok = false, message = "access closed" });
+
+                return StatusCode(404);
+            }
+
+            var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString();
+            if (await securityService.IsBlocked(ip))
+            {
+                if (WantsJsonResponse())
+                    return StatusCode(403, new { ok = false, message = "blocked" });
+
+                return StatusCode(403);
+            }
+
+            var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
+            if (adminSession is not { IsAuth: true })
+                return WantsJsonResponse()
+                    ? Unauthorized(new { ok = false, message = "need authorization" })
+                    : Unauthorized("need authorization");
+
+            HttpContext.Session.SetSession("admin", adminSession);
+            await HttpContext.Session.CommitAsync();
+
+            if (!await appDb.DeleteLauncherNewsAsync(id))
+            {
+                if (WantsJsonResponse())
+                    return BadRequest(new { ok = false, message = "delete failed" });
+
+                return Redirect("~/news?delete=failed");
+            }
+
+            if (WantsJsonResponse())
+                return Json(new { ok = true, id });
+
+            return Redirect("~/news");
+        }
+        catch (Exception exception)
+        {
+            exception.LogException();
+            if (WantsJsonResponse())
+                return BadRequest(new { ok = false, message = exception.Message });
+
+            return Redirect("~/news?delete=failed");
+        }
+    }
+
+    /// <summary>
+    /// Отдает локальное превью обложки новости для админки.
+    /// </summary>
+    [HttpGet]
+    [Route("/news/image/{fileName}")]
+    public IActionResult NewsImage(string fileName)
+    {
+        try
+        {
+            if (!AdminAccessGuard.IsAllowed(HttpContext))
+                return NotFound();
+
+            var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
+            if (adminSession is not { IsAuth: true })
+                return NotFound();
+
+            if (string.IsNullOrWhiteSpace(fileName) || fileName != Path.GetFileName(fileName))
+                return NotFound();
+
+            var extension = Path.GetExtension(fileName)?.ToLowerInvariant();
+            var contentType = extension switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".webp" => "image/webp",
+                ".gif" => "image/gif",
+                _ => string.Empty
+            };
+
+            if (string.IsNullOrWhiteSpace(contentType))
+                return NotFound();
+
+            var fullPath = Path.Combine(GetNewsImagesPath(), fileName);
+            if (!System.IO.File.Exists(fullPath))
+                return NotFound();
+
+            return PhysicalFile(fullPath, contentType);
+        }
+        catch (Exception exception)
+        {
+            exception.LogException();
+            return NotFound();
+        }
+    }
+
+    /// <summary>
+    /// Uploads an image pasted into the news Markdown editor.
+    /// </summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Route("/news/upload-image")]
+    public async Task<IActionResult> UploadNewsMarkdownImage([FromForm] IFormFile imageFile)
+    {
+        try
+        {
+            if (!AdminAccessGuard.IsAllowed(HttpContext))
+                return StatusCode(404, new { ok = false, message = "access closed" });
+
+            var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
+            if (adminSession is not { IsAuth: true })
+                return Unauthorized(new { ok = false, message = "need authorization" });
+
+            HttpContext.Session.SetSession("admin", adminSession);
+            await HttpContext.Session.CommitAsync();
+
+            var uploadedImageUrl = await SaveNewsImageAsync(imageFile);
+            if (string.IsNullOrWhiteSpace(uploadedImageUrl))
+                return BadRequest(new { ok = false, message = "empty image" });
+
+            return Json(new
+            {
+                ok = true,
+                imageUrl = uploadedImageUrl,
+                previewImageUrl = GetNewsPreviewUrl(uploadedImageUrl)
+            });
+        }
+        catch (Exception exception)
+        {
+            exception.LogException();
+            return BadRequest(new { ok = false, message = exception.Message });
+        }
+    }
+
+    private bool WantsJsonResponse()
+    {
+        return string.Equals(Request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.OrdinalIgnoreCase)
+            || Request.Headers["Accept"].Any(value => value.Contains("application/json", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool ContainsNewsText(string value, string search)
+    {
+        return !string.IsNullOrWhiteSpace(value)
+            && value.Contains(search, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string GetNewsPreviewUrl(string imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl))
+            return string.Empty;
+
+        if (Uri.TryCreate(imageUrl, UriKind.Absolute, out _))
+            return imageUrl;
+
+        if (!imageUrl.StartsWith("/img/news/", StringComparison.OrdinalIgnoreCase))
+            return imageUrl;
+
+        var fileName = Path.GetFileName(imageUrl);
+        return string.IsNullOrWhiteSpace(fileName) ? imageUrl : $"/news/image/{fileName}";
+    }
+
+    private static long ParseNewsPublishedAt(string publishedAtLocal)
+    {
+        if (string.IsNullOrWhiteSpace(publishedAtLocal))
+            return 0;
+
+        if (!DateTime.TryParse(publishedAtLocal, out var localDateTime))
+            return 0;
+
+        var offset = TimeZoneInfo.Local.GetUtcOffset(localDateTime);
+        return new DateTimeOffset(localDateTime, offset).ToUnixTimeSeconds();
+    }
+
+    private static string FormatNewsPublishedAtInput(long publishedAtUnix)
+    {
+        return publishedAtUnix > 0
+            ? DateTimeOffset.FromUnixTimeSeconds(publishedAtUnix).ToLocalTime().ToString("yyyy-MM-ddTHH:mm")
+            : string.Empty;
+    }
+
+    private static async Task<string> SaveNewsImageAsync(IFormFile imageFile)
+    {
+        if (imageFile == null || imageFile.Length == 0)
+            return string.Empty;
+
+        const long maxImageBytes = 8 * 1024 * 1024;
+        if (imageFile.Length > maxImageBytes)
+            throw new InvalidOperationException("News image is too large.");
+
+        var extension = Path.GetExtension(imageFile.FileName)?.ToLowerInvariant();
+        var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".webp",
+            ".gif"
+        };
+
+        if (string.IsNullOrWhiteSpace(extension) || !allowedExtensions.Contains(extension))
+            throw new InvalidOperationException("Unsupported news image type.");
+
+        var contentType = imageFile.ContentType?.ToLowerInvariant() ?? string.Empty;
+        if (!contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Uploaded file is not an image.");
+
+        var imagesPath = GetNewsImagesPath();
+        Directory.CreateDirectory(imagesPath);
+
+        var fileName = $"{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid():N}{extension}";
+        var fullPath = Path.Combine(imagesPath, fileName);
+
+        await using (var stream = System.IO.File.Create(fullPath))
+        {
+            await imageFile.CopyToAsync(stream);
+        }
+
+        return $"/img/news/{fileName}";
+    }
+
+    private static async Task<List<string>> SaveNewsImagesAsync(IEnumerable<IFormFile> imageFiles)
+    {
+        var urls = new List<string>();
+        if (imageFiles == null)
+            return urls;
+
+        foreach (var imageFile in imageFiles)
+        {
+            var url = await SaveNewsImageAsync(imageFile);
+            if (!string.IsNullOrWhiteSpace(url))
+                urls.Add(url);
+        }
+
+        return urls;
+    }
+
+    private static List<string> ParseNewsGallery(string imageGalleryJson)
+    {
+        if (string.IsNullOrWhiteSpace(imageGalleryJson))
+            return new List<string>();
+
+        try
+        {
+            return JsonSerializer.Deserialize<List<string>>(imageGalleryJson)?
+                .Where(url => !string.IsNullOrWhiteSpace(url))
+                .Select(url => url.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList() ?? new List<string>();
+        }
+        catch (JsonException)
+        {
+            return imageGalleryJson
+                .Split(new[] { "\r\n", "\n", ";", "," }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(url => url.Trim())
+                .Where(url => !string.IsNullOrWhiteSpace(url))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+    }
+
+    private static string SerializeNewsGallery(IEnumerable<string> imageUrls)
+    {
+        var urls = imageUrls?
+            .Where(url => !string.IsNullOrWhiteSpace(url))
+            .Select(url => url.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList() ?? new List<string>();
+
+        return urls.Count == 0 ? string.Empty : JsonSerializer.Serialize(urls);
+    }
+
+    private static string GetNewsImagesPath()
+    {
+        var configuredPath = Program.Configuration["appSettings:newsImagesPath"];
+        if (!string.IsNullOrWhiteSpace(configuredPath))
+        {
+            return Path.GetFullPath(Path.IsPathRooted(configuredPath)
+                ? configuredPath
+                : Path.Combine(Directory.GetCurrentDirectory(), configuredPath));
+        }
+
+        if (Program.SettingsApp.IsRelease)
+        {
+            var wwwRoot = Directory.GetParent(Directory.GetCurrentDirectory())?.FullName
+                ?? Directory.GetCurrentDirectory();
+
+            return Path.GetFullPath(Path.Combine(wwwRoot, "uploader", "wwwroot", "img", "news"));
+        }
+
+        return FindDevelopmentNewsImagesPath();
+    }
+
+    private static string FindDevelopmentNewsImagesPath()
+    {
+        var roots = new[]
+        {
+            AppContext.BaseDirectory,
+            Directory.GetCurrentDirectory()
+        };
+
+        foreach (var root in roots)
+        {
+            var current = new DirectoryInfo(Path.GetFullPath(root));
+            while (current != null)
+            {
+                var portalProject = Path.Combine(current.FullName, "LizeriumServer", "LizeriumServer.csproj");
+                var portalWebRoot = Path.Combine(current.FullName, "LizeriumServer", "wwwroot");
+
+                if (System.IO.File.Exists(portalProject) && Directory.Exists(portalWebRoot))
+                {
+                    return Path.Combine(portalWebRoot, "img", "news");
+                }
+
+                current = current.Parent;
+            }
+        }
+
+        return Path.GetFullPath(Path.Combine(
+            Directory.GetCurrentDirectory(),
+            "..",
+            "LizeriumServer",
+            "wwwroot",
+            "img",
+            "news"));
+    }
+
+    /// <summary>
     /// Страница управления пользователями
     /// </summary>
     [HttpGet]
@@ -626,7 +1142,7 @@ public class HomeController : Controller
             var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
 
             //если сессии нет или администратор не авторизован редиректим на главную страницу
-            if (adminSession is not { IsAuth: true }) return RedirectPermanent("~/");
+            if (adminSession is not { IsAuth: true }) return Redirect("~/");
 
             //используем базу приложения
             var translations = await appDb.GetAllAdminCommandTranslatesAsync();
@@ -656,7 +1172,7 @@ public class HomeController : Controller
             return StatusCode(403);
 
         var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
-        if (adminSession is not { IsAuth: true }) return RedirectPermanent("~/");
+        if (adminSession is not { IsAuth: true }) return Redirect("~/");
 
         var command = new AdminCommandWithTranslations()
         {
@@ -688,13 +1204,13 @@ public class HomeController : Controller
             var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
 
             //если сессии нет или администратор не авторизован редиректим на главную страницу
-            if (adminSession is not { IsAuth: true }) return RedirectPermanent("~/");
+            if (adminSession is not { IsAuth: true }) return Redirect("~/");
 
             //разрушаем сессию пользователя
             HttpContext.DestroyUserSession();
 
             //редиректим на главную
-            return RedirectPermanent("~/");
+            return Redirect("~/");
         }
         catch (Exception exception)
         {
@@ -707,7 +1223,10 @@ public class HomeController : Controller
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public async Task<IActionResult> ErrorAsync()
+    [HttpGet]
+    [Route("/Home/Error")]
+    [Route("/Error")]
+    public async Task<IActionResult> Error()
     {
         try
         {
