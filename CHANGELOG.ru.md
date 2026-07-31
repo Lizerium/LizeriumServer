@@ -12,6 +12,16 @@
 
 # Обновления
 
+## 01.08.2026
+
+### Главный сервер Lizerium Server
+
+- Добавлена SEO-конфигурация `SeoDomains` для работы одного сервера сразу на `lizerium.com` и `lizup.ru` без дублирования проекта.
+- Добавлена динамическая генерация canonical, OpenGraph, VK preview и JSON-LD URL в зависимости от выбранного SEO-режима домена.
+- Добавлена генерация `/sitemap.xml` и `/robots.txt` с учётом текущего домена запроса: каждый домен получает ссылки на свой host, а canonical страниц при этом может указывать на основной домен.
+- Добавлен пример `appsettings.example.json` с настройками `PrimaryDomain`, `Domains`, `Scheme`, `CanonicalMode`, `OpenGraphImage` и `SiteName`.
+- Обновлена документация по сборке и деплою: описана настройка nginx для нескольких доменов и передача forwarded host headers.
+
 ## 31.07.2026
 
 ### Главный сервер Lizerium Server

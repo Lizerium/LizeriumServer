@@ -12,6 +12,16 @@
 
 # Updates
 
+## 01.08.2026
+
+### Lizerium Server
+
+- Added multi-domain SEO configuration through `SeoDomains` for running one server on `lizerium.com` and `lizup.ru` without duplicating the project.
+- Added dynamic canonical, OpenGraph, VK preview and JSON-LD URL generation based on the configured SEO domain mode.
+- Added host-aware `/sitemap.xml` and `/robots.txt` generation: each domain now receives sitemap and robots links for its own host while page canonical URLs can still point to the primary domain.
+- Added `appsettings.example.json` documentation for `PrimaryDomain`, `Domains`, `Scheme`, `CanonicalMode`, `OpenGraphImage` and `SiteName`.
+- Updated deployment and build documentation with nginx proxy requirements, including forwarded host headers for multi-domain hosting.
+
 ## 31.07.2026
 
 ### Lizerium Server

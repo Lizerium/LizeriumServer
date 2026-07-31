@@ -71,15 +71,11 @@
 
 `LizeriumServer` can serve several public domains from the same deployed project. The application reads the request host and uses `SeoDomains` to generate domain-aware SEO metadata.
 
-The following values are generated from the current domain:
+The following values are generated from `SeoDomains`:
 
-- canonical URL
-- OpenGraph URL
-- OpenGraph and VK preview image URL
-- JSON-LD breadcrumb URLs
-- `/robots.txt`
-- `/sitemap.xml`
-- CORS origins for configured public domains
+- canonical URL, OpenGraph URL, OpenGraph/VK preview image URL, and JSON-LD breadcrumb URLs follow `CanonicalMode`
+- `/robots.txt` and `/sitemap.xml` always use the current request host
+- CORS origins are generated for configured public domains
 
 ### `SeoDomains` options
 
@@ -100,8 +96,8 @@ The following values are generated from the current domain:
 - `Domains` — all public domains that are allowed to represent the same server.
 - `Scheme` — public scheme used for generated absolute URLs, normally `https`.
 - `CanonicalMode` — canonical URL strategy:
-  - `RequestHost` means every configured domain generates SEO URLs for itself. Use this when both `lizerium.com` and `lizup.ru` should be indexable as separate public domains.
-  - `PrimaryDomain` means every domain points canonical URLs to `PrimaryDomain`. Use this when SEO authority must be concentrated on one domain.
+  - `RequestHost` means every configured domain generates page SEO URLs for itself. Use this when both `lizerium.com` and `lizup.ru` should be indexable as separate public domains.
+  - `PrimaryDomain` means every domain points page canonical/OpenGraph URLs to `PrimaryDomain`. Use this when SEO authority must be concentrated on one domain.
 - `OpenGraphImage` — image path used for social previews. Relative paths are expanded to the current public domain.
 - `SiteName` — site name used in social metadata.
 
@@ -144,7 +140,7 @@ curl https://lizup.ru/robots.txt
 curl https://lizup.ru/sitemap.xml
 ```
 
-When `CanonicalMode` is `RequestHost`, `lizerium.com/sitemap.xml` must contain `https://lizerium.com/...`, and `lizup.ru/sitemap.xml` must contain `https://lizup.ru/...`.
+`lizerium.com/sitemap.xml` must contain `https://lizerium.com/...`, and `lizup.ru/sitemap.xml` must contain `https://lizup.ru/...`. This is true even when `CanonicalMode` is `PrimaryDomain`; in that mode the HTML pages can still point canonical/OpenGraph metadata to `lizerium.com`.
 
 > [!IMPORTANT]
 > Production config files are intentionally not deployed by the helper scripts. `appsettings*.json`, `downloads.json`, `dev_mode.json`, databases, logs, and content directories are excluded from the deploy package. Update the real server config before restarting the service.

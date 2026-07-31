@@ -197,7 +197,7 @@ app.Use(async (context, next) =>
     {
         var seoDomains = context.RequestServices.GetRequiredService<IOptions<SeoDomainsOptions>>().Value;
         var breadcrumbService = context.RequestServices.GetRequiredService<IBreadcrumbService>();
-        var baseUrl = seoDomains.GetBaseUrl(context.Request);
+        var baseUrl = seoDomains.GetRequestHostBaseUrl(context.Request);
 
         if (string.Equals(path, "/sitemap.xml", StringComparison.OrdinalIgnoreCase))
         {

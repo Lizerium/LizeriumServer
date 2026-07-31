@@ -21,17 +21,24 @@ namespace LizeriumServer.Options
 
         public string GetBaseUrl(HttpRequest request)
         {
-            var requestHost = request.Host.Host;
+            var requestHost = GetPublicHost(request);
             if (IsLocalHost(requestHost))
                 return $"{request.Scheme}://{request.Host}";
 
-            var configuredDomain = Domains.FirstOrDefault(domain =>
-                string.Equals(NormalizeHost(domain), NormalizeHost(requestHost), StringComparison.OrdinalIgnoreCase));
-
             var domain = string.Equals(CanonicalMode, "PrimaryDomain", StringComparison.OrdinalIgnoreCase)
                 ? PrimaryDomain
-                : configuredDomain ?? PrimaryDomain;
+                : GetConfiguredDomain(requestHost) ?? PrimaryDomain;
 
+            return $"{Scheme}://{NormalizeHost(domain)}";
+        }
+
+        public string GetRequestHostBaseUrl(HttpRequest request)
+        {
+            var requestHost = GetPublicHost(request);
+            if (IsLocalHost(requestHost))
+                return $"{request.Scheme}://{request.Host}";
+
+            var domain = GetConfiguredDomain(requestHost) ?? PrimaryDomain;
             return $"{Scheme}://{NormalizeHost(domain)}";
         }
 
@@ -43,6 +50,23 @@ namespace LizeriumServer.Options
 
         private static string NormalizeHost(string host)
             => (host ?? string.Empty).Trim().TrimEnd('/').ToLowerInvariant();
+
+        private string GetConfiguredDomain(string host)
+            => Domains.FirstOrDefault(domain =>
+                string.Equals(NormalizeHost(domain), NormalizeHost(host), StringComparison.OrdinalIgnoreCase));
+
+        private static string GetPublicHost(HttpRequest request)
+        {
+            var forwardedHost = request.Headers["X-Forwarded-Host"].FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(forwardedHost))
+                return forwardedHost.Split(',')[0].Trim();
+
+            var originalHost = request.Headers["X-Original-Host"].FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(originalHost))
+                return originalHost.Split(',')[0].Trim();
+
+            return request.Host.Host;
+        }
 
         private static string NormalizePath(string path)
         {
