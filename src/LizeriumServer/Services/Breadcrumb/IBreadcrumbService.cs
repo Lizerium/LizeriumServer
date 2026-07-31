@@ -17,6 +17,8 @@ namespace LizeriumServer.Services.Breadcrumb
     public interface IBreadcrumbService
     {
         Task BuildSiteMapAsync();
+        string GetSitemapXml(string baseUrl);
+        string GetRobotsTxt(string baseUrl);
         List<BreadcrumbItem> GetBreadcrumbs(RouteData routeData, IViewLocalizer localizer, ViewDataDictionary viewData);
     }
 }

@@ -1,6 +1,7 @@
 ﻿@inject IBreadcrumbService BreadcrumbService
 @inject IViewLocalizer Localizer
 @inject LizeriumServer.Helpers.ServerVersionProvider ServerVersionProvider
+@inject Microsoft.Extensions.Options.IOptions<LizeriumServer.Options.SeoDomainsOptions> SeoDomainsOptions
 @{
 	var breadcrumbs = BreadcrumbService.GetBreadcrumbs(ViewContext.RouteData, Localizer, ViewData);
 }
@@ -11,8 +12,11 @@
 @using LizeriumServer.Services.Breadcrumb
 @using LizeriumServer.Services.Breadcrumb.Implements
 @{
+	var seoDomains = SeoDomainsOptions.Value;
+	var currentBaseUrl = seoDomains.GetBaseUrl(Context.Request);
 	// Ссылка на текущую страницу
-	var currentUrl = Context.Request.Scheme + "://" + Context.Request.Host + Context.Request.Path;
+	var currentUrl = currentBaseUrl + Context.Request.Path;
+	var openGraphImageUrl = seoDomains.GetOpenGraphImageUrl(Context.Request);
 
 	// анонимный объект с "безопасными" именами
 	var jsonLdObj = new
@@ -24,7 +28,7 @@
 			type = "ListItem",
 			position = i + 1,
 			name = b.Name,
-			item = Context.Request.Scheme + "://" + Context.Request.Host + b.Url
+			item = currentBaseUrl + b.Url
 		}).ToList()
 	};
 
@@ -55,10 +59,11 @@
 	<meta property="og:description" content="@(ViewData["Description"] ?? SharedLocalizer["Shared_Desc2_Site"])" />
 	<meta property="og:url" content="@currentUrl" />
     <meta property="og:type" content="website">
-    <meta property="og:image" content="https://lizup.ru/img/Main.png">
-    <meta property="og:site_name" content="Lizerium">
+    <meta property="og:image" content="@openGraphImageUrl">
+    <meta property="og:site_name" content="@seoDomains.SiteName">
     <meta property="og:locale" content="ru_RU">
-    <meta property="vk:image" content="https://lizup.ru/img/Main.png">
+    <meta property="vk:image" content="@openGraphImageUrl">
+    <link rel="canonical" href="@currentUrl" />
 
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap&subset=cyrillic" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="~/LOGO.ico" />

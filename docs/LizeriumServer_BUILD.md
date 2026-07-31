@@ -27,6 +27,8 @@
 
    6. `GoogleReCaptcha` — keys for Google reCAPTCHA integration
 
+   7. `SeoDomains` — public domains and SEO generation mode for one server instance
+
 ---
 
 ### Example `appsettings.json`
@@ -51,9 +53,101 @@
 		"LauncherRoot": "full_path_to_LAUNCHER_RELEASE",
 		"KnowledgeBase": "full_path_to_KnowledgeBase",
 		"GameServerConfigs": "full_path_to_GameServerConfigs"
+	},
+	"SeoDomains": {
+		"PrimaryDomain": "lizerium.com",
+		"Domains": ["lizerium.com", "lizup.ru"],
+		"Scheme": "https",
+		"CanonicalMode": "RequestHost",
+		"OpenGraphImage": "/img/Main.png",
+		"SiteName": "Lizerium"
 	}
 }
 ```
+
+---
+
+## Multi-domain SEO
+
+`LizeriumServer` can serve several public domains from the same deployed project. The application reads the request host and uses `SeoDomains` to generate domain-aware SEO metadata.
+
+The following values are generated from the current domain:
+
+- canonical URL
+- OpenGraph URL
+- OpenGraph and VK preview image URL
+- JSON-LD breadcrumb URLs
+- `/robots.txt`
+- `/sitemap.xml`
+- CORS origins for configured public domains
+
+### `SeoDomains` options
+
+```json
+{
+	"SeoDomains": {
+		"PrimaryDomain": "lizerium.com",
+		"Domains": ["lizerium.com", "lizup.ru"],
+		"Scheme": "https",
+		"CanonicalMode": "RequestHost",
+		"OpenGraphImage": "/img/Main.png",
+		"SiteName": "Lizerium"
+	}
+}
+```
+
+- `PrimaryDomain` — the main domain used as a fallback and as the canonical domain when `CanonicalMode` is `PrimaryDomain`.
+- `Domains` — all public domains that are allowed to represent the same server.
+- `Scheme` — public scheme used for generated absolute URLs, normally `https`.
+- `CanonicalMode` — canonical URL strategy:
+  - `RequestHost` means every configured domain generates SEO URLs for itself. Use this when both `lizerium.com` and `lizup.ru` should be indexable as separate public domains.
+  - `PrimaryDomain` means every domain points canonical URLs to `PrimaryDomain`. Use this when SEO authority must be concentrated on one domain.
+- `OpenGraphImage` — image path used for social previews. Relative paths are expanded to the current public domain.
+- `SiteName` — site name used in social metadata.
+
+### Recommended domain setup
+
+One application instance is enough. Do not duplicate the project for each domain.
+
+1. Point DNS records for every domain to the same server.
+2. Add all domains to nginx, for example `lizerium.com`, `www.lizerium.com`, and `lizup.ru`.
+3. Proxy all domains to the same ASP.NET Core process.
+4. Issue HTTPS certificates for every public domain.
+5. Keep `UseForwardedHeaders` enabled so the application receives the correct external scheme and host from the reverse proxy.
+6. Update the real production `appsettings.json` with `SeoDomains`.
+
+Example nginx idea:
+
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name lizerium.com www.lizerium.com lizup.ru;
+
+    location / {
+        proxy_pass http://127.0.0.1:7176;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Host $host;
+    }
+}
+```
+
+After deployment, verify both domains separately:
+
+```bash
+curl -I https://lizerium.com/
+curl https://lizerium.com/robots.txt
+curl https://lizerium.com/sitemap.xml
+curl -I https://lizup.ru/
+curl https://lizup.ru/robots.txt
+curl https://lizup.ru/sitemap.xml
+```
+
+When `CanonicalMode` is `RequestHost`, `lizerium.com/sitemap.xml` must contain `https://lizerium.com/...`, and `lizup.ru/sitemap.xml` must contain `https://lizup.ru/...`.
+
+> [!IMPORTANT]
+> Production config files are intentionally not deployed by the helper scripts. `appsettings*.json`, `downloads.json`, `dev_mode.json`, databases, logs, and content directories are excluded from the deploy package. Update the real server config before restarting the service.
 
 ---
 

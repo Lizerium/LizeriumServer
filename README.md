@@ -94,6 +94,7 @@ The project targets scenarios where you need not just a website, but a **central
 - Project landing page
 - Informational and service pages
 - News and publication system
+- Domain-aware SEO for multiple public domains
 - User request display
 - Freelancer (2003) documentation
 - Crafting recipes visualization
@@ -123,6 +124,7 @@ The project targets scenarios where you need not just a website, but a **central
 - Database abstraction layer
 - Utility modules
 - Reverse proxy / trusted proxy support
+- Dynamic `robots.txt`, `sitemap.xml`, canonical and OpenGraph URLs from configuration
 - DoS protection
 - Support for external directories (mods, launcher, game data)
 

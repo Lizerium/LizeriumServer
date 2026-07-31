@@ -1,5 +1,6 @@
 ﻿@model WikiPageViewModel
 @inject IViewLocalizer Localizer
+@inject Microsoft.Extensions.Options.IOptions<LizeriumServer.Options.SeoDomainsOptions> SeoDomainsOptions
 @using LizeriumServer.FormatsData.AppWikiData
 @using Microsoft.AspNetCore.Html
 @section PageStyle {
@@ -9,7 +10,9 @@
 	Layout = "_Layout";
 	ViewData["Title"] = Model.Title;
 	ViewData["Description"] = string.IsNullOrEmpty(Model.Description) ? SharedLocalizer["Shared_Desc_Site"] : Model.Description;
-	var currentUrl = Model.Url;
+	var seoDomains = SeoDomainsOptions.Value;
+	var currentUrl = seoDomains.GetBaseUrl(Context.Request) + Context.Request.Path;
+	var openGraphImageUrl = seoDomains.GetOpenGraphImageUrl(Context.Request);
 	var Culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
 }
 
@@ -25,8 +28,8 @@
 	<meta property="og:description" content="@(string.IsNullOrEmpty(Model.Description) ? SharedLocalizer["Shared_Desc_Site"] : Model.Description)" />
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="@currentUrl" />
-	<meta property="og:image" content="https://lizup.ru/img/Main.png" />
-	<meta property="og:site_name" content="Lizerium" />
+	<meta property="og:image" content="@openGraphImageUrl" />
+	<meta property="og:site_name" content="@seoDomains.SiteName" />
 	<meta property="og:locale" content="ru_RU" />
 </head>
 

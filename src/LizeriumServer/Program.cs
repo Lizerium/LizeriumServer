@@ -51,6 +51,8 @@ builder.Services.AddSingleton<ServerVersionProvider>();
 
 builder.Services.Configure<StoragePathsOptions>(
     builder.Configuration.GetSection("StoragePaths"));
+builder.Services.Configure<SeoDomainsOptions>(
+    builder.Configuration.GetSection("SeoDomains"));
 
 //конфигурация политики кук
 builder.Services.Configure<CookiePolicyOptions>(options =>
@@ -187,6 +189,31 @@ else
     });
     app.UseDeveloperExceptionPage(); //используем страницу исключений
 }
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.Value;
+    if (string.Equals(path, "/sitemap.xml", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(path, "/robots.txt", StringComparison.OrdinalIgnoreCase))
+    {
+        var seoDomains = context.RequestServices.GetRequiredService<IOptions<SeoDomainsOptions>>().Value;
+        var breadcrumbService = context.RequestServices.GetRequiredService<IBreadcrumbService>();
+        var baseUrl = seoDomains.GetBaseUrl(context.Request);
+
+        if (string.Equals(path, "/sitemap.xml", StringComparison.OrdinalIgnoreCase))
+        {
+            context.Response.ContentType = "application/xml; charset=utf-8";
+            await context.Response.WriteAsync(breadcrumbService.GetSitemapXml(baseUrl));
+            return;
+        }
+
+        context.Response.ContentType = "text/plain; charset=utf-8";
+        await context.Response.WriteAsync(breadcrumbService.GetRobotsTxt(baseUrl));
+        return;
+    }
+
+    await next();
+});
+
 //app.UseHttpsRedirection();
 app.UseStaticFiles();
 
@@ -223,7 +250,15 @@ app.UseMiddleware<DevModeMiddleware>();
 //используем CORS с любых хостов
 app.UseCors(options =>
 {
-    options.WithOrigins("https://lizup.ru", "https://localhost:7176", "https://0.0.0.0:7176")
+    var seoDomains = app.Services.GetRequiredService<IOptions<SeoDomainsOptions>>().Value;
+    var publicOrigins = seoDomains.Domains
+        .Where(domain => !string.IsNullOrWhiteSpace(domain))
+        .Select(domain => $"{seoDomains.Scheme}://{domain.Trim().TrimEnd('/')}");
+
+    options.WithOrigins(publicOrigins
+            .Concat(new[] { "https://localhost:7176", "https://0.0.0.0:7176" })
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray())
         .AllowAnyMethod()
         .AllowAnyHeader()
         .AllowCredentials();

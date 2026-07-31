@@ -51,6 +51,7 @@ namespace LizeriumServer.Services.Breadcrumb.Implements
         private IServiceProvider _serviceProvider { get; set; }
         private readonly IWebHostEnvironment _env;
         private readonly StoragePathsOptions _storagePaths;
+        private readonly SeoDomainsOptions _seoDomains;
 
         // Дерево сайта: URL -> Node
         private readonly Dictionary<string, BreadcrumbNode> _siteMap;
@@ -58,13 +59,15 @@ namespace LizeriumServer.Services.Breadcrumb.Implements
         public BreadcrumbService(LinkGenerator linkGenerator, 
             IServiceProvider serviceProvider, 
             IWebHostEnvironment env,
-            IOptions<StoragePathsOptions> storagePathsOptions)
+            IOptions<StoragePathsOptions> storagePathsOptions,
+            IOptions<SeoDomainsOptions> seoDomainsOptions)
         {
             _linkGenerator = linkGenerator;
             _siteMap = new Dictionary<string, BreadcrumbNode>();
             _serviceProvider = serviceProvider;
             _env = env;
             _storagePaths = storagePathsOptions.Value;
+            _seoDomains = seoDomainsOptions.Value;
         }
 
         /// <summary>
@@ -167,6 +170,12 @@ namespace LizeriumServer.Services.Breadcrumb.Implements
         private void GenerateSitemapXml(IEnumerable<BreadcrumbNode> nodes)
         {
             var sitemapPath = Path.Combine(_env.WebRootPath, "sitemap.xml");
+            File.WriteAllText(sitemapPath, GetSitemapXml(_seoDomains.GetPrimaryBaseUrl()), Encoding.UTF8);
+            GenerateRobotsTxt();
+        }
+
+        public string GetSitemapXml(string baseUrl)
+        {
             XNamespace ns = "http://www.sitemaps.org/schemas/sitemap/0.9";
 
             var xmlDoc = new XDocument(
@@ -174,6 +183,7 @@ namespace LizeriumServer.Services.Breadcrumb.Implements
                 new XElement(ns + "urlset")
             );
 
+            var normalizedBaseUrl = (baseUrl ?? _seoDomains.GetPrimaryBaseUrl()).TrimEnd('/');
             var seenUrls = new HashSet<string>();
 
             void AddNodeRecursive(BreadcrumbNode node)
@@ -181,7 +191,7 @@ namespace LizeriumServer.Services.Breadcrumb.Implements
                 if (!seenUrls.Add(node.Url)) return;
 
                 xmlDoc.Root.Add(new XElement(ns + "url",
-                    new XElement(ns + "loc", $"https://lizup.ru{node.Url}"),
+                    new XElement(ns + "loc", $"{normalizedBaseUrl}{node.Url}"),
                     new XElement(ns + "lastmod", DateTime.UtcNow.ToString("yyyy-MM-dd")),
                     new XElement(ns + "changefreq", "weekly"),
                     new XElement(ns + "priority", node.Url == "/" ? "1.0" : "0.8")
@@ -191,26 +201,29 @@ namespace LizeriumServer.Services.Breadcrumb.Implements
                     AddNodeRecursive(child);
             }
 
-            foreach (var rootNode in nodes.Where(n => n.Parent == null))
+            foreach (var rootNode in _siteMap.Values.Where(n => n.Parent == null))
                 AddNodeRecursive(rootNode);
 
-            xmlDoc.Save(sitemapPath);
-            GenerateRobotsTxt();
+            return xmlDoc.ToString(SaveOptions.DisableFormatting);
         }
 
         private void GenerateRobotsTxt()
         {
             var robotsPath = Path.Combine(_env.WebRootPath, "robots.txt");
+            File.WriteAllText(robotsPath, GetRobotsTxt(_seoDomains.GetPrimaryBaseUrl()), Encoding.UTF8);
+        }
 
-            var content = new StringBuilder()
+        public string GetRobotsTxt(string baseUrl)
+        {
+            var normalizedBaseUrl = (baseUrl ?? _seoDomains.GetPrimaryBaseUrl()).TrimEnd('/');
+
+            return new StringBuilder()
                 .AppendLine("User-agent: *")
                 .AppendLine("Disallow: /error")
                 .AppendLine("Allow: /")
                 .AppendLine()
-                .AppendLine("Sitemap: https://lizup.ru/sitemap.xml")
+                .AppendLine($"Sitemap: {normalizedBaseUrl}/sitemap.xml")
                 .ToString();
-
-            File.WriteAllText(robotsPath, content, Encoding.UTF8);
         }
 
 
