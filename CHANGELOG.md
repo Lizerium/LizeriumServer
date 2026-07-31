@@ -12,6 +12,31 @@
 
 # Updates
 
+## 31.07.2026
+
+### Lizerium Server
+
+- Added a database-backed Lizerium Launcher news feed on `/Home/Launcher` with search, newest/oldest sorting, pagination and localized RU/EN content.
+- Added `launcher_news` storage support: automatic table creation, missing-column repair, initial seed news, published/admin queries, save/delete operations and public like counter updates.
+- Added the `LauncherNewsDataResponse` model with RU/EN titles and Markdown, YouTube/Rutube/VK links, cover image, gallery, product icon, news type, GitHub link, publication status, sort order and publication date.
+- Added a full news reader with Markdown rendering, image galleries, cover/product icons, GitHub links, public likes, localized share/copy flow and navigation controls.
+- Added Markdown media support for inline images and embedded videos through `@video(...)`, `@video-vertical(...)` and standalone YouTube/Rutube/VK links.
+- Added locale-aware video platform priority: Russian prefers Rutube/VK/YouTube, English prefers YouTube/VK/Rutube, with manual platform switching and blocked-platform messages.
+- Added RSS endpoints for launcher news: `/news/rss.xml` and `/rss/news.xml`.
+- Added integration/regression coverage for Markdown rendering, launcher scripts and news test data.
+- Updated launcher styles, mobile adaptation and localized resource strings for the new news experience.
+
+### Api Lizerium Server
+
+- Added a dedicated admin page for launcher news management with search and compact edit cards.
+- Added create/edit/delete/publish/sort controls for news posts, including RU/EN title, Markdown, news type, YouTube/Rutube/VK URLs, GitHub metadata and publication date.
+- Added separate upload flows for product icons, cover images, galleries and pasted Markdown images; uploaded files are validated as images and limited to 8 MB.
+- Added admin-side previews for product icons, covers, galleries and inline Markdown images, plus client-side paste/upload helpers in `news.js`.
+- Added `admin_access.json` and `AdminAccessGuard` for optional trusted-IP access control.
+- Added `AccessClosed` view for blocked admin access.
+- Added persistent data protection keys and extended admin sessions to 8 hours so long edit sessions do not expire immediately.
+- Added bot detection based on user agent and expanded dashboard monitoring with pagination, hourly activity and human/bot counters.
+
 ## 30.03.2025
 
 ### Lizerium Server
