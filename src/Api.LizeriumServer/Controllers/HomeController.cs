@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 30 июля 2026 07:10:07
- * Version: 1.0.126
+ * Last Updated: 31 июля 2026 16:48:21
+ * Version: 1.0.127
  */
 
 using System;
@@ -691,6 +691,7 @@ public class HomeController : Controller
     [Route("/news/save")]
     public async Task<IActionResult> SaveNews(
         [FromForm] LauncherNewsDataResponse news,
+        [FromForm] IFormFile iconFile,
         [FromForm] IFormFile imageFile,
         [FromForm] List<IFormFile> galleryFiles,
         [FromForm] string publishedAtLocal,
@@ -721,11 +722,12 @@ public class HomeController : Controller
                     ? Unauthorized(new { ok = false, message = "need authorization" })
                     : Unauthorized("need authorization");
 
-            HttpContext.Session.SetSession("admin", adminSession);
-            await HttpContext.Session.CommitAsync();
-
             if (removeImage)
                 news.ImageUrl = string.Empty;
+
+            var uploadedIconUrl = await SaveNewsImageAsync(iconFile);
+            if (!string.IsNullOrWhiteSpace(uploadedIconUrl))
+                news.IconUrl = uploadedIconUrl;
 
             var uploadedImageUrl = await SaveNewsImageAsync(imageFile);
             if (!string.IsNullOrWhiteSpace(uploadedImageUrl))
@@ -766,6 +768,7 @@ public class HomeController : Controller
                     news.NewsTypeRu,
                     news.NewsTypeEn,
                     news.IconUrl,
+                    IconPreviewUrl = GetNewsPreviewUrl(news.IconUrl),
                     news.LikeCount,
                     PreviewImageUrl = GetNewsPreviewUrl(news.ImageUrl),
                     news.IsPublished,
@@ -819,9 +822,6 @@ public class HomeController : Controller
                 return WantsJsonResponse()
                     ? Unauthorized(new { ok = false, message = "need authorization" })
                     : Unauthorized("need authorization");
-
-            HttpContext.Session.SetSession("admin", adminSession);
-            await HttpContext.Session.CommitAsync();
 
             if (!await appDb.DeleteLauncherNewsAsync(id))
             {
@@ -907,9 +907,6 @@ public class HomeController : Controller
             var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
             if (adminSession is not { IsAuth: true })
                 return Unauthorized(new { ok = false, message = "need authorization" });
-
-            HttpContext.Session.SetSession("admin", adminSession);
-            await HttpContext.Session.CommitAsync();
 
             var uploadedImageUrl = await SaveNewsImageAsync(imageFile);
             if (string.IsNullOrWhiteSpace(uploadedImageUrl))

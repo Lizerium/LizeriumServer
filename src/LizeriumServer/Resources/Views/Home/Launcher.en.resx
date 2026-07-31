@@ -155,6 +155,9 @@
 	<data name="Launcher_Share" xml:space="preserve">
 		<value>Share</value>
 	</data>
+	<data name="Launcher_ShareCopied" xml:space="preserve">
+		<value>Link copied</value>
+	</data>
 	<data name="Launcher_News_Navigation" xml:space="preserve">
 		<value>News navigation</value>
 	</data>
@@ -166,5 +169,11 @@
 	</data>
 	<data name="Launcher_Older" xml:space="preserve">
 		<value>Older</value>
+	</data>
+	<data name="Launcher_Video_Blocked_Template" xml:space="preserve">
+		<value>{0} did not load. Try another platform above the video.</value>
+	</data>
+	<data name="Launcher_Video_Generic_Platform" xml:space="preserve">
+		<value>Video</value>
 	</data>
 </root>

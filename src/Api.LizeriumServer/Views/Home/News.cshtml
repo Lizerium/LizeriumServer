@@ -106,12 +106,12 @@
                     <label>
                         <span>Markdown RU</span>
                         <textarea name="MarkdownRu" placeholder="Текст новости на русском"></textarea>
-                        <small class="news-field-note">Ctrl+V с картинкой загрузит ее и вставит Markdown прямо в текст.</small>
+                        <small class="news-field-note">Ctrl+V с картинкой загрузит ее и вставит Markdown прямо в текст. Видео в нужном месте: @@video(https://...) или ссылка YouTube/Rutube/VK отдельной строкой. Вертикальное видео: @@video-vertical(https://...).</small>
                     </label>
                     <label>
                         <span>Markdown EN</span>
                         <textarea name="MarkdownEn" placeholder="News text in English"></textarea>
-                        <small class="news-field-note">Ctrl+V with an image uploads it and inserts Markdown at the cursor.</small>
+                        <small class="news-field-note">Ctrl+V with an image uploads it and inserts Markdown at the cursor. Inline video: @@video(https://...) or a YouTube/Rutube/VK URL on its own line. Vertical video: @@video-vertical(https://...).</small>
                     </label>
                     <label>
                         <span>YouTube URL</span>
@@ -135,28 +135,34 @@
                         <input name="NewsTypeEn" placeholder="Major update" />
                     </label>
                     <label>
-                        <span>Product icon URL</span>
+                        <span>Иконка продукта / Product icon URL</span>
                         <input name="IconUrl" placeholder="/img/logo.png или /img/news/icon.webp" />
+                        <small class="news-field-note">Маленький логотип продукта для карточки и шапки новости. Можно вставить URL или загрузить файл ниже.</small>
+                    </label>
+                    <label class="news-image-upload news-icon-upload">
+                        <span>Загрузить иконку продукта</span>
+                        <input name="iconFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" />
+                        <small class="news-field-note">Отдельное поле для IconUrl. Не заменяет обложку и не добавляется в галерею.</small>
                     </label>
                     <label>
-                        <span>Image URL</span>
-                        <input name="ImageUrl" placeholder="/img/news/example.webp или https://..." />
-                        <small class="news-field-note">Можно вставить готовую ссылку или выбрать файл ниже. Если выбран файл, это поле заполнится локальным путем автоматически.</small>
+                        <span>Обложка карточки / Cover image URL</span>
+                        <input name="ImageUrl" placeholder="/img/news/cover.webp или https://..." />
+                        <small class="news-field-note">Главная картинка новости: миниатюра карточки и верх полного просмотра. Можно вставить URL или загрузить файл ниже.</small>
                     </label>
-                    <label class="news-image-upload">
-                        <span>Изображение</span>
+                    <label class="news-image-upload news-cover-upload">
+                        <span>Загрузить обложку</span>
                         <input name="imageFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" />
-                        <small class="news-field-note">JPG, PNG, WEBP или GIF до 8 MB. Сервер сохраняет файл как есть: WebP не создается автоматически.</small>
+                        <small class="news-field-note">JPG, PNG, WEBP или GIF до 8 MB. Это поле заполняет ImageUrl локальным путем.</small>
                     </label>
                     <label>
-                        <span>Image Gallery</span>
+                        <span>Галерея / Gallery images</span>
                         <textarea name="ImageGalleryJson" placeholder="/img/news/one.webp&#10;/img/news/two.webp"></textarea>
-                        <small class="news-field-note">Дополнительные картинки: можно JSON-массив или каждую ссылку с новой строки.</small>
+                        <small class="news-field-note">Дополнительные картинки для полного просмотра. Можно JSON-массив или каждую ссылку с новой строки.</small>
                     </label>
                     <label class="news-image-upload">
-                        <span>Gallery Upload</span>
+                        <span>Загрузить картинки галереи</span>
                         <input name="galleryFiles" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple />
-                        <small class="news-field-note">Можно выбрать сразу несколько картинок. Первая станет обложкой, если Image URL пустой.</small>
+                        <small class="news-field-note">Несколько файлов добавятся только в ImageGalleryJson. Обложку и иконку это поле не меняет.</small>
                     </label>
                     <label>
                         <span>GitHub проект</span>
@@ -222,12 +228,12 @@
                                 <label>
                                     <span>Markdown RU</span>
                                     <textarea name="MarkdownRu">@news.MarkdownRu</textarea>
-                                    <small class="news-field-note">Ctrl+V с картинкой загрузит ее и вставит Markdown прямо в текст.</small>
+                                    <small class="news-field-note">Ctrl+V с картинкой загрузит ее и вставит Markdown прямо в текст. Видео в нужном месте: @@video(https://...) или ссылка YouTube/Rutube/VK отдельной строкой. Вертикальное видео: @@video-vertical(https://...).</small>
                                 </label>
                                 <label>
                                     <span>Markdown EN</span>
                                     <textarea name="MarkdownEn">@news.MarkdownEn</textarea>
-                                    <small class="news-field-note">Ctrl+V with an image uploads it and inserts Markdown at the cursor.</small>
+                                    <small class="news-field-note">Ctrl+V with an image uploads it and inserts Markdown at the cursor. Inline video: @@video(https://...) or a YouTube/Rutube/VK URL on its own line. Vertical video: @@video-vertical(https://...).</small>
                                 </label>
                                 <label>
                                     <span>YouTube URL</span>
@@ -251,37 +257,50 @@
                                     <input name="NewsTypeEn" value="@news.NewsTypeEn" placeholder="Major update" />
                                 </label>
                                 <label>
-                                    <span>Product icon URL</span>
+                                    <span>Иконка продукта / Product icon URL</span>
                                     <input name="IconUrl" value="@news.IconUrl" placeholder="/img/logo.png или /img/news/icon.webp" />
+                                    <small class="news-field-note">Маленький логотип продукта для карточки и шапки новости. Можно вставить URL или заменить файлом ниже.</small>
+                                </label>
+                                <label class="news-image-upload news-icon-upload">
+                                    <span>Загрузить новую иконку</span>
+                                    <input name="iconFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" />
+                                    <small class="news-field-note">Заменяет только IconUrl. Обложку и галерею не трогает.</small>
                                 </label>
                                 <label>
-                                    <span>Image URL</span>
+                                    <span>Обложка карточки / Cover image URL</span>
                                     <input name="ImageUrl" value="@news.ImageUrl" />
-                                    <small class="news-field-note">Можно оставить текущую ссылку или заменить файлом ниже.</small>
+                                    <small class="news-field-note">Главная картинка новости. Можно оставить текущий URL или заменить файлом ниже.</small>
                                 </label>
-                                <label class="news-image-upload">
-                                    <span>Изображение</span>
+                                <label class="news-image-upload news-cover-upload">
+                                    <span>Загрузить новую обложку</span>
                                     <input name="imageFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" />
-                                    <small class="news-field-note">JPG, PNG, WEBP или GIF до 8 MB. При выборе файла Image URL заменится локальным путем.</small>
+                                    <small class="news-field-note">Заменяет только ImageUrl. Иконку продукта и галерею не трогает.</small>
                                 </label>
                                 <label class="checkbox-field">
                                     <input name="removeImage" type="checkbox" value="true" />
                                     <span>Удалить текущую обложку</span>
                                 </label>
                                 <label>
-                                    <span>Image Gallery</span>
+                                    <span>Галерея / Gallery images</span>
                                     <textarea name="ImageGalleryJson">@news.ImageGalleryJson</textarea>
-                                    <small class="news-field-note">JSON-массив или ссылки с новой строки. Новые файлы ниже добавятся в конец галереи.</small>
+                                    <small class="news-field-note">Дополнительные картинки для полного просмотра. Новые файлы ниже добавятся в конец галереи.</small>
                                 </label>
                                 <label class="news-image-upload">
-                                    <span>Gallery Upload</span>
+                                    <span>Загрузить картинки галереи</span>
                                     <input name="galleryFiles" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple />
-                                    <small class="news-field-note">Можно добавить несколько новых картинок к этой новости.</small>
+                                    <small class="news-field-note">Добавляет несколько новых картинок к этой новости, не меняя обложку.</small>
                                 </label>
+                                @if (!string.IsNullOrWhiteSpace(news.IconUrl))
+                                {
+                                    <div class="news-icon-preview">
+                                        <span>Иконка продукта</span>
+                                        <img src="@GetNewsPreviewUrl(news.IconUrl)" alt="" loading="lazy" onerror="this.closest('.news-icon-preview')?.classList.add('broken');" />
+                                    </div>
+                                }
                                 @if (!string.IsNullOrWhiteSpace(news.ImageUrl))
                                 {
                                     <div class="news-image-preview">
-                                        <span>Текущая обложка</span>
+                                        <span>Обложка карточки</span>
                                         <img src="@GetNewsPreviewUrl(news.ImageUrl)" alt="" loading="lazy" onerror="this.closest('.news-image-preview')?.classList.add('broken');" />
                                     </div>
                                 }

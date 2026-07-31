@@ -1,7 +1,7 @@
 ﻿@model MainModel
 @{
     ViewData["Title"] = @"Кабинет Lizerium Server API";
-    var maxHourlyVisits = Math.Max(1, Model.MonitorHourlyData?.Max(item => item.Visits) ?? 1);
+    var maxHourlyVisits = Math.Max(1, Model.MonitorHourlyData?.Select(item => item.Visits).DefaultIfEmpty(0).Max() ?? 1);
     var previousPage = Math.Max(1, Model.CurrentPage - 1);
     var nextPage = Math.Min(Model.TotalPages, Model.CurrentPage + 1);
 }

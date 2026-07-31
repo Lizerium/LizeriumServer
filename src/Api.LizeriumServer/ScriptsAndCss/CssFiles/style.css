@@ -2417,6 +2417,7 @@ button.accept-policy {
     text-transform: none;
 }
 
+.news-icon-preview,
 .news-image-preview {
     display: grid;
     gap: 8px;
@@ -2424,6 +2425,20 @@ button.accept-policy {
     font-size: 12px;
     font-weight: 800;
     text-transform: uppercase;
+}
+
+.news-icon-preview {
+    align-content: start;
+}
+
+.news-icon-preview img {
+    width: 86px;
+    aspect-ratio: 1;
+    object-fit: contain;
+    padding: 10px;
+    border: 1px solid rgba(51, 197, 224, 0.28);
+    border-radius: 6px;
+    background: #0b1320;
 }
 
 .news-image-preview img {
@@ -2435,6 +2450,7 @@ button.accept-policy {
     background: #0b1320;
 }
 
+.news-icon-preview.broken,
 .news-image-preview.broken {
     display: none;
 }

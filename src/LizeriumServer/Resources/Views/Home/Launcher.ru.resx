@@ -149,6 +149,9 @@
 	<data name="Launcher_Share" xml:space="preserve">
 		<value>Поделиться</value>
 	</data>
+	<data name="Launcher_ShareCopied" xml:space="preserve">
+		<value>Ссылка скопирована</value>
+	</data>
 	<data name="Launcher_News_Navigation" xml:space="preserve">
 		<value>Навигация новости</value>
 	</data>
@@ -160,5 +163,11 @@
 	</data>
 	<data name="Launcher_Older" xml:space="preserve">
 		<value>Старее</value>
+	</data>
+	<data name="Launcher_Video_Blocked_Template" xml:space="preserve">
+		<value>{0} не загрузился. Попробуйте другую площадку над видео.</value>
+	</data>
+	<data name="Launcher_Video_Generic_Platform" xml:space="preserve">
+		<value>Видео</value>
 	</data>
 </root>

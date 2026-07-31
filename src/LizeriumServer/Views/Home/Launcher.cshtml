@@ -19,10 +19,13 @@
     var likeLabel = Localizer["Launcher_Like"].Value;
     var readFullLabel = Localizer["Launcher_Read_Full"].Value;
     var shareLabel = Localizer["Launcher_Share"].Value;
+    var shareCopiedLabel = Localizer["Launcher_ShareCopied"].Value;
     var newsNavigationLabel = Localizer["Launcher_News_Navigation"].Value;
     var closeLabel = Localizer["Launcher_Close"].Value;
     var newerLabel = Localizer["Launcher_Newer"].Value;
     var olderLabel = Localizer["Launcher_Older"].Value;
+    var videoBlockedTemplate = Localizer["Launcher_Video_Blocked_Template"].Value;
+    var genericVideoPlatformLabel = Localizer["Launcher_Video_Generic_Platform"].Value;
 }
 @functions {
     private sealed class NewsVideoPlatform
@@ -32,6 +35,7 @@
         public string IconUrl { get; init; } = string.Empty;
         public string Url { get; init; } = string.Empty;
         public string EmbedUrl { get; init; } = string.Empty;
+        public string PosterUrl { get; init; } = string.Empty;
     }
 
     private static string PickText(string primary, string fallback)
@@ -44,8 +48,17 @@
         if (string.IsNullOrWhiteSpace(url))
             return string.Empty;
 
-        var match = Regex.Match(url, @"(?:youtube\.com/watch\?v=|youtube\.com/embed/|youtu\.be/)([A-Za-z0-9_-]{6,})", RegexOptions.IgnoreCase);
+        var match = Regex.Match(url, @"(?:youtube\.com/watch\?v=|youtube\.com/embed/|youtube\.com/shorts/|youtu\.be/)([A-Za-z0-9_-]{6,})", RegexOptions.IgnoreCase);
         return match.Success ? $"https://www.youtube.com/embed/{match.Groups[1].Value}" : string.Empty;
+    }
+
+    private static string BuildYoutubePosterUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            return string.Empty;
+
+        var match = Regex.Match(url, @"(?:youtube\.com/watch\?v=|youtube\.com/embed/|youtube\.com/shorts/|youtu\.be/)([A-Za-z0-9_-]{6,})", RegexOptions.IgnoreCase);
+        return match.Success ? $"https://img.youtube.com/vi/{match.Groups[1].Value}/hqdefault.jpg" : string.Empty;
     }
 
     private static string BuildRutubeEmbedUrl(string url)
@@ -55,6 +68,15 @@
 
         var match = Regex.Match(url, @"rutube\.ru/(?:video|play/embed)/([A-Za-z0-9]+)", RegexOptions.IgnoreCase);
         return match.Success ? $"https://rutube.ru/play/embed/{match.Groups[1].Value}/" : string.Empty;
+    }
+
+    private static string BuildRutubePosterUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            return string.Empty;
+
+        var match = Regex.Match(url, @"rutube\.ru/(?:video|play/embed)/([A-Za-z0-9]+)", RegexOptions.IgnoreCase);
+        return match.Success ? $"https://rutube.ru/api/video/{match.Groups[1].Value}/thumbnail/?redirect=1" : string.Empty;
     }
 
     private static string BuildVkEmbedUrl(string url)
@@ -89,7 +111,8 @@
                 Name = "YouTube",
                 IconUrl = "/img/social/youtube.webp",
                 Url = news.YoutubeUrl,
-                EmbedUrl = youtube
+                EmbedUrl = youtube,
+                PosterUrl = BuildYoutubePosterUrl(news.YoutubeUrl)
             });
         }
 
@@ -101,7 +124,8 @@
                 Name = "Rutube",
                 IconUrl = "/img/social/rutube.webp",
                 Url = news.RutubeUrl,
-                EmbedUrl = rutube
+                EmbedUrl = rutube,
+                PosterUrl = BuildRutubePosterUrl(news.RutubeUrl)
             });
         }
 
@@ -202,12 +226,51 @@
             .ToList();
     }
 
+    private static List<string> GetMarkdownVideos(string markdown)
+    {
+        if (string.IsNullOrWhiteSpace(markdown))
+            return new List<string>();
+
+        var videos = new List<string>();
+        var inFence = false;
+        foreach (var line in markdown.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n'))
+        {
+            var trimmed = line.Trim();
+            if (trimmed.StartsWith("```", StringComparison.Ordinal) || trimmed.StartsWith("~~~", StringComparison.Ordinal))
+            {
+                inFence = !inFence;
+                continue;
+            }
+
+            if (inFence)
+                continue;
+
+            var macro = Regex.Match(trimmed, @"^@video(?:-vertical)?\((?<url>https?://[^)\s]+)\)$", RegexOptions.IgnoreCase);
+            var url = macro.Success ? macro.Groups["url"].Value : trimmed;
+            if (!Regex.IsMatch(url, @"^https?://\S+$", RegexOptions.IgnoreCase))
+                continue;
+
+            var embedUrl = BuildYoutubeEmbedUrl(url);
+            if (string.IsNullOrWhiteSpace(embedUrl))
+                embedUrl = BuildRutubeEmbedUrl(url);
+            if (string.IsNullOrWhiteSpace(embedUrl))
+                embedUrl = BuildVkEmbedUrl(url);
+
+            if (!string.IsNullOrWhiteSpace(embedUrl))
+                videos.Add(url);
+        }
+
+        return videos.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
     private static string StripNewsText(string markdown)
     {
         if (string.IsNullOrWhiteSpace(markdown))
             return string.Empty;
 
         var text = Regex.Replace(markdown, @"!\[[^\]]*\]\([^)]+\)", string.Empty);
+        text = Regex.Replace(text, @"^\s*@video(?:-vertical)?\(https?://[^)\s]+\)\s*$", string.Empty, RegexOptions.IgnoreCase | RegexOptions.Multiline);
+        text = Regex.Replace(text, @"^\s*https?://(?:www\.)?(?:youtube\.com/watch\?v=|youtube\.com/embed/|youtube\.com/shorts/|youtu\.be/|rutube\.ru/(?:video|play/embed)/|vk\.com/(?:video|clip))\S+\s*$", string.Empty, RegexOptions.IgnoreCase | RegexOptions.Multiline);
         text = Regex.Replace(text, @"\[([^\]]+)\]\([^)]+\)", "$1");
         text = Regex.Replace(text, @"[#>*_`~\-]+", " ");
         return Regex.Replace(text, @"\s+", " ").Trim();
@@ -217,14 +280,16 @@
     {
         var text = StripNewsText(markdown);
         if (text.Length == 0)
-            return imageCount > 0 || hasVideo;
+            return imageCount > 0 || hasVideo || GetMarkdownVideos(markdown).Count > 0;
 
-        return text.Length > 260 || imageCount > 0 || GetMarkdownImages(markdown).Count > 0 || (hasVideo && text.Length > 80);
+        return text.Length > 260 || imageCount > 0 || GetMarkdownImages(markdown).Count > 0 || GetMarkdownVideos(markdown).Count > 0 || (hasVideo && text.Length > 80);
     }
 }
 @Html.ReCaptcha()
 <article>
-    <section class="news-section launcher-news-page">
+    <section class="news-section launcher-news-page"
+             data-news-video-blocked-template="@videoBlockedTemplate"
+             data-news-video-generic-platform="@genericVideoPlatformLabel">
         <div class="container-fluid">
             <header class="launcher-news-hero">
                 <span class="launcher-news-hero-icon" aria-hidden="true"></span>
@@ -266,17 +331,44 @@
                     {
                         cardImages.Add(galleryImages[0]);
                     }
+                    else
+                    {
+                        var inlineImages = GetMarkdownImages(markdown);
+                        if (inlineImages.Count > 0)
+                            cardImages.Add(inlineImages[0]);
+                        else
+                        {
+                            var videoPoster = videoPlatforms.FirstOrDefault(platform => !string.IsNullOrWhiteSpace(platform.PosterUrl))?.PosterUrl;
+                            if (!string.IsNullOrWhiteSpace(videoPoster))
+                                cardImages.Add(videoPoster);
+                        }
+                    }
                     var hasBody = !string.IsNullOrWhiteSpace(markdown);
                     var canReadFull = ShouldShowFullRead(markdown, galleryImages.Count, videoPlatforms.Count > 0);
                     var excerpt = StripNewsText(markdown);
-                    var hasCardMedia = !string.IsNullOrWhiteSpace(videoUrl) || cardImages.Count > 0;
-                    var hasInlineMedia = GetMarkdownImages(markdown).Count > 0;
+                    var hasCardMedia = cardImages.Count > 0 || videoPlatforms.Count > 0;
+                    var hasInlineMedia = GetMarkdownImages(markdown).Count > 0 || GetMarkdownVideos(markdown).Count > 0;
                     var date = news.PublishedAtUnix > 0
                         ? DateTimeOffset.FromUnixTimeSeconds(news.PublishedAtUnix).ToLocalTime().ToString("dd.MM.yyyy")
                         : string.Empty;
 
                     <article class="launcher-news-card @(hasBody ? "has-body" : "compact") @(hasCardMedia ? "has-media" : "no-media") @(hasInlineMedia ? "has-inline-media" : string.Empty)" id="news-card-@news.Id">
-                        @if (cardImages.Count > 0)
+                        @if (videoPlatforms.Count > 0)
+                        {
+                            <div class="launcher-news-media launcher-news-card-video" data-news-card-video>
+                                <iframe src="@videoUrl"
+                                        loading="lazy"
+                                        data-news-card-video-frame
+                                        data-news-reader-video-src="@videoUrl"
+                                        frameborder="0"
+                                        allow="clipboard-write; autoplay; encrypted-media; picture-in-picture"
+                                        allowfullscreen
+                                        webkitallowfullscreen
+                                        mozallowfullscreen>
+                                </iframe>
+                            </div>
+                        }
+                        else if (cardImages.Count > 0)
                         {
                             <div class="launcher-news-media image-block launcher-news-carousel" data-news-carousel>
                                 @for (var imageIndex = 0; imageIndex < cardImages.Count; imageIndex++)
@@ -286,10 +378,6 @@
                                             data-news-lightbox="@cardImages[imageIndex]"
                                             data-news-title="@title">
                                         <img src="@cardImages[imageIndex]" alt="@title" loading="lazy" onerror="var media=this.closest('.launcher-news-media');this.closest('.launcher-news-image-button')?.remove();if(media&&!media.querySelector('img'))media.remove();" />
-                                        @if (imageIndex == 0 && videoPlatforms.Count > 0)
-                                        {
-                                            <span class="launcher-news-card-play" aria-hidden="true">&#9654;</span>
-                                        }
                                     </button>
                                 }
                                 @if (cardImages.Count > 1)
@@ -298,19 +386,6 @@
                                     <button class="launcher-news-carousel-arrow next" type="button" data-news-carousel-next aria-label="@nextImageLabel">&rsaquo;</button>
                                     <div class="launcher-news-carousel-count"><span data-news-carousel-current>1</span>/@cardImages.Count</div>
                                 }
-                            </div>
-                        }
-                        else if (!string.IsNullOrWhiteSpace(videoUrl))
-                        {
-                            <div class="launcher-news-media video-block">
-                                <iframe data-news-card-video-src="@videoUrl"
-                                        frameborder="0"
-                                        loading="lazy"
-                                        allow="clipboard-write; autoplay; encrypted-media; picture-in-picture"
-                                        allowfullscreen
-                                        webkitallowfullscreen
-                                        mozallowfullscreen>
-                                </iframe>
                             </div>
                         }
                         <div class="launcher-news-content">
@@ -330,10 +405,14 @@
                                 <div class="launcher-news-video-links" aria-label="@videoPlatformsLabel">
                                     @foreach (var platform in videoPlatforms)
                                     {
-                                        <a href="@platform.Url" target="_blank" rel="noopener noreferrer" title="@platform.Name">
+                                        <button type="button"
+                                                class="@(platform.Key == videoPlatforms[0].Key ? "active" : string.Empty)"
+                                                data-news-card-video-platform="@platform.Key"
+                                                data-news-card-video-src="@platform.EmbedUrl"
+                                                title="@platform.Name">
                                             <img src="@platform.IconUrl" alt="@platform.Name" />
                                             <span>@platform.Name</span>
-                                        </a>
+                                        </button>
                                     }
                                 </div>
                             }
@@ -356,7 +435,8 @@
                                 {
                                     <button class="launcher-news-read-button"
                                             type="button"
-                                            data-news-reader-open="@news.Id">
+                                            data-news-reader-open="@news.Id"
+                                            data-news-reader-platform="@(videoPlatforms.FirstOrDefault()?.Key ?? string.Empty)">
                                         @readFullLabel
                                     </button>
                                 }
@@ -422,6 +502,21 @@
                                                 webkitallowfullscreen
                                                 mozallowfullscreen>
                                         </iframe>
+                                        @if (videoPlatforms.Count > 1)
+                                        {
+                                            <div class="launcher-news-video-links compact in-player" aria-label="@videoPlatformsLabel">
+                                                @foreach (var platform in videoPlatforms)
+                                                {
+                                                    <button type="button"
+                                                            class="@(platform.Key == videoPlatforms[0].Key ? "active" : string.Empty)"
+                                                            data-news-video-platform="@platform.Key"
+                                                            data-news-video-src="@platform.EmbedUrl"
+                                                            title="@platform.Name">
+                                                        <img src="@platform.IconUrl" alt="@platform.Name" />
+                                                    </button>
+                                                }
+                                            </div>
+                                        }
                                     </div>
                                 }
                             </header>
@@ -457,6 +552,21 @@
                                                 webkitallowfullscreen
                                                 mozallowfullscreen>
                                         </iframe>
+                                        @if (videoPlatforms.Count > 1)
+                                        {
+                                            <div class="launcher-news-video-links compact in-player" aria-label="@videoPlatformsLabel">
+                                                @foreach (var platform in videoPlatforms)
+                                                {
+                                                    <button type="button"
+                                                            class="@(platform.Key == videoPlatforms[0].Key ? "active" : string.Empty)"
+                                                            data-news-video-platform="@platform.Key"
+                                                            data-news-video-src="@platform.EmbedUrl"
+                                                            title="@platform.Name">
+                                                        <img src="@platform.IconUrl" alt="@platform.Name" />
+                                                    </button>
+                                                }
+                                            </div>
+                                        }
                                     </div>
                                 }
 
@@ -468,24 +578,13 @@
                                         <span class="launcher-news-like-icon" aria-hidden="true"></span>
                                         <strong data-news-like-count>@Math.Max(0, news.LikeCount)</strong>
                                     </button>
-                                    <button class="launcher-news-action-button" type="button" data-news-reader-share="@news.Id">
+                                    <button class="launcher-news-action-button"
+                                            type="button"
+                                            data-news-reader-share="@news.Id"
+                                            data-share-label="@shareLabel"
+                                            data-share-copied-label="@shareCopiedLabel">
                                         @shareLabel
                                     </button>
-                                    @if (videoPlatforms.Count > 0)
-                                    {
-                                <div class="launcher-news-video-links compact" aria-label="@videoPlatformsLabel">
-                                    @foreach (var platform in videoPlatforms)
-                                    {
-                                        <button type="button"
-                                                class="@(platform.Key == videoPlatforms[0].Key ? "active" : string.Empty)"
-                                                data-news-video-platform="@platform.Key"
-                                                data-news-video-src="@platform.EmbedUrl"
-                                                title="@platform.Name">
-                                                    <img src="@platform.IconUrl" alt="@platform.Name" />
-                                                </button>
-                                            }
-                                        </div>
-                                    }
                                     @if (!string.IsNullOrWhiteSpace(news.GithubUrl))
                                     {
                                         <a class="launcher-news-github" href="@news.GithubUrl" target="_blank" rel="noopener noreferrer">

@@ -44,7 +44,6 @@ export class Launcher {
     async start(): Promise<void> {
         this.bindNewsCarousels();
         this.bindNewsLightbox();
-        this.bindLazyNewsCards();
         this.bindNewsReader();
     }
 
@@ -121,36 +120,6 @@ export class Launcher {
         document.body.appendChild(lightbox);
     }
 
-    private bindLazyNewsCards(): void {
-        const hydrateCard = (card: Element): void => {
-            card.querySelectorAll<HTMLIFrameElement>("[data-news-card-video-src]").forEach((iframe) => {
-                if (!iframe.src)
-                    iframe.src = iframe.getAttribute("data-news-card-video-src") || "";
-            });
-        };
-
-        const cards = Array.from(document.querySelectorAll<HTMLElement>(".launcher-news-card"));
-        if (cards.length === 0)
-            return;
-
-        if (!("IntersectionObserver" in window)) {
-            cards.slice(0, 4).forEach(hydrateCard);
-            return;
-        }
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                if (!entry.isIntersecting)
-                    return;
-
-                hydrateCard(entry.target);
-                observer.unobserve(entry.target);
-            });
-        }, { rootMargin: "600px 0px" });
-
-        cards.forEach((card) => observer.observe(card));
-    }
-
     private bindNewsReader(): void {
         const reader = document.querySelector<HTMLElement>("[data-news-reader]");
         const feed = document.querySelector<HTMLElement>("[data-news-reader-feed]");
@@ -160,98 +129,156 @@ export class Launcher {
 
         const posts = Array.from(reader.querySelectorAll<HTMLElement>("[data-news-reader-post]"));
         let activeIndex = 0;
-        const visibleRadius = 1;
-        let scrollSyncTimeout = 0;
+        let renderedStart = 0;
+        let renderedEnd = -1;
+        let suppressScrollSyncUntil = 0;
 
-        const hydratePost = (post: HTMLElement): void => {
+        const releaseProgrammaticScroll = (): void => {
+            suppressScrollSyncUntil = 0;
+        };
+
+        const hydratePost = (post: HTMLElement, resetVideos: boolean = false, preferredPlatform: string = ""): void => {
             post.querySelectorAll<HTMLImageElement>("[data-news-reader-image-src]").forEach((image) => {
                 if (!image.src)
                     image.src = image.getAttribute("data-news-reader-image-src") || "";
             });
 
             post.querySelectorAll<HTMLElement>("[data-news-video-player]").forEach((player) => {
+                if (resetVideos)
+                    player.dataset.newsVideoResetDefault = "true";
+                if (preferredPlatform)
+                    player.dataset.newsVideoPreferredPlatform = preferredPlatform;
                 this.hydrateNewsVideoPlayer(player);
             });
         };
 
-        const updateVisiblePosts = (): void => {
+        const setRenderedWindow = (start: number, end: number, hydrateVisible: boolean = true): void => {
+            renderedStart = Math.max(0, Math.min(start, posts.length - 1));
+            renderedEnd = Math.max(renderedStart, Math.min(end, posts.length - 1));
+
             posts.forEach((item, index) => {
-                const isVisible = Math.abs(index - activeIndex) <= visibleRadius;
                 if (!item.classList.contains("is-unloaded")) {
                     const height = Math.max(item.offsetHeight, 560);
                     item.style.setProperty("--news-post-height", `${height}px`);
                 }
 
-                item.classList.toggle("is-unloaded", !isVisible);
+                const isRendered = index >= renderedStart && index <= renderedEnd;
+                item.classList.toggle("is-unloaded", !isRendered);
+                if (isRendered && hydrateVisible)
+                    hydratePost(item);
             });
         };
 
-        const setActivePost = (post: HTMLElement): void => {
+        const resetRenderedWindow = (centerIndex: number): void => {
+            const start = Math.max(0, Math.min(centerIndex, posts.length - 1));
+            const end = start;
+
+            setRenderedWindow(start, end, false);
+        };
+
+        const ensurePostRendered = (index: number): void => {
+            if (index < 0 || index >= posts.length)
+                return;
+
+            if (renderedEnd < renderedStart) {
+                resetRenderedWindow(index);
+                return;
+            }
+
+            if (index < renderedStart || index > renderedEnd)
+                resetRenderedWindow(index);
+            else
+                setRenderedWindow(renderedStart, renderedEnd);
+        };
+
+        const setActivePost = (post: HTMLElement, resetVideos: boolean = false, preferredPlatform: string = ""): void => {
             const nextIndex = posts.indexOf(post);
             if (nextIndex < 0)
                 return;
 
             activeIndex = nextIndex;
             posts.forEach((item, index) => item.classList.toggle("active", index === activeIndex));
-            updateVisiblePosts();
-            hydratePost(post);
-
-            const previousPost = posts[activeIndex - 1];
-            const nextPost = posts[activeIndex + 1];
-
-            if (previousPost)
-                hydratePost(previousPost);
-            if (nextPost)
-                hydratePost(nextPost);
+            ensurePostRendered(activeIndex);
+            hydratePost(post, resetVideos, preferredPlatform);
         };
 
-        const syncActivePostFromScroll = (): void => {
-            if (!reader.classList.contains("open"))
-                return;
+        const alignPostToTop = (post: HTMLElement, behavior: ScrollBehavior = "auto", attempts: number = 8): void => {
+            suppressScrollSyncUntil = Date.now() + 1200;
 
-            const feedRect = feed.getBoundingClientRect();
-            const feedCenter = feedRect.top + feedRect.height / 2;
-            let closestPost: HTMLElement | null = null;
-            let closestDistance = Number.MAX_VALUE;
+            const align = (remainingAttempts: number): void => {
+                const nextTop = Math.max(0, post.offsetTop);
 
-            posts.forEach((post) => {
-                const rect = post.getBoundingClientRect();
-                if (rect.bottom < feedRect.top || rect.top > feedRect.bottom)
+                feed.scrollTo({ top: nextTop, behavior: remainingAttempts === attempts ? behavior : "auto" });
+
+                if (remainingAttempts <= 0) {
+                    window.setTimeout(() => {
+                        if (Date.now() >= suppressScrollSyncUntil)
+                            suppressScrollSyncUntil = 0;
+                    }, 40);
                     return;
-
-                const postCenter = rect.top + rect.height / 2;
-                const distance = Math.abs(postCenter - feedCenter);
-                if (distance < closestDistance) {
-                    closestDistance = distance;
-                    closestPost = post;
                 }
-            });
 
-            if (closestPost)
-                setActivePost(closestPost);
+                window.requestAnimationFrame(() => align(remainingAttempts - 1));
+            };
+
+            window.requestAnimationFrame(() => align(attempts));
         };
 
-        const scrollToPost = (newsId: string, behavior: ScrollBehavior = "smooth"): void => {
+        const scrollToPost = (newsId: string, behavior: ScrollBehavior = "smooth", resetVideos: boolean = false, preferredPlatform: string = ""): void => {
             const post = posts.find((item) => item.getAttribute("data-news-reader-post") === newsId);
             if (!post)
                 return;
 
-            setActivePost(post);
-            window.requestAnimationFrame(() => {
-                feed.scrollTo({
-                    top: Math.max(0, post.offsetTop - 22),
-                    behavior
-                });
-            });
+            const postIndex = posts.indexOf(post);
+            resetRenderedWindow(postIndex);
+            setActivePost(post, resetVideos, preferredPlatform);
+            alignPostToTop(post, behavior);
         };
 
-        const open = (newsId: string): void => {
+        const scrollCurrentPostToBottom = (): void => {
+            const post = posts[activeIndex];
+            if (!post)
+                return;
+
+            suppressScrollSyncUntil = Date.now() + 500;
+            const maxTop = Math.max(0, feed.scrollHeight - feed.clientHeight);
+            feed.scrollTo({ top: maxTop, behavior: "smooth" });
+        };
+
+        const scrollCurrentPostToTop = (): void => {
+            const post = posts[activeIndex];
+            if (!post)
+                return;
+
+            suppressScrollSyncUntil = Date.now() + 500;
+            feed.scrollTo({ top: Math.max(0, post.offsetTop), behavior: "smooth" });
+        };
+
+        const isNearCurrentPostBottom = (): boolean => {
+            const maxTop = Math.max(0, feed.scrollHeight - feed.clientHeight);
+            return feed.scrollTop >= maxTop - 24;
+        };
+
+        const isNearCurrentPostTop = (): boolean => {
+            const post = posts[activeIndex];
+            if (!post)
+                return true;
+
+            return feed.scrollTop <= Math.max(0, post.offsetTop) + 24;
+        };
+
+        const open = (newsId: string, preferredPlatform: string = ""): void => {
             reader.classList.add("open");
             reader.setAttribute("aria-hidden", "false");
             document.body.classList.add("news-reader-open");
 
-            window.setTimeout(() => scrollToPost(newsId, "auto"), 30);
-            window.setTimeout(syncActivePostFromScroll, 120);
+            const post = posts.find((item) => item.getAttribute("data-news-reader-post") === newsId);
+            const postIndex = post ? posts.indexOf(post) : 0;
+            feed.scrollTop = 0;
+            resetRenderedWindow(postIndex);
+
+            window.setTimeout(() => scrollToPost(newsId, "auto", true, preferredPlatform), 0);
+            window.setTimeout(() => scrollToPost(newsId, "auto", false, preferredPlatform), 220);
         };
 
         const close = (): void => {
@@ -260,11 +287,39 @@ export class Launcher {
             document.body.classList.remove("news-reader-open");
         };
 
+        document.querySelectorAll<HTMLButtonElement>("[data-news-card-video-src]").forEach((button) => {
+            button.addEventListener("click", (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+
+                const card = button.closest<HTMLElement>(".launcher-news-card");
+                const frame = card?.querySelector<HTMLIFrameElement>("[data-news-card-video-frame]");
+                const src = button.getAttribute("data-news-card-video-src") || "";
+                const platform = button.getAttribute("data-news-card-video-platform") || "";
+
+                if (!card || !frame || !src || !platform)
+                    return;
+
+                card.querySelectorAll<HTMLButtonElement>("[data-news-card-video-src]").forEach((item) => {
+                    item.classList.toggle("active", item === button);
+                });
+
+                frame.src = src;
+                frame.setAttribute("data-news-reader-video-src", src);
+
+                const readButton = card.querySelector<HTMLElement>("[data-news-reader-open]");
+                if (readButton)
+                    readButton.setAttribute("data-news-reader-platform", platform);
+            });
+        });
+
         document.querySelectorAll<HTMLElement>("[data-news-reader-open]").forEach((button) => {
             button.addEventListener("click", (event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                open(button.getAttribute("data-news-reader-open") || "");
+                open(
+                    button.getAttribute("data-news-reader-open") || "",
+                    button.getAttribute("data-news-reader-platform") || "");
             });
         });
 
@@ -339,36 +394,52 @@ export class Launcher {
         });
 
         reader.querySelector("[data-news-reader-previous]")?.addEventListener("click", () => {
-            activeIndex = Math.max(0, activeIndex - 1);
-            scrollToPost(posts[activeIndex]?.getAttribute("data-news-reader-post") || "");
+            if (!isNearCurrentPostTop()) {
+                scrollCurrentPostToTop();
+                return;
+            }
+
+            const targetIndex = Math.max(0, activeIndex - 1);
+            if (targetIndex === activeIndex) {
+                scrollCurrentPostToTop();
+                return;
+            }
+
+            const targetPost = posts[targetIndex];
+            if (!targetPost)
+                return;
+
+            ensurePostRendered(targetIndex);
+            scrollToPost(targetPost.getAttribute("data-news-reader-post") || "", "auto", true);
         });
 
         reader.querySelector("[data-news-reader-next]")?.addEventListener("click", () => {
-            activeIndex = Math.min(posts.length - 1, activeIndex + 1);
-            scrollToPost(posts[activeIndex]?.getAttribute("data-news-reader-post") || "");
+            if (!isNearCurrentPostBottom()) {
+                scrollCurrentPostToBottom();
+                return;
+            }
+
+            const targetIndex = Math.min(posts.length - 1, activeIndex + 1);
+            if (targetIndex === activeIndex) {
+                scrollCurrentPostToBottom();
+                return;
+            }
+
+            const targetPost = posts[targetIndex];
+            if (!targetPost)
+                return;
+
+            ensurePostRendered(targetIndex);
+            scrollToPost(targetPost.getAttribute("data-news-reader-post") || "", "auto", true);
         });
 
-        if ("IntersectionObserver" in window) {
-            const observer = new IntersectionObserver((entries) => {
-                const visibleEntries = entries
-                    .filter((entry) => entry.isIntersecting)
-                    .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-
-                const visiblePost = visibleEntries[0]?.target as HTMLElement | undefined;
-                if (visiblePost)
-                    setActivePost(visiblePost);
-            }, {
-                root: feed,
-                threshold: [0.2, 0.35, 0.55, 0.75]
-            });
-
-            posts.forEach((post) => observer.observe(post));
-        }
-
         feed.addEventListener("scroll", () => {
-            window.clearTimeout(scrollSyncTimeout);
-            scrollSyncTimeout = window.setTimeout(syncActivePostFromScroll, 80);
+            if (Date.now() >= suppressScrollSyncUntil)
+                suppressScrollSyncUntil = 0;
         }, { passive: true });
+
+        feed.addEventListener("wheel", releaseProgrammaticScroll, { passive: true });
+        feed.addEventListener("touchstart", releaseProgrammaticScroll, { passive: true });
 
         reader.querySelectorAll<HTMLElement>("[data-news-reader-share]").forEach((button) => {
             button.addEventListener("click", async () => {
@@ -386,66 +457,196 @@ export class Launcher {
                 }
 
                 await navigator.clipboard?.writeText(url);
+                const shareLabel = button.dataset.shareLabel || button.textContent || "";
+                const copiedLabel = button.dataset.shareCopiedLabel || shareLabel;
+
                 button.classList.add("copied");
-                window.setTimeout(() => button.classList.remove("copied"), 1200);
+                button.textContent = copiedLabel;
+
+                window.setTimeout(() => {
+                    button.classList.remove("copied");
+                    button.textContent = shareLabel;
+                }, 1200);
             });
         });
 
         document.addEventListener("keydown", (event) => {
             if (event.key === "Escape" && reader.classList.contains("open"))
                 close();
+            if (reader.classList.contains("open")
+                && ["ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End", " "].includes(event.key))
+                releaseProgrammaticScroll();
         });
     }
 
     private hydrateNewsVideoPlayer(player: HTMLElement): void {
-        if (player.getAttribute("data-news-video-ready") === "true")
-            return;
-
         const iframe = player.querySelector<HTMLIFrameElement>("[data-news-video-frame]");
         if (!iframe)
             return;
 
-        const post = player.closest<HTMLElement>("[data-news-reader-post]");
-        const buttons = Array.from(post?.querySelectorAll<HTMLButtonElement>("[data-news-video-src]") || []);
+        const isInlineVideo = player.classList.contains("launcher-news-reader-inline-video");
+        const buttons = isInlineVideo
+            ? []
+            : Array.from(player.querySelectorAll<HTMLButtonElement>("[data-news-video-src]"));
+        const status = this.ensureNewsVideoStatus(player);
+        const preferredPlatform = player.dataset.newsVideoPreferredPlatform || "";
+        const shouldResetToDefault = player.dataset.newsVideoResetDefault === "true"
+            || preferredPlatform.length > 0
+            || player.getAttribute("data-news-video-ready") !== "true";
+        delete player.dataset.newsVideoResetDefault;
+        delete player.dataset.newsVideoPreferredPlatform;
+        let loadTimer = 0;
+
+        const setStatus = (message: string, mode: "checking" | "blocked" | "ready" = "checking"): void => {
+            status.textContent = message;
+            status.dataset.newsVideoStatus = mode;
+            status.hidden = mode === "ready";
+        };
+
+        const markButtonStatus = (button: HTMLButtonElement, mode: "checking" | "available" | "blocked"): void => {
+            const platform = button.getAttribute("data-news-video-platform") || "video";
+            button.dataset.newsVideoAvailability = mode;
+            button.setAttribute("aria-disabled", mode === "blocked" ? "true" : "false");
+            if (mode === "blocked")
+                button.title = this.getVideoPlatformBlockedMessage(platform);
+        };
+
+        const clearButtonStatuses = (): void => {
+            buttons.forEach((button) => {
+                delete button.dataset.newsVideoAvailability;
+                button.setAttribute("aria-disabled", "false");
+            });
+        };
+
         const setPlatform = (button: HTMLButtonElement): void => {
             const src = button.getAttribute("data-news-video-src") || "";
             if (!src)
                 return;
 
+            window.clearTimeout(loadTimer);
             buttons.forEach((item) => item.classList.toggle("active", item === button));
             iframe.setAttribute("data-news-reader-video-src", src);
             iframe.src = src;
             iframe.dataset.loaded = "false";
+            setStatus("", "ready");
 
-            window.setTimeout(() => {
+            loadTimer = window.setTimeout(() => {
                 if (iframe.dataset.loaded === "true")
                     return;
 
-                const currentIndex = buttons.indexOf(button);
-                const next = buttons.find((item, index) => index > currentIndex && item.getAttribute("data-news-video-src"));
-                if (next)
-                    setPlatform(next);
-            }, 3200);
+                markButtonStatus(button, "blocked");
+                setStatus(this.getVideoPlatformBlockedMessage(button.getAttribute("data-news-video-platform") || "video"), "blocked");
+            }, 4500);
         };
 
-        iframe.addEventListener("load", () => {
-            iframe.dataset.loaded = "true";
-        });
+        const activatePlatform = (button: HTMLButtonElement): void => {
+            const src = button.getAttribute("data-news-video-src") || "";
+            if (!src)
+                return;
 
-        buttons.forEach((button) => {
-            button.addEventListener("click", (event) => {
-                event.preventDefault();
-                setPlatform(button);
+            markButtonStatus(button, "available");
+            setPlatform(button);
+        };
+
+        if (player.getAttribute("data-news-video-ready") !== "true") {
+            iframe.addEventListener("load", () => {
+                iframe.dataset.loaded = "true";
+                window.clearTimeout(loadTimer);
+                const activeButton = buttons.find((button) => button.classList.contains("active"));
+                if (activeButton)
+                    markButtonStatus(activeButton, "available");
+                setStatus("", "ready");
             });
-        });
 
-        const activeButton = buttons.find((button) => button.classList.contains("active"));
-        if (activeButton)
-            setPlatform(activeButton);
+            buttons.forEach((button) => {
+                button.addEventListener("click", (event) => {
+                    event.preventDefault();
+                    activatePlatform(button);
+                });
+            });
+        }
+
+        if (shouldResetToDefault)
+            clearButtonStatuses();
+
+        const defaultButton = this.getDefaultNewsVideoButton(buttons, preferredPlatform);
+        if (defaultButton && shouldResetToDefault)
+            activatePlatform(defaultButton);
         else if (!iframe.src)
             iframe.src = iframe.getAttribute("data-news-reader-video-src") || "";
 
         player.setAttribute("data-news-video-ready", "true");
+    }
+
+    private getDefaultNewsVideoButton(buttons: HTMLButtonElement[], preferredPlatform: string = ""): HTMLButtonElement | undefined {
+        if (preferredPlatform) {
+            const preferred = buttons.find((button) => button.getAttribute("data-news-video-platform") === preferredPlatform);
+            if (preferred)
+                return preferred;
+        }
+
+        const culture = this.getCurrentCulture();
+        const order = culture === "ru"
+            ? ["rutube", "vk", "youtube"]
+            : ["youtube", "vk", "rutube"];
+
+        for (const platform of order) {
+            const button = buttons.find((item) => item.getAttribute("data-news-video-platform") === platform);
+            if (button)
+                return button;
+        }
+
+        return buttons[0];
+    }
+
+    private getCurrentCulture(): "ru" | "en" {
+        const selectedCulture = document.querySelector<HTMLSelectElement>("#cultureForm select[name='culture']")?.value;
+        if (selectedCulture?.toLowerCase().startsWith("en"))
+            return "en";
+        if (selectedCulture?.toLowerCase().startsWith("ru"))
+            return "ru";
+
+        const htmlLanguage = document.documentElement.lang || "";
+        if (htmlLanguage.toLowerCase().startsWith("en"))
+            return "en";
+
+        return "ru";
+    }
+
+    private ensureNewsVideoStatus(player: HTMLElement): HTMLElement {
+        const current = player.querySelector<HTMLElement>("[data-news-video-status]");
+        if (current)
+            return current;
+
+        const status = document.createElement("div");
+        status.className = "launcher-news-video-status";
+        status.setAttribute("data-news-video-status", "checking");
+        status.hidden = true;
+        player.appendChild(status);
+        return status;
+    }
+
+    private getVideoPlatformBlockedMessage(platform: string): string {
+        const name = this.getVideoPlatformName(platform);
+        const template = document
+            .querySelector<HTMLElement>("[data-news-video-blocked-template]")
+            ?.dataset.newsVideoBlockedTemplate;
+        return (template || "{0}").replace("{0}", name);
+    }
+
+    private getVideoPlatformName(platform: string): string {
+        switch (platform) {
+            case "youtube":
+                return "YouTube";
+            case "rutube":
+                return "Rutube";
+            case "vk":
+                return "VK";
+            default:
+                return document
+                    .querySelector<HTMLElement>("[data-news-video-generic-platform]")
+                    ?.dataset.newsVideoGenericPlatform || platform;
+        }
     }
 
     private escapeAttribute(value: string): string {

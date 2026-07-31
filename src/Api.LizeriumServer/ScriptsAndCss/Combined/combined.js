@@ -797,8 +797,10 @@ class NewsAdmin {
         const idInput = form.querySelector("input[name='Id']");
         const publishedAtUnixInput = form.querySelector("input[name='PublishedAtUnix']");
         const publishedAtLocalInput = form.querySelector("input[name='publishedAtLocal']");
+        const iconInput = form.querySelector("input[name='IconUrl']");
         const imageInput = form.querySelector("input[name='ImageUrl']");
         const galleryInput = form.querySelector("textarea[name='ImageGalleryJson']");
+        const iconFileInput = form.querySelector("input[name='iconFile']");
         const fileInput = form.querySelector("input[name='imageFile']");
         const galleryFileInput = form.querySelector("input[name='galleryFiles']");
 
@@ -812,6 +814,19 @@ class NewsAdmin {
 
         if (publishedAtLocalInput && result.publishedAtLocal) {
             publishedAtLocalInput.value = result.publishedAtLocal;
+        }
+
+        if (iconInput && typeof result.iconUrl === "string") {
+            iconInput.value = result.iconUrl;
+        }
+
+        if (result.iconPreviewUrl) {
+            this.updateIconPreview(form, result.iconPreviewUrl);
+        }
+        else if (iconInput && iconInput.value.trim().length === 0) {
+            const preview = form.querySelector(".news-icon-preview");
+            if (preview)
+                preview.remove();
         }
 
         if (imageInput && typeof result.imageUrl === "string") {
@@ -829,6 +844,11 @@ class NewsAdmin {
 
         if (galleryInput && typeof result.imageGalleryJson === "string") {
             galleryInput.value = result.imageGalleryJson;
+        }
+
+        if (iconFileInput) {
+            iconFileInput.value = "";
+            iconFileInput.removeAttribute("data-file-name");
         }
 
         if (fileInput) {
@@ -866,14 +886,39 @@ class NewsAdmin {
         }
     }
 
+    updateIconPreview(form, previewImageUrl) {
+        let preview = form.querySelector(".news-icon-preview");
+
+        if (!preview) {
+            const iconUpload = form.querySelector(".news-icon-upload");
+            preview = document.createElement("div");
+            preview.className = "news-icon-preview";
+            preview.innerHTML = "<span>Иконка продукта</span><img alt=\"\" loading=\"lazy\" onerror=\"this.closest('.news-icon-preview')?.classList.add('broken');\" />";
+
+            if (iconUpload && iconUpload.parentNode) {
+                iconUpload.parentNode.insertBefore(preview, iconUpload.nextSibling);
+            }
+            else {
+                form.appendChild(preview);
+            }
+        }
+
+        const image = preview.querySelector("img");
+        if (image) {
+            image.src = previewImageUrl;
+        }
+
+        preview.classList.remove("broken");
+    }
+
     updateImagePreview(form, previewImageUrl) {
         let preview = form.querySelector(".news-image-preview");
 
         if (!preview) {
-            const imageUpload = form.querySelector(".news-image-upload");
+            const imageUpload = form.querySelector(".news-cover-upload");
             preview = document.createElement("div");
             preview.className = "news-image-preview";
-            preview.innerHTML = "<span>Текущая обложка</span><img alt=\"\" loading=\"lazy\" onerror=\"this.closest('.news-image-preview')?.classList.add('broken');\" />";
+            preview.innerHTML = "<span>Обложка карточки</span><img alt=\"\" loading=\"lazy\" onerror=\"this.closest('.news-image-preview')?.classList.add('broken');\" />";
 
             if (imageUpload && imageUpload.parentNode) {
                 imageUpload.parentNode.insertBefore(preview, imageUpload.nextSibling);
