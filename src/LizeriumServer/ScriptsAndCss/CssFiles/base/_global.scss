@@ -9005,11 +9005,20 @@ body.news-reader-open {
 .launcher-news-video-links a {
 	min-height: 38px;
 	padding: 0 12px;
-	border: 1px solid rgba(97, 231, 255, 0.48);
+	border: 1px solid rgba(97, 231, 255, 0.24);
 	border-radius: 8px;
-	background: rgba(23, 76, 96, 0.38);
-	color: #80f4ff;
+	background: rgba(7, 18, 32, 0.56);
+	color: rgba(190, 235, 245, 0.72);
 	font-weight: 900;
+}
+
+.launcher-news-video-links button.active {
+	border-color: rgba(97, 231, 255, 0.78);
+	background: rgba(23, 76, 96, 0.52);
+	color: #80f4ff;
+	box-shadow:
+		0 0 0 1px rgba(97, 231, 255, 0.16),
+		0 0 18px rgba(97, 231, 255, 0.18);
 }
 
 .launcher-news-card-actions {

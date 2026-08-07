@@ -170,6 +170,11 @@ public interface IDataBaseService : IDisposable
     Task<List<LauncherNewsDataResponse>> GetAllAdminLauncherNewsAsync(bool checkSecureOperate = true);
 
     /// <summary>
+    /// Получает новость для админского предпросмотра без фильтра публикации.
+    /// </summary>
+    Task<LauncherNewsDataResponse> GetAdminLauncherNewsByIdAsync(int id, bool checkSecureOperate = true);
+
+    /// <summary>
     /// Добавляет или обновляет новость.
     /// </summary>
     Task<bool> SaveLauncherNewsAsync(LauncherNewsDataResponse news, bool checkSecureOperate = true);

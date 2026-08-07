@@ -37,6 +37,38 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
         }
 
         [TestMethod]
+        public async Task GetAdminLauncherNewsByIdAsync_ReturnsHiddenNewsForPreview()
+        {
+            var service = this.CreateService();
+
+            await service.SaveLauncherNewsAsync(new LauncherNewsDataResponse
+            {
+                TitleRu = "Published",
+                MarkdownRu = "Visible",
+                IsPublished = true,
+                PublishedAtUnix = 100
+            }, false);
+
+            await service.SaveLauncherNewsAsync(new LauncherNewsDataResponse
+            {
+                TitleRu = "Hidden preview",
+                MarkdownRu = "Draft body",
+                IsPublished = false,
+                PublishedAtUnix = 200
+            }, false);
+
+            var hiddenNews = (await service.GetAllAdminLauncherNewsAsync(false))
+                .Single(news => news.TitleRu == "Hidden preview");
+
+            var result = await service.GetAdminLauncherNewsByIdAsync(hiddenNews.Id, false);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(hiddenNews.Id, result.Id);
+            Assert.AreEqual("Hidden preview", result.TitleRu);
+            Assert.IsFalse(result.IsPublished);
+        }
+
+        [TestMethod]
         public async Task AddCommand_StateUnderTest_ExpectedBehavior()
         {
             // Arrange

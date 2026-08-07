@@ -349,19 +349,22 @@ export class Launcher {
                 const src = button.getAttribute("data-news-card-video-src") || "";
                 const platform = button.getAttribute("data-news-card-video-platform") || "";
 
-                if (!card || !frame || !src || !platform)
+                if (!card || !src || !platform)
                     return;
 
                 card.querySelectorAll<HTMLButtonElement>("[data-news-card-video-src]").forEach((item) => {
                     item.classList.toggle("active", item === button);
                 });
 
-                frame.src = src;
-                frame.setAttribute("data-news-reader-video-src", src);
+                if (frame) {
+                    frame.src = src;
+                    frame.setAttribute("data-news-reader-video-src", src);
+                }
 
-                const readButton = card.querySelector<HTMLElement>("[data-news-reader-open]");
-                if (readButton)
-                    readButton.setAttribute("data-news-reader-platform", platform);
+                card.setAttribute("data-news-reader-platform", platform);
+                card.querySelectorAll<HTMLElement>("[data-news-reader-open]").forEach((opener) => {
+                    opener.setAttribute("data-news-reader-platform", platform);
+                });
             });
         });
 
@@ -384,7 +387,7 @@ export class Launcher {
                 const opener = card.querySelector<HTMLElement>("[data-news-reader-open]");
                 const newsId = opener?.getAttribute("data-news-reader-open");
                 if (newsId)
-                    open(newsId);
+                    open(newsId, card.getAttribute("data-news-reader-platform") || "");
             });
         });
 

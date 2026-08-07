@@ -857,6 +857,27 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
+    /// Получает одну новость для закрытого админского предпросмотра, включая скрытые черновики.
+    /// </summary>
+    public async Task<LauncherNewsDataResponse> GetAdminLauncherNewsByIdAsync(int id, bool checkSecureOperate = true)
+    {
+        try
+        {
+            if (checkSecureOperate)
+                await ExistAndCreateLauncherNewsTable();
+
+            return await LauncherNews
+                .AsNoTracking()
+                .FirstOrDefaultAsync(news => news.Id == id);
+        }
+        catch (Exception ex)
+        {
+            ex.LogException();
+            return null;
+        }
+    }
+
+    /// <summary>
     /// Добавляет или обновляет новость.
     /// </summary>
     public async Task<bool> SaveLauncherNewsAsync(LauncherNewsDataResponse news, bool checkSecureOperate = true)

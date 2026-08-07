@@ -115,6 +115,8 @@ public class MainModel
 
     public int NewsTotalCount { get; set; }
 
+    public string NewsPreviewCulture { get; set; } = "ru";
+
     public List<ProductCategoryDataResponse> ProductCatalog { get; set; } = new();
 
     /// <summary>

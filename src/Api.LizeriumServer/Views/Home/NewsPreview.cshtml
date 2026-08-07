@@ -1,0 +1,397 @@
+@model MainModel
+@using System.Text.Encodings.Web
+@using System.Text.Json
+@using System.Text.RegularExpressions
+@{
+    var news = Model.LauncherNews.FirstOrDefault();
+    var culture = string.Equals(Model.NewsPreviewCulture, "en", StringComparison.OrdinalIgnoreCase) ? "en" : "ru";
+    var isRussian = culture == "ru";
+    var title = PickText(isRussian ? news?.TitleRu : news?.TitleEn, isRussian ? news?.TitleEn : news?.TitleRu);
+    var markdown = PickText(isRussian ? news?.MarkdownRu : news?.MarkdownEn, isRussian ? news?.MarkdownEn : news?.MarkdownRu);
+    var newsType = PickText(isRussian ? news?.NewsTypeRu : news?.NewsTypeEn, PickText(news?.NewsType, isRussian ? news?.NewsTypeEn : news?.NewsTypeRu));
+    var publishedAt = news?.PublishedAtUnix > 0
+        ? DateTimeOffset.FromUnixTimeSeconds(news.PublishedAtUnix).ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+        : "без даты";
+    var coverUrl = GetNewsPreviewUrl(news?.ImageUrl);
+    var iconUrl = GetNewsPreviewUrl(news?.IconUrl);
+    var galleryUrls = GetGalleryPreviewUrls(news?.ImageGalleryJson);
+    var videoPlatforms = GetVideoPlatforms(news);
+    ViewData["Title"] = $"Предпросмотр: {title}";
+}
+@functions {
+    private sealed class NewsVideoPlatform
+    {
+        public string Key { get; init; } = string.Empty;
+        public string Name { get; init; } = string.Empty;
+        public string Url { get; init; } = string.Empty;
+        public string EmbedUrl { get; init; } = string.Empty;
+    }
+
+    private static string PickText(string primary, string fallback)
+    {
+        return !string.IsNullOrWhiteSpace(primary) ? primary : fallback ?? string.Empty;
+    }
+
+    private static string GetNewsPreviewUrl(string imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl))
+            return string.Empty;
+
+        if (Uri.TryCreate(imageUrl, UriKind.Absolute, out _))
+            return imageUrl;
+
+        if (!imageUrl.StartsWith("/img/news/", StringComparison.OrdinalIgnoreCase))
+            return imageUrl;
+
+        var fileName = System.IO.Path.GetFileName(imageUrl);
+        return string.IsNullOrWhiteSpace(fileName) ? imageUrl : $"/news/image/{fileName}";
+    }
+
+    private static IReadOnlyList<string> GetGalleryPreviewUrls(string imageGalleryJson)
+    {
+        if (string.IsNullOrWhiteSpace(imageGalleryJson))
+            return Array.Empty<string>();
+
+        try
+        {
+            return JsonSerializer.Deserialize<List<string>>(imageGalleryJson)?
+                .Where(url => !string.IsNullOrWhiteSpace(url))
+                .Select(GetNewsPreviewUrl)
+                .ToList() ?? new List<string>();
+        }
+        catch
+        {
+            return imageGalleryJson
+                .Split(new[] { "\r\n", "\n", ";", "," }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(url => url.Trim())
+                .Where(url => !string.IsNullOrWhiteSpace(url))
+                .Select(GetNewsPreviewUrl)
+                .ToList();
+        }
+    }
+
+    private static List<NewsVideoPlatform> GetVideoPlatforms(LizeriumUtilities.FormatsData.DataBase.Response.LauncherNewsDataResponse news)
+    {
+        var platforms = new List<NewsVideoPlatform>();
+        if (news == null)
+            return platforms;
+
+        AddVideo(platforms, "youtube", "YouTube", news.YoutubeUrl, BuildYoutubeEmbedUrl(news.YoutubeUrl));
+        AddVideo(platforms, "vk", "VK", news.VkVideoUrl, BuildVkEmbedUrl(news.VkVideoUrl));
+        AddVideo(platforms, "rutube", "Rutube", news.RutubeUrl, BuildRutubeEmbedUrl(news.RutubeUrl));
+        return platforms;
+    }
+
+    private static void AddVideo(List<NewsVideoPlatform> platforms, string key, string name, string url, string embedUrl)
+    {
+        if (string.IsNullOrWhiteSpace(embedUrl))
+            return;
+
+        platforms.Add(new NewsVideoPlatform
+        {
+            Key = key,
+            Name = name,
+            Url = url,
+            EmbedUrl = embedUrl
+        });
+    }
+
+    private static string BuildYoutubeEmbedUrl(string url)
+    {
+        var match = Regex.Match(url ?? string.Empty, @"(?:youtube\.com/watch\?v=|youtube\.com/embed/|youtube\.com/shorts/|youtu\.be/)([A-Za-z0-9_-]{6,})", RegexOptions.IgnoreCase);
+        return match.Success ? $"https://www.youtube.com/embed/{match.Groups[1].Value}" : string.Empty;
+    }
+
+    private static string BuildRutubeEmbedUrl(string url)
+    {
+        var match = Regex.Match(url ?? string.Empty, @"rutube\.ru/(?:video|play/embed)/([A-Za-z0-9]+)", RegexOptions.IgnoreCase);
+        return match.Success ? $"https://rutube.ru/play/embed/{match.Groups[1].Value}/" : string.Empty;
+    }
+
+    private static string BuildVkEmbedUrl(string url)
+    {
+        var match = Regex.Match(url ?? string.Empty, @"(?:video|clip)(-?\d+)_(\d+)", RegexOptions.IgnoreCase);
+        return match.Success ? $"https://vk.com/video_ext.php?oid={match.Groups[1].Value}&id={match.Groups[2].Value}" : string.Empty;
+    }
+
+    private static string RenderMarkdownPreview(string markdown)
+    {
+        if (string.IsNullOrWhiteSpace(markdown))
+            return "<p class=\"news-preview-empty\">Текст новости не заполнен.</p>";
+
+        var blocks = markdown
+            .Replace("\r\n", "\n")
+            .Replace('\r', '\n')
+            .Split(new[] { "\n\n" }, StringSplitOptions.RemoveEmptyEntries);
+
+        return string.Join("\n", blocks.Select(RenderMarkdownBlock));
+    }
+
+    private static string RenderMarkdownBlock(string block)
+    {
+        var trimmed = block.Trim();
+        var video = ExtractVideoEmbed(trimmed);
+        if (!string.IsNullOrWhiteSpace(video))
+            return $"<div class=\"news-preview-inline-video\"><iframe src=\"{HtmlEncoder.Default.Encode(video)}\" frameborder=\"0\" allow=\"clipboard-write; autoplay; encrypted-media; picture-in-picture\" allowfullscreen></iframe></div>";
+
+        var imageMatch = Regex.Match(trimmed, @"^!\[[^\]]*\]\((?<url>[^)]+)\)$");
+        if (imageMatch.Success)
+        {
+            var imageUrl = HtmlEncoder.Default.Encode(GetNewsPreviewUrl(imageMatch.Groups["url"].Value.Trim()));
+            return $"<figure><img src=\"{imageUrl}\" alt=\"\" loading=\"lazy\" /></figure>";
+        }
+
+        var safe = HtmlEncoder.Default.Encode(trimmed);
+        safe = Regex.Replace(safe, @"^###\s+(.+)$", "<h3>$1</h3>", RegexOptions.Multiline);
+        safe = Regex.Replace(safe, @"^##\s+(.+)$", "<h2>$1</h2>", RegexOptions.Multiline);
+        safe = Regex.Replace(safe, @"^#\s+(.+)$", "<h1>$1</h1>", RegexOptions.Multiline);
+        safe = Regex.Replace(safe, @"\*\*(.+?)\*\*", "<strong>$1</strong>");
+        safe = Regex.Replace(safe, @"`(.+?)`", "<code>$1</code>");
+        safe = Regex.Replace(safe, @"\[(?<text>[^\]]+)\]\((?<url>https?://[^)\s]+)\)", "<a href=\"${url}\" target=\"_blank\" rel=\"noopener noreferrer\">${text}</a>");
+
+        return safe.StartsWith("<h", StringComparison.OrdinalIgnoreCase)
+            ? safe
+            : $"<p>{safe.Replace("\n", "<br />")}</p>";
+    }
+
+    private static string ExtractVideoEmbed(string text)
+    {
+        var macro = Regex.Match(text, @"^@video(?:-vertical)?\((?<url>https?://[^)\s]+)\)$", RegexOptions.IgnoreCase);
+        var url = macro.Success ? macro.Groups["url"].Value : text;
+        if (!Regex.IsMatch(url, @"^https?://\S+$", RegexOptions.IgnoreCase))
+            return string.Empty;
+
+        return PickText(BuildYoutubeEmbedUrl(url), PickText(BuildRutubeEmbedUrl(url), BuildVkEmbedUrl(url)));
+    }
+}
+
+<div class="container top with_left_side">
+    <section class="admin-workspace news-preview-workspace">
+        @if (news == null)
+        {
+            <div class="admin-alert danger">Новость не найдена.</div>
+        }
+        else
+        {
+            <div class="news-preview-toolbar">
+                <a class="admin-button muted" href="/news">Назад к новостям</a>
+                <a class="admin-button @(isRussian ? "primary" : "muted")" href="/news/preview/@news.Id?culture=ru">RU</a>
+                <a class="admin-button @(!isRussian ? "primary" : "muted")" href="/news/preview/@news.Id?culture=en">EN</a>
+                <span class="news-preview-state @(news.IsPublished ? "published" : "hidden")">@(news.IsPublished ? "опубликована" : "скрыта")</span>
+            </div>
+
+            <article class="news-preview-card">
+                @if (!string.IsNullOrWhiteSpace(coverUrl))
+                {
+                    <img class="news-preview-cover" src="@coverUrl" alt="" loading="lazy" />
+                }
+                <header class="news-preview-header">
+                    @if (!string.IsNullOrWhiteSpace(iconUrl))
+                    {
+                        <img class="news-preview-icon" src="@iconUrl" alt="" loading="lazy" />
+                    }
+                    <div>
+                        <span class="news-preview-type">@PickText(newsType, "News")</span>
+                        <h1>@title</h1>
+                        <time>@publishedAt</time>
+                    </div>
+                </header>
+
+                @if (videoPlatforms.Count > 0)
+                {
+                    <div class="news-preview-video">
+                        <iframe src="@videoPlatforms[0].EmbedUrl" frameborder="0" allow="clipboard-write; autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    <div class="news-preview-video-links">
+                        @foreach (var platform in videoPlatforms)
+                        {
+                            <a href="@platform.Url" target="_blank" rel="noopener noreferrer">@platform.Name</a>
+                        }
+                    </div>
+                }
+
+                <div class="news-preview-markdown">
+                    @Html.Raw(RenderMarkdownPreview(markdown))
+                </div>
+
+                @if (galleryUrls.Count > 0)
+                {
+                    <div class="news-preview-gallery">
+                        @foreach (var imageUrl in galleryUrls)
+                        {
+                            <img src="@imageUrl" alt="" loading="lazy" />
+                        }
+                    </div>
+                }
+            </article>
+        }
+    </section>
+</div>
+
+<style>
+    .news-preview-workspace {
+        max-width: 1180px;
+    }
+
+    .news-preview-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+    }
+
+    .news-preview-state {
+        margin-left: auto;
+        padding: 8px 12px;
+        border: 1px solid #2b3b55;
+        border-radius: 8px;
+        color: #b8c7dd;
+        font-weight: 700;
+    }
+
+    .news-preview-state.published {
+        color: #7af0b2;
+        border-color: rgba(122, 240, 178, 0.35);
+    }
+
+    .news-preview-state.hidden {
+        color: #ffc17a;
+        border-color: rgba(255, 193, 122, 0.35);
+    }
+
+    .news-preview-card {
+        overflow: hidden;
+        border: 1px solid #24344f;
+        border-radius: 12px;
+        background: #0d1421;
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
+    }
+
+    .news-preview-cover {
+        display: block;
+        width: 100%;
+        max-height: 420px;
+        object-fit: cover;
+        background: #050914;
+    }
+
+    .news-preview-header {
+        display: flex;
+        gap: 18px;
+        align-items: center;
+        padding: 28px;
+        border-bottom: 1px solid #24344f;
+    }
+
+    .news-preview-icon {
+        width: 74px;
+        height: 74px;
+        object-fit: cover;
+        border-radius: 16px;
+        background: #080d18;
+    }
+
+    .news-preview-type {
+        display: inline-flex;
+        margin-bottom: 10px;
+        color: #74e7ff;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .news-preview-header h1 {
+        margin: 0 0 10px;
+        color: #fff;
+        font-size: 34px;
+        line-height: 1.15;
+    }
+
+    .news-preview-header time {
+        color: #9fb0c8;
+        font-weight: 700;
+    }
+
+    .news-preview-video,
+    .news-preview-inline-video {
+        aspect-ratio: 16 / 9;
+        margin: 28px;
+        overflow: hidden;
+        border: 1px solid #244566;
+        border-radius: 10px;
+        background: #050914;
+    }
+
+    .news-preview-video iframe,
+    .news-preview-inline-video iframe {
+        width: 100%;
+        height: 100%;
+    }
+
+    .news-preview-video-links {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 0 28px 12px;
+    }
+
+    .news-preview-video-links a {
+        padding: 9px 13px;
+        border: 1px solid rgba(97, 231, 255, 0.3);
+        border-radius: 8px;
+        color: #84ebff;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .news-preview-markdown {
+        padding: 28px;
+        color: #d4deef;
+        font-size: 17px;
+        line-height: 1.7;
+    }
+
+    .news-preview-markdown h1,
+    .news-preview-markdown h2,
+    .news-preview-markdown h3 {
+        color: #fff;
+        margin: 24px 0 12px;
+    }
+
+    .news-preview-markdown p {
+        margin: 0 0 18px;
+    }
+
+    .news-preview-markdown a {
+        color: #74e7ff;
+    }
+
+    .news-preview-markdown code {
+        padding: 2px 6px;
+        border-radius: 6px;
+        background: #050914;
+        color: #ff79c6;
+    }
+
+    .news-preview-markdown figure {
+        margin: 24px 0;
+    }
+
+    .news-preview-markdown figure img,
+    .news-preview-gallery img {
+        max-width: 100%;
+        border-radius: 10px;
+        border: 1px solid #24344f;
+    }
+
+    .news-preview-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 14px;
+        padding: 0 28px 28px;
+    }
+
+    .news-preview-empty {
+        color: #8f9db4;
+    }
+</style>

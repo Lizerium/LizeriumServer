@@ -219,6 +219,7 @@
                 </div>
                 <div class="news-editor-actions">
                     <button class="admin-button primary" type="submit">Создать новость</button>
+                    <span class="news-field-note">Предпросмотр появится после сохранения записи. Для черновика снимите галочку публикации.</span>
                 </div>
             </form>
         </details>
@@ -391,6 +392,12 @@
                                 </label>
                             </div>
                             <div class="news-editor-actions">
+                                <a class="admin-button muted"
+                                   href="/news/preview/@news.Id"
+                                   target="_blank"
+                                   rel="noopener noreferrer">
+                                    Предпросмотр
+                                </a>
                                 <button class="admin-button primary" type="submit">Сохранить</button>
                                 <button class="admin-button danger"
                                         type="submit"

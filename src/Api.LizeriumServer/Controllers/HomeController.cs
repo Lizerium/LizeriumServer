@@ -696,6 +696,44 @@ public class HomeController : Controller
         }
     }
 
+    /// <summary>
+    /// Shows a closed admin-only preview for a launcher news item, including hidden drafts.
+    /// </summary>
+    [HttpGet]
+    [Route("/news/preview/{id:int}")]
+    public async Task<IActionResult> NewsPreview(int id, string culture = "ru")
+    {
+        try
+        {
+            if (!AdminAccessGuard.IsAllowed(HttpContext))
+                return View("AccessClosed", new MainModel(null, null) { ShowLeftSide = false });
+
+            var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString();
+            if (await securityService.IsBlocked(ip))
+                return StatusCode(403);
+
+            var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
+            if (adminSession is not { IsAuth: true }) return Redirect("~/");
+
+            var news = await appDb.GetAdminLauncherNewsByIdAsync(id);
+            if (news == null)
+                return StatusCode(404);
+
+            culture = string.Equals(culture, "en", StringComparison.OrdinalIgnoreCase) ? "en" : "ru";
+            return View("NewsPreview", new MainModel(null, null)
+            {
+                ShowLeftSide = true,
+                LauncherNews = new List<LauncherNewsDataResponse> { news },
+                NewsPreviewCulture = culture
+            });
+        }
+        catch (Exception exception)
+        {
+            exception.LogException();
+            return StatusCode(404);
+        }
+    }
+
     // Product catalog admin: category/product/link CRUD plus image library endpoints.
     [HttpGet]
     [Route("/products")]
