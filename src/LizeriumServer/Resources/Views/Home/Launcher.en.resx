@@ -119,7 +119,7 @@
 		<comment>Launcher_News_4</comment>
 	</data>
 	<data name="Launcher_Title_Site" xml:space="preserve">
-		<value>Lizerium Launcher</value>
+		<value>Lizerium - Steam</value>
 		<comment>Launcher_Title_Site</comment>
 	</data>
 	<data name="Launcher_Search_Placeholder" xml:space="preserve">
@@ -175,5 +175,38 @@
 	</data>
 	<data name="Launcher_Video_Generic_Platform" xml:space="preserve">
 		<value>Video</value>
+	</data>
+	<data name="Launcher_Description" xml:space="preserve">
+		<value>Current events, updates, and important announcements from the Freelancer and Lizerium universe.</value>
+	</data>
+	<data name="Launcher_Filter_Button" xml:space="preserve">
+		<value>Filters</value>
+	</data>
+	<data name="Launcher_Filter_Dialog_Title" xml:space="preserve">
+		<value>News filters</value>
+	</data>
+	<data name="Launcher_Filter_Dialog_Description" xml:space="preserve">
+		<value>Filter posts by video, GitHub links, and news type.</value>
+	</data>
+	<data name="Launcher_Filter_Platform" xml:space="preserve">
+		<value>Video platform</value>
+	</data>
+	<data name="Launcher_Filter_Platform_All" xml:space="preserve">
+		<value>All platforms</value>
+	</data>
+	<data name="Launcher_Filter_Github" xml:space="preserve">
+		<value>GitHub links</value>
+	</data>
+	<data name="Launcher_Filter_Type" xml:space="preserve">
+		<value>News type</value>
+	</data>
+	<data name="Launcher_Filter_Type_All" xml:space="preserve">
+		<value>All types</value>
+	</data>
+	<data name="Launcher_Filter_Apply" xml:space="preserve">
+		<value>Apply</value>
+	</data>
+	<data name="Launcher_Filter_Reset" xml:space="preserve">
+		<value>Reset</value>
 	</data>
 </root>

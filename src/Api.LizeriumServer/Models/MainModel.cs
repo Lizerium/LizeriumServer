@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
@@ -39,7 +39,7 @@ public class MainModel
             Commands.Commands.AddRange(commands);
             Commands.LastId = Commands.Commands[^1].Id;
         }
-        
+
         if (translationsCommand != null && translationsCommand.Count > 0)
             Commands.CommandTranslations.AddRange(translationsCommand);
     }
@@ -97,9 +97,11 @@ public class MainModel
     public List<string> CommandCategories { get; set; } = new();
 
     /// <summary>
-    /// Новости Lizerium Launcher.
+    /// Новости Lizerium Steam.
     /// </summary>
     public List<LauncherNewsDataResponse> LauncherNews { get; set; } = new();
+
+    public List<LauncherNewsTypeOption> LauncherNewsTypes { get; set; } = new();
 
     public string NewsSearch { get; set; } = string.Empty;
 
@@ -112,6 +114,8 @@ public class MainModel
     public int NewsPageSize { get; set; } = 10;
 
     public int NewsTotalCount { get; set; }
+
+    public List<ProductCategoryDataResponse> ProductCatalog { get; set; } = new();
 
     /// <summary>
     /// Объект данных о пользователях
@@ -127,4 +131,11 @@ public class MainModel
     /// Версия API
     /// </summary>
     public string Version { get; init; }
+}
+
+public class LauncherNewsTypeOption
+{
+    public string Ru { get; set; } = string.Empty;
+
+    public string En { get; set; } = string.Empty;
 }

@@ -8,7 +8,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { Ajax } from "../Shared/ajax";
-import { ModalForm } from "../Shared/modal_form";
 export class Wish {
     constructor(utilities, cookies) {
         this.utilities = utilities;
@@ -24,19 +23,45 @@ export class Wish {
             yield this.loadTablePosts();
             const createPost = document.getElementById("create-post-btn");
             if (createPost) {
-                createPost.addEventListener("click", () => __awaiter(this, void 0, void 0, function* () {
-                    const confirmForm = new ModalForm(this.localizationStrings["Wish_Modal_Title"], "column");
-                    const resultConfirm = yield confirmForm.showConfirmForm("", "", this.localizationStrings["Wish_Modal_Cancel"]);
-                    if (!resultConfirm)
-                        return;
-                    document.location.href = "/create";
-                }));
+                createPost.addEventListener("click", () => this.openCreatePostModal());
             }
+            document.querySelectorAll("[data-wish-modal-close]").forEach(closeControl => {
+                closeControl.addEventListener("click", () => this.closeCreatePostModal());
+            });
+            document.addEventListener("keydown", event => {
+                if (event.key === "Escape") {
+                    this.closeCreatePostModal();
+                }
+            });
             window.addEventListener("scroll", () => __awaiter(this, void 0, void 0, function* () { return yield this.handleScrollWindow(); }));
             this.statusSelect.addEventListener("change", () => __awaiter(this, void 0, void 0, function* () {
                 yield this.loadTablePosts();
             }));
         });
+    }
+    openCreatePostModal() {
+        const modal = document.getElementById("modal_form");
+        if (!modal)
+            return;
+        modal.style.display = "flex";
+        window.requestAnimationFrame(() => modal.classList.add("is-open"));
+        document.body.classList.add("lizerium-modal-open");
+        const firstInput = modal.querySelector("input[name='autor']");
+        if (firstInput) {
+            window.setTimeout(() => firstInput.focus(), 80);
+        }
+    }
+    closeCreatePostModal() {
+        const modal = document.getElementById("modal_form");
+        if (!modal)
+            return;
+        modal.classList.remove("is-open");
+        document.body.classList.remove("lizerium-modal-open");
+        window.setTimeout(() => {
+            if (!modal.classList.contains("is-open")) {
+                modal.style.display = "none";
+            }
+        }, 200);
     }
     loadTablePosts() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -46,7 +71,7 @@ export class Wish {
             if (this.utilities.isEmpty(response))
                 return;
             const dataResponse = JSON.parse(response);
-            const blockPosts = document.querySelector(".block.posts");
+            const blockPosts = document.querySelector(".lizerium-wish-feed");
             if (blockPosts) {
                 blockPosts.innerHTML = '';
                 while (blockPosts.firstChild) {
@@ -120,7 +145,8 @@ export class Wish {
             for (let i = 0; i < posts.length; i++) {
                 if (parseInt(posts[i].Status) < 0)
                     continue;
-                const div = document.createElement("div");
+                const div = document.createElement("article");
+                div.classList.add("lizerium-wish-card");
                 switch (posts[i].Status) {
                     case 1:
                         div.classList.add("status-new");
@@ -139,9 +165,14 @@ export class Wish {
                         break;
                 }
                 const AutorLabel = document.createElement("p");
+                AutorLabel.classList.add("lizerium-wish-author");
                 AutorLabel.innerText = posts[i].Autor;
+                const avatar = document.createElement("span");
+                avatar.classList.add("lizerium-wish-avatar");
+                avatar.setAttribute("aria-hidden", "true");
+                avatar.style.setProperty("--wish-avatar-seed", `${(posts[i].Id % 6) + 1}`);
                 const PostContentDiv = document.createElement("div");
-                PostContentDiv.classList.add("post-content");
+                PostContentDiv.classList.add("post-content", "lizerium-wish-message");
                 const spanTruncated = document.createElement("span");
                 spanTruncated.classList.add("truncated");
                 spanTruncated.innerText = posts[i].MessageMini;
@@ -163,69 +194,42 @@ export class Wish {
                     AReadMore.addEventListener('click', () => this.toggleContent(PostContentDiv));
                     PostContentDiv.appendChild(AReadMore);
                 }
-                div.appendChild(AutorLabel);
-                div.appendChild(PostContentDiv);
+                const cardHeader = document.createElement("div");
+                cardHeader.classList.add("lizerium-wish-card-head");
+                cardHeader.appendChild(AutorLabel);
+                const cardDate = document.createElement("time");
+                cardDate.classList.add("lizerium-wish-date");
+                cardDate.innerText = posts[i].DateTimeUnixString ? posts[i].DateTimeUnixString : "";
+                cardHeader.appendChild(cardDate);
+                const cardBody = document.createElement("div");
+                cardBody.classList.add("lizerium-wish-card-body");
+                cardBody.appendChild(cardHeader);
+                cardBody.appendChild(PostContentDiv);
+                const statusSlot = document.createElement("div");
+                statusSlot.classList.add("lizerium-wish-status-row");
+                div.appendChild(avatar);
+                div.appendChild(cardBody);
                 switch (posts[i].Status) {
                     case 1:
-                        const labelStatusNew = document.createElement("p");
-                        labelStatusNew.classList.add("status-new");
-                        const divStatusNew = document.createElement("div");
-                        divStatusNew.classList.add("loader");
-                        divStatusNew.classList.add("status-new");
-                        const statusNewSpans = this.createSpansFromText(this.localizationStrings["Wish_Status_1"]);
-                        statusNewSpans.forEach(span => divStatusNew.appendChild(span));
-                        labelStatusNew.appendChild(divStatusNew);
-                        div.appendChild(labelStatusNew);
+                        statusSlot.appendChild(this.createStatusBadge(this.localizationStrings["Wish_Status_1"], "status-new"));
                         break;
                     case 2:
-                        const labelStatusRead = document.createElement("p");
-                        labelStatusRead.classList.add("status-read");
-                        const divStatusRead = document.createElement("div");
-                        divStatusRead.classList.add("loader");
-                        divStatusRead.classList.add("status-read");
-                        const statusReadSpans = this.createSpansFromText(this.localizationStrings["Wish_Status_2"]);
-                        statusReadSpans.forEach(span => divStatusRead.appendChild(span));
-                        labelStatusRead.appendChild(divStatusRead);
-                        div.appendChild(labelStatusRead);
+                        statusSlot.appendChild(this.createStatusBadge(this.localizationStrings["Wish_Status_2"], "status-read"));
                         break;
                     case 3:
-                        const labelStatusJob = document.createElement("p");
-                        labelStatusJob.classList.add("status-job");
-                        const divStatusJob = document.createElement("div");
-                        divStatusJob.classList.add("loader");
-                        divStatusJob.classList.add("status-job");
-                        const statusJobSpans = this.createSpansFromText(this.localizationStrings["Wish_Status_3"]);
-                        statusJobSpans.forEach(span => divStatusJob.appendChild(span));
-                        labelStatusJob.appendChild(divStatusJob);
-                        div.appendChild(labelStatusJob);
+                        statusSlot.appendChild(this.createStatusBadge(this.localizationStrings["Wish_Status_3"], "status-job"));
                         break;
                     case 4:
-                        const labelStatusDelete = document.createElement("p");
-                        labelStatusDelete.classList.add("status-delete");
-                        const divStatusDelete = document.createElement("div");
-                        divStatusDelete.classList.add("loader");
-                        divStatusDelete.classList.add("status-delete");
-                        const statusDeleteSpans = this.createSpansFromText(this.localizationStrings["Wish_Status_4"]);
-                        statusDeleteSpans.forEach(span => divStatusDelete.appendChild(span));
-                        labelStatusDelete.appendChild(divStatusDelete);
-                        div.appendChild(labelStatusDelete);
+                        statusSlot.appendChild(this.createStatusBadge(this.localizationStrings["Wish_Status_4"], "status-delete"));
                         break;
                     case 5:
-                        const labelStatusComplete = document.createElement("div");
-                        labelStatusComplete.classList.add("status-complete");
-                        const divStatusComplete = document.createElement("div");
-                        divStatusComplete.classList.add("loader");
-                        divStatusComplete.classList.add("status-complete");
-                        const statusCompleteSpans = this.createSpansFromText(this.localizationStrings["Wish_Status_5"]);
-                        statusCompleteSpans.forEach(span => divStatusComplete.appendChild(span));
-                        labelStatusComplete.style.textAlign = "center";
-                        labelStatusComplete.appendChild(divStatusComplete);
-                        div.appendChild(labelStatusComplete);
+                        statusSlot.appendChild(this.createStatusBadge(this.localizationStrings["Wish_Status_5"], "status-complete"));
                         break;
                 }
+                cardBody.appendChild(statusSlot);
                 fragment.appendChild(div);
             }
-            document.querySelector(".block.posts").appendChild(fragment);
+            document.querySelector(".lizerium-wish-feed").appendChild(fragment);
         }
         finally {
             this.ajaxInProgress = false;
@@ -239,6 +243,12 @@ export class Wish {
             spans.push(span);
         }
         return spans;
+    }
+    createStatusBadge(text, statusClass) {
+        const badge = document.createElement("span");
+        badge.classList.add("lizerium-wish-status-badge", statusClass);
+        badge.innerText = text;
+        return badge;
     }
 }
 //# sourceMappingURL=wish.js.map

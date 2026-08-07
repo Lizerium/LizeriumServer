@@ -106,4 +106,46 @@
 		<value>Crafting Items</value>
 		<comment>DocBuild_Site_Header</comment>
 	</data>
+	<data name="DocBuild_Kicker" xml:space="preserve">
+		<value>Server solutions</value>
+	</data>
+	<data name="DocBuild_Description" xml:space="preserve">
+		<value>A catalog of items craftable on the Lizerium server: categories, recipes, and required component counts.</value>
+	</data>
+	<data name="DocBuild_Catalog_Label" xml:space="preserve">
+		<value>Recipe catalog</value>
+	</data>
+	<data name="DocBuild_Catalog_Title" xml:space="preserve">
+		<value>Craftable items</value>
+	</data>
+	<data name="DocBuild_Catalog_Description" xml:space="preserve">
+		<value>Choose a category and open an item to see the required components.</value>
+	</data>
+	<data name="DocBuild_Category_Label" xml:space="preserve">
+		<value>Category</value>
+	</data>
+	<data name="DocBuild_Items_Count_Label" xml:space="preserve">
+		<value>items</value>
+	</data>
+	<data name="DocBuild_Recipe_Label" xml:space="preserve">
+		<value>Recipe</value>
+	</data>
+	<data name="DocBuild_Search_Label" xml:space="preserve">
+		<value>Item search</value>
+	</data>
+	<data name="DocBuild_Search_Placeholder" xml:space="preserve">
+		<value>Find an item or category...</value>
+	</data>
+	<data name="DocBuild_Search_Clear" xml:space="preserve">
+		<value>Clear search</value>
+	</data>
+	<data name="DocBuild_Search_Empty" xml:space="preserve">
+		<value>No items found</value>
+	</data>
+	<data name="DocBuild_Search_Result" xml:space="preserve">
+		<value>result</value>
+	</data>
+	<data name="DocBuild_Search_Results" xml:space="preserve">
+		<value>results</value>
+	</data>
 </root>

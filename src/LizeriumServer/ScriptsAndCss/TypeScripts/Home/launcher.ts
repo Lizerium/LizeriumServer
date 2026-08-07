@@ -47,6 +47,9 @@ export class Launcher {
         this.bindNewsReader();
     }
 
+    /**
+     * Wires image galleries inside news cards without rebuilding server-rendered markup.
+     */
     private bindNewsCarousels(): void {
         const carousels = document.querySelectorAll<HTMLElement>("[data-news-carousel]");
 
@@ -85,6 +88,9 @@ export class Launcher {
         });
     }
 
+    /**
+     * Opens gallery images in a lightweight overlay shared by all launcher news cards.
+     */
     private bindNewsLightbox(): void {
         document.querySelectorAll<HTMLElement>("[data-news-lightbox]").forEach((button) => {
             button.addEventListener("click", () => {
@@ -120,6 +126,9 @@ export class Launcher {
         document.body.appendChild(lightbox);
     }
 
+    /**
+     * Controls the full-screen reader: virtualized posts, scroll sync, pagination jumps and share actions.
+     */
     private bindNewsReader(): void {
         const reader = document.querySelector<HTMLElement>("[data-news-reader]");
         const feed = document.querySelector<HTMLElement>("[data-news-reader-feed]");
@@ -132,6 +141,47 @@ export class Launcher {
         let renderedStart = 0;
         let renderedEnd = -1;
         let suppressScrollSyncUntil = 0;
+
+        const getVisibleHeaderInset = (): number => {
+            if (!window.matchMedia("(max-width: 900px)").matches)
+                return 0;
+
+            const header = document.querySelector<HTMLElement>(".header_icon_lang_block");
+            if (!header)
+                return 0;
+
+            const rect = header.getBoundingClientRect();
+            if (rect.bottom <= 0 || rect.top >= window.innerHeight)
+                return 0;
+
+            return Math.max(0, Math.min(rect.bottom, window.innerHeight * 0.42));
+        };
+
+        const updateReaderViewportInsets = (): void => {
+            feed.style.setProperty("--news-reader-header-inset", `${getVisibleHeaderInset()}px`);
+        };
+
+        const getFeedTopInset = (): number => {
+            updateReaderViewportInsets();
+            const paddingTop = Number.parseFloat(window.getComputedStyle(feed).paddingTop || "0");
+            return Math.max(16, paddingTop);
+        };
+
+        const withReaderTarget = (href: string, target: "first" | "last"): string => {
+            const url = new URL(href, window.location.href);
+            url.searchParams.set("reader", target);
+            return `${url.pathname}${url.search}${url.hash}`;
+        };
+
+        const navigateReaderPage = (target: "first" | "last"): void => {
+            const pageLinkSelector = target === "first"
+                ? ".launcher-news-pagination a.active + a"
+                : ".launcher-news-pagination a:has(+ a.active)";
+            const pageLink = document.querySelector<HTMLAnchorElement>(pageLinkSelector);
+
+            if (pageLink?.href)
+                window.location.href = withReaderTarget(pageLink.href, target);
+        };
 
         const releaseProgrammaticScroll = (): void => {
             suppressScrollSyncUntil = 0;
@@ -152,6 +202,7 @@ export class Launcher {
             });
         };
 
+        // Keep only the active reader window hydrated; unloaded posts preserve height to avoid scroll jumps.
         const setRenderedWindow = (start: number, end: number, hydrateVisible: boolean = true): void => {
             renderedStart = Math.max(0, Math.min(start, posts.length - 1));
             renderedEnd = Math.max(renderedStart, Math.min(end, posts.length - 1));
@@ -206,7 +257,7 @@ export class Launcher {
             suppressScrollSyncUntil = Date.now() + 1200;
 
             const align = (remainingAttempts: number): void => {
-                const nextTop = Math.max(0, post.offsetTop);
+                const nextTop = Math.max(0, post.offsetTop - getFeedTopInset());
 
                 feed.scrollTo({ top: nextTop, behavior: remainingAttempts === attempts ? behavior : "auto" });
 
@@ -271,6 +322,7 @@ export class Launcher {
             reader.classList.add("open");
             reader.setAttribute("aria-hidden", "false");
             document.body.classList.add("news-reader-open");
+            updateReaderViewportInsets();
 
             const post = posts.find((item) => item.getAttribute("data-news-reader-post") === newsId);
             const postIndex = post ? posts.indexOf(post) : 0;
@@ -401,7 +453,7 @@ export class Launcher {
 
             const targetIndex = Math.max(0, activeIndex - 1);
             if (targetIndex === activeIndex) {
-                scrollCurrentPostToTop();
+                navigateReaderPage("last");
                 return;
             }
 
@@ -421,7 +473,7 @@ export class Launcher {
 
             const targetIndex = Math.min(posts.length - 1, activeIndex + 1);
             if (targetIndex === activeIndex) {
-                scrollCurrentPostToBottom();
+                navigateReaderPage("first");
                 return;
             }
 
@@ -470,6 +522,27 @@ export class Launcher {
             });
         });
 
+        const hashReaderTarget = window.location.hash === "#reader-first"
+            ? "first"
+            : window.location.hash === "#reader-last"
+                ? "last"
+                : "";
+        const readerTarget = new URLSearchParams(window.location.search).get("reader") || hashReaderTarget;
+        if (readerTarget === "first" && posts[0]) {
+            window.setTimeout(() => open(posts[0].getAttribute("data-news-reader-post") || ""), 120);
+        }
+        else if (readerTarget === "last" && posts[posts.length - 1]) {
+            window.setTimeout(() => open(posts[posts.length - 1].getAttribute("data-news-reader-post") || ""), 120);
+        }
+
+        window.addEventListener("resize", () => {
+            if (!reader.classList.contains("open"))
+                return;
+
+            updateReaderViewportInsets();
+            alignPostToTop(posts[activeIndex], "auto", 2);
+        });
+
         document.addEventListener("keydown", (event) => {
             if (event.key === "Escape" && reader.classList.contains("open"))
                 close();
@@ -479,6 +552,9 @@ export class Launcher {
         });
     }
 
+    /**
+     * Activates a video player lazily and keeps fallback platform buttons in sync.
+     */
     private hydrateNewsVideoPlayer(player: HTMLElement): void {
         const iframe = player.querySelector<HTMLIFrameElement>("[data-news-video-frame]");
         if (!iframe)
@@ -578,6 +654,9 @@ export class Launcher {
         player.setAttribute("data-news-video-ready", "true");
     }
 
+    /**
+     * Chooses a default video provider by explicit preference first, then by current culture.
+     */
     private getDefaultNewsVideoButton(buttons: HTMLButtonElement[], preferredPlatform: string = ""): HTMLButtonElement | undefined {
         if (preferredPlatform) {
             const preferred = buttons.find((button) => button.getAttribute("data-news-video-platform") === preferredPlatform);

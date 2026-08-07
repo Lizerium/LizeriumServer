@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
@@ -20,7 +20,7 @@ public interface IDataBaseService : IDisposable
     /// <summary>
     /// База данных
     /// </summary>
-    DatabaseFacade Database {  get; }
+    DatabaseFacade Database { get; }
     /// <summary>
     /// Инициализация таблицы постов
     /// </summary>
@@ -35,9 +35,24 @@ public interface IDataBaseService : IDisposable
     DbSet<CommandDataResponse> Commands { get; set; }
 
     /// <summary>
-    /// Инициализация таблицы новостей Lizerium Launcher.
+    /// Инициализация таблицы новостей Lizerium Steam.
     /// </summary>
     DbSet<LauncherNewsDataResponse> LauncherNews { get; set; }
+
+    /// <summary>
+    /// Инициализация таблицы категорий продуктов.
+    /// </summary>
+    DbSet<ProductCategoryDataResponse> ProductCategories { get; set; }
+
+    /// <summary>
+    /// Инициализация таблицы продуктов.
+    /// </summary>
+    DbSet<ProductDataResponse> Products { get; set; }
+
+    /// <summary>
+    /// Инициализация таблицы источников скачивания продуктов.
+    /// </summary>
+    DbSet<ProductDownloadLinkDataResponse> ProductDownloadLinks { get; set; }
 
 
     /// <summary>
@@ -66,7 +81,7 @@ public interface IDataBaseService : IDisposable
     /// <param name="checkSecureOperate">Проверять ли существование таблицы</param>
     /// <param name="shortSize">Ограничения включены или выключены</param>
     /// <returns></returns>
-    Task<List<CommandDataResponse>> GetCommandsAsync(string Category, int Page = 1, int Size = 10, bool checkSecureOperate = true, 
+    Task<List<CommandDataResponse>> GetCommandsAsync(string Category, int Page = 1, int Size = 10, bool checkSecureOperate = true,
         bool shortSize = true);
     /// <summary>
     /// Получает список переводов команд
@@ -145,7 +160,7 @@ public interface IDataBaseService : IDisposable
     Task ExistAndCreateLauncherNewsTable();
 
     /// <summary>
-    /// Получает опубликованные новости Lizerium Launcher.
+    /// Получает опубликованные новости Lizerium Steam.
     /// </summary>
     Task<List<LauncherNewsDataResponse>> GetPublishedLauncherNewsAsync(bool checkSecureOperate = true);
 
@@ -168,6 +183,51 @@ public interface IDataBaseService : IDisposable
     /// Increments public like counter for a launcher news item.
     /// </summary>
     Task<int?> IncrementLauncherNewsLikeAsync(int id, bool checkSecureOperate = true);
+
+    /// <summary>
+    /// Проверяет существование продуктовых таблиц и создает их при необходимости.
+    /// </summary>
+    Task ExistAndCreateProductsTables();
+
+    /// <summary>
+    /// Получает опубликованный каталог продуктов для публичной витрины.
+    /// </summary>
+    Task<List<ProductCategoryDataResponse>> GetPublishedProductCatalogAsync(bool checkSecureOperate = true);
+
+    /// <summary>
+    /// Получает полный каталог продуктов для админки.
+    /// </summary>
+    Task<List<ProductCategoryDataResponse>> GetAllAdminProductCatalogAsync(bool checkSecureOperate = true);
+
+    /// <summary>
+    /// Добавляет или обновляет категорию продуктов.
+    /// </summary>
+    Task<bool> SaveProductCategoryAsync(ProductCategoryDataResponse category, bool checkSecureOperate = true);
+
+    /// <summary>
+    /// Удаляет категорию продуктов.
+    /// </summary>
+    Task<bool> DeleteProductCategoryAsync(int id, bool checkSecureOperate = true);
+
+    /// <summary>
+    /// Добавляет или обновляет продукт.
+    /// </summary>
+    Task<bool> SaveProductAsync(ProductDataResponse product, bool checkSecureOperate = true);
+
+    /// <summary>
+    /// Удаляет продукт.
+    /// </summary>
+    Task<bool> DeleteProductAsync(int id, bool checkSecureOperate = true);
+
+    /// <summary>
+    /// Добавляет или обновляет источник скачивания продукта.
+    /// </summary>
+    Task<bool> SaveProductDownloadLinkAsync(ProductDownloadLinkDataResponse link, bool checkSecureOperate = true);
+
+    /// <summary>
+    /// Удаляет источник скачивания продукта.
+    /// </summary>
+    Task<bool> DeleteProductDownloadLinkAsync(int id, bool checkSecureOperate = true);
     /// <summary>
     /// Генерировать базовую таблицу
     /// </summary>

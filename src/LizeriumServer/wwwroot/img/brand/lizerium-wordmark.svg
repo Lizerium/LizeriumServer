@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="186" height="34" viewBox="0 0 186 34" role="img" aria-label="LIZERIUM">
+  <defs>
+    <linearGradient id="lizerium-wordmark-fill" x1="0" y1="0" x2="0" y2="34" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.48" stop-color="#fbfaff"/>
+      <stop offset="0.74" stop-color="#ded2ff"/>
+      <stop offset="1" stop-color="#a874ff"/>
+    </linearGradient>
+    <linearGradient id="lizerium-wordmark-edge" x1="0" y1="0" x2="186" y2="34" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7b4dff"/>
+      <stop offset="0.5" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#61dcff"/>
+    </linearGradient>
+    <filter id="lizerium-wordmark-glow" x="-8%" y="-25%" width="116%" height="150%">
+      <feGaussianBlur stdDeviation="0.65" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0.55 0 0 0 0.35  0 0.3 0 0 0.15  0 0 0.95 0 1  0 0 0 0.55 0" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <g filter="url(#lizerium-wordmark-glow)">
+    <text x="1" y="27"
+          fill="url(#lizerium-wordmark-fill)"
+          stroke="url(#lizerium-wordmark-edge)"
+          stroke-width="0.42"
+          paint-order="stroke fill"
+          font-family="Montserrat, Eurostile, Orbitron, Arial, sans-serif"
+          font-size="28"
+          font-weight="600"
+          letter-spacing="0"
+          textLength="181"
+          lengthAdjust="spacingAndGlyphs">LIZERIUM</text>
+  </g>
+</svg>

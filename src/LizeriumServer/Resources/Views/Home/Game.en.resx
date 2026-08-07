@@ -1,6 +1,6 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
-	<!-- 
+  <!--
 		Microsoft ResX Schema
 
 		Version 1.3
@@ -58,112 +58,138 @@
 			: using a System.ComponentModel.TypeConverter
 			: and then encoded with base64 encoding.
 	-->
-	
-	<xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-		<xsd:element name="root" msdata:IsDataSet="true">
-			<xsd:complexType>
-				<xsd:choice maxOccurs="unbounded">
-					<xsd:element name="data">
-						<xsd:complexType>
-							<xsd:sequence>
-								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-								<xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
-							</xsd:sequence>
-							<xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
-							<xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-							<xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-						</xsd:complexType>
-					</xsd:element>
-					<xsd:element name="resheader">
-						<xsd:complexType>
-							<xsd:sequence>
-								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-							</xsd:sequence>
-							<xsd:attribute name="name" type="xsd:string" use="required" />
-						</xsd:complexType>
-					</xsd:element>
-				</xsd:choice>
-			</xsd:complexType>
-		</xsd:element>
-	</xsd:schema>
-	<resheader name="resmimetype">
-		<value>text/microsoft-resx</value>
-	</resheader>
-	<resheader name="version">
-		<value>1.3</value>
-	</resheader>
-	<resheader name="reader">
-		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-	</resheader>
-	<resheader name="writer">
-		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-	</resheader>
-	<data name="Game_Title" xml:space="preserve">
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>1.3</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Game_Title" xml:space="preserve">
 		<value>Download launcher and games</value>
 		<comment>Game_Title</comment>
 	</data>
-	<data name="Game_Title_Mini" xml:space="preserve">
+  <data name="Game_Title_Mini" xml:space="preserve">
 		<value>What is available for download</value>
 		<comment>Game_Title_Mini</comment>
 	</data>
-	<data name="Game_Name_Lizerium_Launcher" xml:space="preserve">
-		<value>Lizerium Launcher</value>
+  <data name="Game_Name_Lizerium_Launcher" xml:space="preserve">
+		<value>Lizerium Steam</value>
 		<comment>Game_Name_Lizerium_Launcher</comment>
 	</data>
-	<data name="Game_Download" xml:space="preserve">
+  <data name="Game_Download" xml:space="preserve">
 		<value>Download</value>
 		<comment>Game_Download</comment>
 	</data>
-	<data name="Game_Note_Lizerium_Launcher" xml:space="preserve">
+  <data name="Game_Note_Lizerium_Launcher" xml:space="preserve">
 		<value>Designed to download updates for available games</value>
 		<comment>Game_Note_Lizerium_Launcher</comment>
 	</data>
-	<data name="Game_FL_Lizerium_Game" xml:space="preserve">
+  <data name="Game_FL_Lizerium_Game" xml:space="preserve">
 		<value>Freelancer Lizerium</value>
 		<comment>Game_FL_Lizerium_Game</comment>
 	</data>
-	<data name="Game_FL_Lizerium_Game_Note" xml:space="preserve">
+  <data name="Game_FL_Lizerium_Game_Note" xml:space="preserve">
 		<value>A standalone game based on Freelancer (2003)</value>
 		<comment>Game_FL_Lizerium_Game_Note</comment>
 	</data>
-	<data name="Game_FL_Freelancer_Game" xml:space="preserve">
+  <data name="Game_FL_Freelancer_Game" xml:space="preserve">
 		<value>Freelancer (2003)</value>
 		<comment>Game_FL_Freelancer_Game</comment>
 	</data>
-	<data name="Game_FL_Freelancer_Game_Note" xml:space="preserve">
+  <data name="Game_FL_Freelancer_Game_Note" xml:space="preserve">
 		<value>Official game from Digital Anvil</value>
 		<comment>Game_FL_Freelancer_Game_Note</comment>
 	</data>
-	<data name="Game_Additional_Info" xml:space="preserve">
+  <data name="Game_Additional_Info" xml:space="preserve">
 		<value>Additional information</value>
 		<comment>Game_Additional_Info</comment>
 	</data>
-	<data name="Game_Additional_Info_1" xml:space="preserve">
-		<value>The launcher (Lizerium Launcher) is in the betta testing stage, the loading speed of applications is not high.</value>
+  <data name="Game_Additional_Info_1" xml:space="preserve">
+		<value>The Lizerium Steam launcher is in beta testing, so download speed may be limited.</value>
 		<comment>Game_Additional_Info_1</comment>
 	</data>
-	<data name="Game_Additional_Info_2" xml:space="preserve">
-		<value>Mod (Freelancer Lizerium) is a standalone game, it is not installed on top of the old game files like all the others. Frelancer (2003) itself is attached to the download for old players who want to remember the game, compare.</value>
+  <data name="Game_Additional_Info_2" xml:space="preserve">
+		<value>Freelancer Lizerium is distributed as a standalone game and is not installed over the old client files.</value>
 		<comment>Game_Additional_Info_2</comment>
 	</data>
-	<data name="Game_Additional_Info_3" xml:space="preserve">
+  <data name="Game_Additional_Info_3" xml:space="preserve">
 		<value>The launcher is designed to update projects inside it, and it also updates itself.</value>
 		<comment>Game_Additional_Info_3</comment>
 	</data>
-	<data name="Game_Additional_Info_4" xml:space="preserve">
-		<value>Leave a review on the official Lizerium communities. It is important to me.</value>
+  <data name="Game_Additional_Info_4" xml:space="preserve">
+		<value>Reviews in the official Lizerium communities help the project improve future releases.</value>
 		<comment>Game_Additional_Info_4</comment>
 	</data>
-	<data name="Game_Additional_Info_5_1" xml:space="preserve">
-		<value>Everything is done for free and by one person.</value>
+  <data name="Game_Additional_Info_5_1" xml:space="preserve">
+		<value>The project is free and maintained by</value>
 		<comment>Game_Additional_Info_5_1</comment>
 	</data>
-	<data name="Game_Additional_Info_5_2" xml:space="preserve">
+  <data name="Game_Additional_Info_5_2" xml:space="preserve">
 		<value>Dvurechensky</value>
 		<comment>Game_Additional_Info_5_2</comment>
 	</data>
-	<data name="Game_Title_Site" xml:space="preserve">
-		<value>Lizerium Mode - Games</value>
+  <data name="Game_Title_Site" xml:space="preserve">
+		<value>Lizerium - Games</value>
 		<comment>Game_Title_Site</comment>
 	</data>
+  <data name="Game_Tool_FindChanges_Description" xml:space="preserve">
+    <value>A tool for comparing two versions of a file structure and preparing an update folder.</value>
+  </data>
+  <data name="Game_Launcher_Source" xml:space="preserve">
+    <value>Lizerium Steam source code</value>
+  </data>
+  <data name="Game_Tool_DataToolkit_Description" xml:space="preserve">
+    <value>Reading, parsing, and serializing data from Freelancer games.</value>
+  </data>
+  <data name="Game_Tools_Title" xml:space="preserve">
+    <value>Tools and helper applications</value>
+  </data>
+  <data name="Game_Open_Source" xml:space="preserve">
+    <value>Source code</value>
+  </data>
+  <data name="Game_Open_Release" xml:space="preserve">
+    <value>Open release</value>
+  </data>
+  <data name="Game_Launcher_Section_Title" xml:space="preserve">
+    <value>Launcher</value>
+  </data>
+  <data name="Game_Page_Header" xml:space="preserve">
+    <value>Lizerium Game Series</value>
+  </data>
+  <data name="Game_Page_Description" xml:space="preserve">
+    <value>Official and fan projects for the Freelancer universe.</value>
+  </data>
 </root>

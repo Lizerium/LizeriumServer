@@ -12,49 +12,49 @@ using System.Text.Json.Serialization;
 namespace LizeriumUtilities.FormatsData.DataBase.Response;
 
 /// <summary>
-/// РќРѕРІРѕСЃС‚РЅРѕР№ РїРѕСЃС‚ РґР»СЏ СЃС‚СЂР°РЅРёС†С‹ Lizerium Launcher.
+/// Новостной пост для страницы Lizerium Steam.
 /// </summary>
 public class LauncherNewsDataResponse
 {
     /// <summary>
-    /// РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РЅРѕРІРѕСЃС‚Рё.
+    /// Идентификатор новости.
     /// </summary>
     [Key]
     [JsonPropertyName("Id")]
     public int Id { get; set; }
 
     /// <summary>
-    /// Р СѓСЃСЃРєРёР№ Р·Р°РіРѕР»РѕРІРѕРє.
+    /// Русский заголовок.
     /// </summary>
     [JsonPropertyName("TitleRu")]
     public string TitleRu { get; set; }
 
     /// <summary>
-    /// РђРЅРіР»РёР№СЃРєРёР№ Р·Р°РіРѕР»РѕРІРѕРє.
+    /// Английский заголовок.
     /// </summary>
     [JsonPropertyName("TitleEn")]
     public string TitleEn { get; set; }
 
     /// <summary>
-    /// Р СѓСЃСЃРєРёР№ Markdown-С‚РµРєСЃС‚.
+    /// Русский Markdown-текст.
     /// </summary>
     [JsonPropertyName("MarkdownRu")]
     public string MarkdownRu { get; set; }
 
     /// <summary>
-    /// РђРЅРіР»РёР№СЃРєРёР№ Markdown-С‚РµРєСЃС‚.
+    /// Английский Markdown-текст.
     /// </summary>
     [JsonPropertyName("MarkdownEn")]
     public string MarkdownEn { get; set; }
 
     /// <summary>
-    /// РЎСЃС‹Р»РєР° РЅР° YouTube-РІРёРґРµРѕ.
+    /// Ссылка на YouTube-видео.
     /// </summary>
     [JsonPropertyName("YoutubeUrl")]
     public string YoutubeUrl { get; set; }
 
     /// <summary>
-    /// РЎСЃС‹Р»РєР° РЅР° Rutube-РІРёРґРµРѕ.
+    /// Ссылка на Rutube-видео.
     /// </summary>
     [JsonPropertyName("RutubeUrl")]
     public string RutubeUrl { get; set; }
@@ -66,7 +66,7 @@ public class LauncherNewsDataResponse
     public string VkVideoUrl { get; set; }
 
     /// <summary>
-    /// РЎСЃС‹Р»РєР° РЅР° РёР·РѕР±СЂР°Р¶РµРЅРёРµ.
+    /// Ссылка на изображение.
     /// </summary>
     [JsonPropertyName("ImageUrl")]
     public string ImageUrl { get; set; }
@@ -108,31 +108,31 @@ public class LauncherNewsDataResponse
     public int LikeCount { get; set; }
 
     /// <summary>
-    /// РЎСЃС‹Р»РєР° РЅР° GitHub-РїСЂРѕРµРєС‚, СЃРІСЏР·Р°РЅРЅС‹Р№ СЃ РЅРѕРІРѕСЃС‚СЊСЋ.
+    /// Ссылка на GitHub-проект, связанный с новостью.
     /// </summary>
     [JsonPropertyName("GithubUrl")]
     public string GithubUrl { get; set; }
 
     /// <summary>
-    /// РћС‚РѕР±СЂР°Р¶Р°РµРјРѕРµ РЅР°Р·РІР°РЅРёРµ GitHub-РїСЂРѕРµРєС‚Р°.
+    /// Отображаемое название GitHub-проекта.
     /// </summary>
     [JsonPropertyName("GithubProjectName")]
     public string GithubProjectName { get; set; }
 
     /// <summary>
-    /// РћРїСѓР±Р»РёРєРѕРІР°РЅР° Р»Рё РЅРѕРІРѕСЃС‚СЊ.
+    /// Опубликована ли новость.
     /// </summary>
     [JsonPropertyName("IsPublished")]
     public bool IsPublished { get; set; }
 
     /// <summary>
-    /// РџРѕСЂСЏРґРѕРє РІС‹РІРѕРґР°. Р§РµРј РјРµРЅСЊС€Рµ С‡РёСЃР»Рѕ, С‚РµРј РІС‹С€Рµ РєР°СЂС‚РѕС‡РєР°.
+    /// Порядок вывода. Чем меньше число, тем выше карточка.
     /// </summary>
     [JsonPropertyName("SortOrder")]
     public int SortOrder { get; set; }
 
     /// <summary>
-    /// Unix-РІСЂРµРјСЏ РїСѓР±Р»РёРєР°С†РёРё.
+    /// Unix-время публикации.
     /// </summary>
     [JsonPropertyName("PublishedAtUnix")]
     public long PublishedAtUnix { get; set; }

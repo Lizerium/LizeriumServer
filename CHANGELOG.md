@@ -12,6 +12,68 @@
 
 # Updates
 
+## 07.08.2026
+
+### Lizerium Server
+
+- Added a dedicated `Community` page with links to the main Lizerium channels: VK, Discord, YouTube, Rutube, VK Video and game server monitoring.
+- Reworked the home page into a portal overview that surfaces the key areas immediately: news, games, documentation, server features, tools, support, community and external Freelancer projects.
+- Reworked global site navigation with a desktop top menu, updated sidebar and mobile navigation, new icons, active states, a language combobox and animated page transitions.
+- Rebuilt the `Games` section on top of a database-backed product catalog: launcher, games, builds and utilities are now grouped by categories and download sources.
+- Added a tools and utilities section for Freelancer (2003): LizeriumFindChanges, LizeriumDataToolkit, LizeriumVSCodeColorPicker, LizeriumAccauntManager, Lizerium.Restarter.Server, Lizerium.RDL.Converter, Lizerium.Localization.Toolkit, Lizerium.BINI.Converter, CompilerInfocardsUI, LizeriumFLHook, LizeriumUTFtoXML, Lizerium.UTF.Editor and Freelancer.Reverse.Runtime.
+- Added a download-source modal on the games page, expandable long categories, in-category search and soft wrapping for long product names.
+- Extended the Lizerium Steam news page with filters by video platform, GitHub links and news type; refreshed the hero, cards, reader modal and pagination links so filters are preserved.
+- News posts can now represent GitHub project publications, videos, full update articles, images, galleries and mixed media announcements.
+- Reworked the support page with a new wish/request UI, custom creation modal, request cards, statuses, publication dates and ReCaptcha validation only on request creation.
+- Fixed wish/request submission redirect: users now return to the support page instead of the home page.
+- Reworked documentation pages: the documentation index, installation page, server command pages and crafting pages now use the new layout, hero blocks, cards, back navigation and responsive styling.
+- Added search to the craftable-items table, including item/category search, quick jump to a found recipe, result highlighting and improved scrolling to opened recipes.
+- Added global command search and category-local command search to server command documentation; category cards now show command counts.
+- Added lightbox viewing for command GIF examples.
+- Fixed links and the table of contents in the Freelancer (2003) Knowledge Base: Russian anchor links now map to generated heading ids, while relative and absolute KnowledgeBase links normalize to `/wiki/KnowledgeBase/...`.
+- Added support for an external Knowledge Base root through `StoragePathsOptions.KnowledgeBase`.
+- Updated RU/EN localization for the home page, games, news, community, support, documentation, footer, navigation and page transitions.
+- Added public `wwwroot/img` assets for brand, navigation, social links and the home/game/community/documentation pages.
+- Improved maintenance mode handling for empty request paths and empty updater-dev-mode whitelists.
+- Switched JS/CSS minimization in Webpack to non-parallel mode for more stable builds in constrained environments.
+
+### Api Lizerium Server
+
+- Added a `Products` section to the admin panel.
+- Added management for product categories, products and download sources: create, edit, delete, sort order, RU/EN names and descriptions, active flags, icons and backgrounds.
+- Added AJAX saving for product catalog forms with quick `Saving/Saved/Error` feedback and automatic reload after creating a new record.
+- Added collapsible category, product and inline-form panels for easier work with large catalogs.
+- Added an image library for the product catalog: search existing `/img` files, preview images, select an existing image and upload new files.
+- Added protected `/products/assets`, `/products/assets/preview` and `/products/assets/upload` endpoints; uploads are limited to 8 MB and support `webp`, `png`, `jpg`, `jpeg`, `gif` and `svg`.
+- Extended the news admin page with a selector for existing news types so RU/EN publication types can be reused without manual entry.
+- Added `Products` to the admin sidebar.
+- Renamed Lizerium Launcher wording to Lizerium Steam across admin and public surfaces.
+
+### Database and Contracts
+
+- Added `product_categories`, `products` and `product_download_links` tables with cascade deletion for nested products and links.
+- Added `ProductCategoryDataResponse`, `ProductDataResponse` and `ProductDownloadLinkDataResponse` DTOs.
+- Made `DataBaseService` partial and moved initial product catalog seeding into `DataBaseService.ProductsSeed.cs`.
+- Added methods for loading the public and admin product catalog, saving and deleting categories, products and download sources.
+- Added initial seed data for launcher, available downloads and tools.
+- Added an optional `category` filter to public command search; existing calls without the filter remain compatible.
+- Updated the launcher-news model wording to Lizerium Steam and fixed Russian XML comments.
+
+### Tests and Quality
+
+- Added product catalog tests to verify public queries return only active categories, products and links in the correct order.
+- Added regression tests for the community page and layout assets.
+- Added coverage for `IReCaptchaService` registration.
+- Expanded Markdown rendering tests for front matter, first-H1 replacement, KnowledgeBase link normalization and Russian table-of-contents links.
+
+### Upgrade Notes
+
+- The new product tables are created automatically through `CREATE TABLE IF NOT EXISTS`; for databases other than the current SQLite scenario, SQL compatibility should be checked separately.
+- Initial product seed data is inserted only when the product categories table is empty.
+- Product image upload and preview require a valid `appSettings:portalImagesPath` or accessible `LizeriumServer/wwwroot/img` directory.
+- The public `/Home/Game` page now expects `GameProductsViewModel`.
+- `ReCaptcha` is registered through `AddReCaptcha(...)` instead of only `Configure<ReCaptchaSettings>`.
+
 ## 01.08.2026
 
 ### Lizerium Server
@@ -26,7 +88,7 @@
 
 ### Lizerium Server
 
-- Added a database-backed Lizerium Launcher news feed on `/Home/Launcher` with search, newest/oldest sorting, pagination and localized RU/EN content.
+- Added a database-backed Lizerium Steam news feed on `/Home/Launcher` with search, newest/oldest sorting, pagination and localized RU/EN content.
 - Added `launcher_news` storage support: automatic table creation, missing-column repair, initial seed news, published/admin queries, save/delete operations and public like counter updates.
 - Added the `LauncherNewsDataResponse` model with RU/EN titles and Markdown, YouTube/Rutube/VK links, cover image, gallery, product icon, news type, GitHub link, publication status, sort order and publication date.
 - Added a full news reader with Markdown rendering, image galleries, cover/product icons, GitHub links, public likes, localized share/copy flow and navigation controls.

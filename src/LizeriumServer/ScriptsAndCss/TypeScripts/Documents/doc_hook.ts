@@ -5,7 +5,9 @@ import { LocalizationStrings, Utilities } from "../Shared/utilities";
 declare var bootstrap: any;
 interface CommandResult {
     urlGif?: string;
+    UrlGif?: string;
     CommandNames: string;
+    CommandNamesList?: string[];
     Description: string;
     Category: string;
     Translations?: TranslationItem[];
@@ -80,6 +82,7 @@ export class DocHook {
         if (commandSearch && searchResults) {
             commandSearch.addEventListener("input", async () => {
                 const query = commandSearch.value;
+                const category = commandSearch.dataset.category;
 
                 if (query.length < 2) {
                     searchResults.innerHTML = "";
@@ -88,7 +91,10 @@ export class DocHook {
 
                 try {
                     //создаем экземпляр Ajax
-                    const ajax = new Ajax(`searchCommands/${encodeURIComponent(query)}`, this.cookies);
+                    const requestUrl = category
+                        ? `searchCommands/${encodeURIComponent(query)}?category=${encodeURIComponent(category)}`
+                        : `searchCommands/${encodeURIComponent(query)}`;
+                    const ajax = new Ajax(requestUrl, this.cookies);
                     //отправляем запрос
                     const response = await ajax.sendRequest();
                     //проверяем ответ
@@ -114,16 +120,16 @@ export class DocHook {
 
 
                         const url = this.buildDocUrl(cmd as CommandResult);
-                        card.className = "col";
+                        card.className = "doc-hook-search-result";
                         card.innerHTML = `
-                            <div class="card h-100 shadow-sm" onclick="window.location.href = '${url}'">
-                                ${cmd.urlGif ? `<img src="${cmd.urlGif}" class="card-img-top" alt="preview">` : ""}
-                                <div class="card-body">
-                                    <h5 class="card-title">${cmd.CommandNames}</h5>
-                                    <p class="card-text">${this.getLocalizedDescription(cmd)}</p>
-                                    <span class="badge bg-secondary">${this.getLocalizedTitleCategory(cmd)}</span>
-                                </div>
-                            </div>`;
+                            <a class="doc-hook-search-card custom-cursor-hover" href="${url}">
+                                ${this.getSearchPreview(cmd)}
+                                <span class="doc-hook-search-copy">
+                                    <strong>${cmd.CommandNames}</strong>
+                                    <small>${this.getLocalizedDescription(cmd)}</small>
+                                </span>
+                                <span class="doc-hook-search-category">${this.getLocalizedTitleCategory(cmd)}</span>
+                            </a>`;
                         searchResults.appendChild(card);
                     }
                 } catch (err) {
@@ -136,6 +142,9 @@ export class DocHook {
         }
     }
 
+    /**
+     * Resolves a command result to the exact docs page/anchor using the cached category index.
+     */
     private buildDocUrl(cmd: CommandResult): string {
         const key = `cmdIndex:${cmd.Category}`;
         const raw = localStorage.getItem(key);
@@ -165,6 +174,9 @@ export class DocHook {
         else return `/docs/hook/${encodeURIComponent(cmd.Category)}#hook_${encodeURIComponent(comm)}`;
     }
 
+    /**
+     * Lazily fetches and caches command anchors per category to keep search result links stable.
+     */
     private async ensureCategoryIndex(category: string): Promise<void> {
         const key = `cmdIndex:${category}`;
         if (localStorage.getItem(key)) return;
@@ -195,7 +207,20 @@ export class DocHook {
             return translations[locale]; // берем первый перевод
         }
 
-        return cmd.Description; // fallback
+        return cmd.Category; // fallback
+    }
+
+    /**
+     * Builds the optional GIF preview cell for command search results.
+     */
+    private getSearchPreview(cmd: CommandResult): string {
+        const gif = cmd.UrlGif || cmd.urlGif;
+        if (gif) {
+            const src = gif.startsWith("/") ? gif : `/gifs/${gif}`;
+            return `<span class="doc-hook-search-preview"><img src="${src}" alt=""></span>`;
+        }
+
+        return `<span class="doc-hook-search-preview is-empty" aria-hidden="true"></span>`;
     }
 
     private getCurrentLocale(): string {

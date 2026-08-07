@@ -104,4 +104,34 @@
 	<data name="DocInstall_Header" xml:space="preserve">
 		<value>Инструкции по установке</value>
 	</data>
+	<data name="DocInstall_Kicker" xml:space="preserve">
+		<value>Основные материалы</value>
+	</data>
+	<data name="DocInstall_Description" xml:space="preserve">
+		<value>Раздел для будущих инструкций по установке клиента, компонентов и связанных инструментов Lizerium.</value>
+	</data>
+	<data name="DocInstall_Status" xml:space="preserve">
+		<value>В разработке</value>
+	</data>
+	<data name="DocInstall_Panel_Label" xml:space="preserve">
+		<value>Подготовка раздела</value>
+	</data>
+	<data name="DocInstall_Panel_Title" xml:space="preserve">
+		<value>Инструкция появится позже</value>
+	</data>
+	<data name="DocInstall_Panel_Text" xml:space="preserve">
+		<value>Установочный гайд готовится в едином стиле портала: с понятными шагами, проверкой окружения и подсказками для типовых проблем.</value>
+	</data>
+	<data name="DocInstall_Roadmap_Label" xml:space="preserve">
+		<value>Что будет добавлено</value>
+	</data>
+	<data name="DocInstall_Point_Install" xml:space="preserve">
+		<value>Установка клиента и нужных файлов</value>
+	</data>
+	<data name="DocInstall_Point_Config" xml:space="preserve">
+		<value>Настройка запуска и параметров</value>
+	</data>
+	<data name="DocInstall_Point_Check" xml:space="preserve">
+		<value>Проверка подключения и частые ошибки</value>
+	</data>
 </root>

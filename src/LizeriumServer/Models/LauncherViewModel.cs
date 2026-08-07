@@ -11,12 +11,12 @@ using LizeriumUtilities.FormatsData.DataBase.Response;
 namespace LizeriumServer.Models;
 
 /// <summary>
-/// РњРѕРґРµР»СЊ СЃС‚СЂР°РЅРёС†С‹ Lizerium Launcher.
+/// Модель страницы Lizerium Steam.
 /// </summary>
 public class LauncherViewModel
 {
     /// <summary>
-    /// РќРѕРІРѕСЃС‚Рё РґР»СЏ РІС‹РІРѕРґР°.
+    /// Новости для вывода.
     /// </summary>
     public List<LauncherNewsDataResponse> News { get; set; } = new();
 
@@ -24,11 +24,19 @@ public class LauncherViewModel
 
     public string SortOrderFilter { get; set; } = "new";
 
+    public string PlatformFilter { get; set; } = string.Empty;
+
+    public string TypeFilter { get; set; } = string.Empty;
+
+    public bool GithubFilter { get; set; }
+
+    public List<string> NewsTypes { get; set; } = new();
+
     public int CurrentPage { get; set; } = 1;
 
     public int TotalPages { get; set; } = 1;
 
-    public int PageSize { get; set; } = 6;
+    public int PageSize { get; set; } = 7;
 
     public int TotalCount { get; set; }
 }

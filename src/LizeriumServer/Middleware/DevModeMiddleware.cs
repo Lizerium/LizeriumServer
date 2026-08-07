@@ -28,7 +28,7 @@ namespace LizeriumServer.Middleware
         {
             if (_devModeService.IsDevelopMode)
             {
-                var path = context.Request.Path.Value;
+                var path = context.Request.Path.Value ?? string.Empty;
 
                 // Разрешаем внутреннее API и статику, например
                 if (!path.StartsWith("/maintenance") 
@@ -49,9 +49,9 @@ namespace LizeriumServer.Middleware
                             // проверяем для кого загрузчик работает для разработчика или всех
                             if(_devModeService.IsUpdaterDevMode) // режим разработчика ограниченное скачивание
                             {
-                                var whiteList = _devModeService.UpdaterWhiteList;
+                                var whiteList = _devModeService.UpdaterWhiteList ?? new List<string>();
                                 var ipAddress = context.Connection.RemoteIpAddress?.ToString();
-                                if(!whiteList.Contains(ipAddress))
+                                if(string.IsNullOrWhiteSpace(ipAddress) || !whiteList.Contains(ipAddress))
                                 {
                                     context.Response.Redirect("/maintenance");
                                     return;
@@ -69,7 +69,7 @@ namespace LizeriumServer.Middleware
             }
             else
             {
-                var path = context.Request.Path.Value;
+                var path = context.Request.Path.Value ?? string.Empty;
                 if (path == "/maintenance")
                 {
                     context.Response.Redirect("/");

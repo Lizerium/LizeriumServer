@@ -168,4 +168,10 @@
   <data name="Wish_Read_Default" xml:space="preserve">
     <value>Скрыть</value>
   </data>
+  <data name="Wish_Page_Header" xml:space="preserve">
+    <value>Поддержка</value>
+  </data>
+  <data name="Wish_Page_Description" xml:space="preserve">
+    <value>Ответы на вопросы, предложения пользователей и техническая поддержка.</value>
+  </data>
 </root>

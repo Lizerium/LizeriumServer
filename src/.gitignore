@@ -212,6 +212,17 @@ project.lock.json
 # Output folder used by Webpack or other FE stuff
 **/node_modules/*
 **/wwwroot/*
+!LizeriumServer/wwwroot/
+!LizeriumServer/wwwroot/img/
+LizeriumServer/wwwroot/img/*
+!LizeriumServer/wwwroot/img/nav/
+!LizeriumServer/wwwroot/img/nav/**
+!LizeriumServer/wwwroot/img/brand/
+!LizeriumServer/wwwroot/img/brand/**
+!LizeriumServer/wwwroot/img/social/
+!LizeriumServer/wwwroot/img/social/**
+!LizeriumServer/wwwroot/img/pages/
+!LizeriumServer/wwwroot/img/pages/**
 
 # SpecFlow specific
 *.feature.cs

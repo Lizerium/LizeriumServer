@@ -134,4 +134,19 @@
 		<value>List of items that can be crafted</value>
 		<comment>Documents_Builds</comment>
 	</data>
+	<data name="Documents_Page_Description" xml:space="preserve">
+		<value>Documentation, guides, setup notes, and technical resources.</value>
+	</data>
+	<data name="Documents_Section_Main" xml:space="preserve">
+		<value>Main materials</value>
+	</data>
+	<data name="Documents_Wiki_Sub" xml:space="preserve">
+		<value>Reference base for Freelancer and modding</value>
+	</data>
+	<data name="Documents_Section_Server" xml:space="preserve">
+		<value>Server solutions</value>
+	</data>
+	<data name="Documents_Section_Server_Description" xml:space="preserve">
+		<value>Information about Lizerium server features</value>
+	</data>
 </root>

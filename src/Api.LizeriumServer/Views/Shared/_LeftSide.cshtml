@@ -3,6 +3,7 @@
     var isCabinet = path == "/" || path.StartsWith("/cabinet");
     var isPosts = path.StartsWith("/posts");
     var isNews = path.StartsWith("/news");
+    var isProducts = path.StartsWith("/products");
     var isCommands = path.StartsWith("/commands");
     var isTranslates = path.StartsWith("/command-translates");
 }
@@ -28,6 +29,12 @@
             <a class="@(isNews ? "active" : string.Empty)" href="/news" title="Новости">
                 <span class="nav-icon" aria-hidden="true">&#9635;</span>
                 <span class="nav-label">Новости</span>
+            </a>
+        </li>
+        <li>
+            <a class="@(isProducts ? "active" : string.Empty)" href="/products" title="Продукты">
+                <span class="nav-icon" aria-hidden="true">&#128229;</span>
+                <span class="nav-label">Продукты</span>
             </a>
         </li>
         <li>

@@ -1,3 +1,5 @@
+REFACTORING.ru.md
+
 # The following command works for downloading when using Git for Windows:
 # curl -LOf http://gist.githubusercontent.com/kmorcinek/2710267/raw/.gitignore
 #
@@ -20,11 +22,14 @@ Build
 InputData
 scripts/README_DEPLOY.md
 scripts/*.json
+scripts/*.sql
+scripts/sql/dev-seed/
 scripts/backup-*.ps1
 scripts/deploy-*.ps1
 .deploy/
 pre_commit.log
 pre_commit.ps1
+*.bak
 
 # User-specific files
 *.suo
@@ -243,3 +248,5 @@ AppPackages/
 #####
 # End of core ignore list, below put you custom 'per project' settings (patterns or path)
 #####
+src/LizeriumServer/download_projects.ini
+src/LizeriumServer/download_steam.ini

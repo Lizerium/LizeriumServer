@@ -7,6 +7,8 @@
  */
 
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using AspNetCore.ReCaptcha;
 
 namespace LizeriumServer.IntegrationTests;
 
@@ -25,5 +27,14 @@ public class MiddlewareTests: IClassFixture<WebApplicationFactory<Program>>
         var client = _factory.CreateClient();
         var response = await client.GetAsync("/");
         response.EnsureSuccessStatusCode();
+    }
+
+    [Fact]
+    public void ReCaptchaServiceIsRegistered()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var service = scope.ServiceProvider.GetRequiredService<IReCaptchaService>();
+
+        Assert.NotNull(service);
     }
 }

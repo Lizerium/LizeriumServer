@@ -122,4 +122,7 @@
 	<data name="DocHookItem_Search_Status2" xml:space="preserve">
 		<value>ru</value>
 	</data>
+	<data name="DocHookItem_Description" xml:space="preserve">
+		<value>Ищите команды, копируйте алиасы и проверяйте текущий статус команды.</value>
+	</data>
 </root>

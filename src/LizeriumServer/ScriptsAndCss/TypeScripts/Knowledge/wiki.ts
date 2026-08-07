@@ -45,7 +45,7 @@ export class Wiki {
         //фиксируем переводы
         this.localizationStrings = JSON.parse(response);
 
-        // Ленивая загрузка Prism только когда нужна
+        // Lazy-load heavy markdown tooling only on wiki pages.
         const { default: Prism } = await import("prismjs");
         const { default: Mermaid } = await import("mermaid");
         await import("prismjs/components/prism-typescript");
@@ -131,7 +131,7 @@ export class Wiki {
             });
         });
 
-        // Получаем все чекбоксы категорий
+        // Patch tables can be filtered by categories rendered into data attributes.
         const categoryCheckboxes = document.querySelectorAll<HTMLInputElement>('.category-checkbox');
 
         categoryCheckboxes.forEach(cb => {
@@ -171,6 +171,9 @@ export class Wiki {
         await this.utilities.stopLoader();
     }
 
+    /**
+     * Applies category filters and recalculates tab counters after every checkbox change.
+     */
     private updateRows() {
         const patchRows = document.querySelectorAll<HTMLTableRowElement>('.patch-row');
         const checkedCats = Array.from(document.querySelectorAll<HTMLInputElement>('.category-checkbox:checked'))

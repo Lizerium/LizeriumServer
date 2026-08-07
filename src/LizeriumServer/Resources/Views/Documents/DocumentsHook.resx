@@ -104,4 +104,22 @@
 	<data name="DocHook_Title_Site" xml:space="preserve">
 		<value>ru</value>
 	</data>
+	<data name="DocHook_Kicker" xml:space="preserve">
+		<value>Серверные решения</value>
+	</data>
+	<data name="DocHook_Description" xml:space="preserve">
+		<value>Категории команд для сервера Lizerium: навигация, торговля, группы, безопасность и администрирование.</value>
+	</data>
+	<data name="DocHook_Categories_Description" xml:space="preserve">
+		<value>Выберите раздел документации, чтобы посмотреть алиасы команд, описания, примеры и текущий статус.</value>
+	</data>
+	<data name="DocHook_Category_Subtitle" xml:space="preserve">
+		<value>Раздел документации</value>
+	</data>
+	<data name="DocHook_Command_Count_Label" xml:space="preserve">
+		<value>команд</value>
+	</data>
+	<data name="DocHook_Global_Search_Placeholder" xml:space="preserve">
+		<value>Глобальный поиск по командам...</value>
+	</data>
 </root>

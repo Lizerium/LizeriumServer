@@ -3,35 +3,79 @@
 @{
     ViewData["Title"] = Localizer["DocHook_Title_Site"];
 }
-@Html.ReCaptcha()
+@section PageStyle {
+    <link rel="stylesheet" href="~/css/doc_hook.min.css" asp-append-version="true" />
+}
 
-<section class="news-section">
-    <h1 class="h-color-2 w-100 fw-bold mb-3 mt-5 text-center">⚙️ @Localizer["DocHook_Header_Site"]</h1>
-    <article class="markdown-body">
-        <div class="card-row small custom-cursor-hover">
-            <div class="subcard" onclick="window.location.href = '/docs/all'">
-                <div class="subcard-icon icon-style">📳</div>
-                <div class="subcard-text">@SharedLocalizer["Shared_Docs"]</div>
-            </div>
+<section class="doc-hook-page doc-hook-index">
+    <header class="doc-hook-hero lizerium-reveal">
+        <span class="doc-hook-hero-icon" aria-hidden="true">
+            <img src="~/img/pages/home/ecosystem-server.webp" alt="" />
+        </span>
+        <div class="doc-hook-hero-copy">
+            <span>@Localizer["DocHook_Kicker"]</span>
+            <h1>@Localizer["DocHook_Header_Site"]</h1>
+            <p>@Localizer["DocHook_Description"]</p>
         </div>
-        <div class="card full">
-            <div class="card-title purple"><span>📳@SharedLocalizer["Shared_Commands_List"]</span></div>
-            <div class="card-row small">
-                <div id="toc">
-                    <ul>
-                        @foreach (var category in Model.CategoriesHook)
-                        {
-                            var displayName = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName switch
-                            {
-                                "ru" => category.NameRu ?? category.Key,
-                                _ => category.NameEn ?? category.Key
-                            };
+    </header>
 
-                            <li><a href="/docs/hook/@category.Key">@displayName</a></li>
-                        }
-                    </ul>
+    <article class="markdown-body doc-hook-shell lizerium-reveal">
+        <a class="doc-hook-back custom-cursor-hover" href="/docs/all">
+            <span class="doc-hook-back-icon" aria-hidden="true">↵</span>
+            <span>@SharedLocalizer["Shared_Docs"]</span>
+        </a>
+
+        <div class="search_doc_hook doc-hook-search doc-hook-global-search custom-cursor-hover">
+            <input type="text" id="commandSearch" class="form-control" placeholder="@Localizer["DocHook_Global_Search_Placeholder"]">
+            <div id="searchResults" class="doc-hook-search-results"></div>
+        </div>
+
+        <section class="doc-hook-panel">
+            <div class="doc-hook-panel-header">
+                <div>
+                    <h2>@SharedLocalizer["Shared_Commands_List"]</h2>
+                    <p>@Localizer["DocHook_Categories_Description"]</p>
                 </div>
             </div>
-        </div>
+
+            <div id="toc" class="doc-hook-category-grid">
+                @foreach (var category in Model.CategoriesHook)
+                {
+                    var displayName = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName switch
+                    {
+                        "ru" => category.NameRu ?? category.Key,
+                        _ => category.NameEn ?? category.Key
+                    };
+
+                    var commandsCount = Model.CommandsCount.TryGetValue(category.Key, out var count)
+                        ? count
+                        : 0;
+
+                    var keyLower = category.Key?.ToLowerInvariant() ?? string.Empty;
+                    var isRu = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ru";
+                    var categoryDetail = keyLower switch
+                    {
+                        var key when key.Contains("nav") => isRu ? "Маршруты, точки перехода и перемещение" : "Routes, waypoints and movement",
+                        var key when key.Contains("trade") => isRu ? "Торговля, грузы и сделки" : "Trading, cargo and deals",
+                        var key when key.Contains("group") => isRu ? "Группы, участники и взаимодействие" : "Groups, members and coordination",
+                        var key when key.Contains("security") => isRu ? "Доступ, ограничения и защита" : "Access, limits and protection",
+                        var key when key.Contains("admin") => isRu ? "Администрирование и управление сервером" : "Administration and server control",
+                        _ => isRu ? "Алиасы, описание, примеры и статус команд" : "Aliases, descriptions, examples and status"
+                    };
+
+                    <a class="doc-hook-category-card custom-cursor-hover lizerium-reveal" href="/docs/hook/@category.Key">
+                        <span class="doc-hook-category-content">
+                            <strong>@displayName</strong>
+                            <small>@categoryDetail</small>
+                        </span>
+                        <span class="doc-hook-category-meta">
+                            <span>@commandsCount</span>
+                            <small>@Localizer["DocHook_Command_Count_Label"]</small>
+                        </span>
+                        <span class="doc-hook-category-arrow" aria-hidden="true">→</span>
+                    </a>
+                }
+            </div>
+        </section>
     </article>
 </section>

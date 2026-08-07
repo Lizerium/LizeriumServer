@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -141,5 +141,128 @@
   </data>
   <data name="Index_title_site" xml:space="preserve">
     <value>ru</value>
+  </data>
+  <data name="Index_Hero_Kicker" xml:space="preserve">
+    <value>Welcome to Lizerium</value>
+  </data>
+  <data name="Index_Hero_Title_Line1" xml:space="preserve">
+    <value>Lizerium —</value>
+  </data>
+  <data name="Index_Hero_Title_Line2" xml:space="preserve">
+    <value>universe portal</value>
+  </data>
+  <data name="Index_Hero_Subtitle" xml:space="preserve">
+    <value>Games, tools, modding, and community for the Freelancer universe and beyond.</value>
+  </data>
+  <data name="Index_Hero_Primary" xml:space="preserve">
+    <value>Explore the universe</value>
+  </data>
+  <data name="Index_Hero_Secondary" xml:space="preserve">
+    <value>Latest news</value>
+  </data>
+  <data name="Index_News_Description" xml:space="preserve">
+    <value>Project updates, important announcements, and current events.</value>
+  </data>
+  <data name="Index_News_Action" xml:space="preserve">
+    <value>Read news</value>
+  </data>
+  <data name="Index_Games_Feature_Title" xml:space="preserve">
+    <value>Lizerium game series</value>
+  </data>
+  <data name="Index_Games_Description" xml:space="preserve">
+    <value>Official and fan projects for the Freelancer universe.</value>
+  </data>
+  <data name="Index_Games_Action" xml:space="preserve">
+    <value>View games</value>
+  </data>
+  <data name="Index_Info_Description" xml:space="preserve">
+    <value>Documentation, guides, setup notes, and technical resources.</value>
+  </data>
+  <data name="Index_Info_Action" xml:space="preserve">
+    <value>Open section</value>
+  </data>
+  <data name="Index_Ecosystem_Launcher_Title" xml:space="preserve">
+    <value>Лаунчер</value>
+  </data>
+  <data name="Index_Server_Dialog_Builds_Title" xml:space="preserve">
+    <value>Создание предметов</value>
+  </data>
+  <data name="Index_Ecosystem_Support_Title" xml:space="preserve">
+    <value>Поддержка</value>
+  </data>
+  <data name="Index_Ecosystem_Docs_Description" xml:space="preserve">
+    <value>База знаний о Freelancer (2003)</value>
+  </data>
+  <data name="Index_Ecosystem_Tools_Title" xml:space="preserve">
+    <value>Инструменты</value>
+  </data>
+  <data name="Index_Ecosystem_Server_Title" xml:space="preserve">
+    <value>Серверные решения</value>
+  </data>
+  <data name="Index_Ecosystem_Community_Title" xml:space="preserve">
+    <value>Сообщество</value>
+  </data>
+  <data name="Index_Ecosystem_Server_Description" xml:space="preserve">
+    <value>Информация о возможностях на сервере Lizerium</value>
+  </data>
+  <data name="Index_Dialog_Close" xml:space="preserve">
+    <value>Закрыть</value>
+  </data>
+  <data name="Index_Ecosystem_Support_Description" xml:space="preserve">
+    <value>Ответы на вопросы и техническая поддержка</value>
+  </data>
+  <data name="Index_Ecosystem_Projects_Description" xml:space="preserve">
+    <value>Все игры и моды вселенной Lizerium</value>
+  </data>
+  <data name="Index_Ecosystem_Projects_Title" xml:space="preserve">
+    <value>Игровые проекты</value>
+  </data>
+  <data name="Index_Ecosystem_Docs_Title" xml:space="preserve">
+    <value>Документация</value>
+  </data>
+  <data name="Index_Ecosystem_Tools_Description" xml:space="preserve">
+    <value>Утилиты, редакторы и вспомогательные программы</value>
+  </data>
+  <data name="Index_Ecosystem_Title" xml:space="preserve">
+    <value>Экосистема Lizerium</value>
+  </data>
+  <data name="Index_Server_Dialog_Builds_Description" xml:space="preserve">
+    <value>Список предметов, которые можно создать на сервере Lizerium</value>
+  </data>
+  <data name="Index_Server_Dialog_Hook_Description" xml:space="preserve">
+    <value>Описание команд на сервере Lizerium</value>
+  </data>
+  <data name="Index_Server_Dialog_Hook_Title" xml:space="preserve">
+    <value>Команды сервера</value>
+  </data>
+  <data name="Index_Ecosystem_Community_Description" xml:space="preserve">
+    <value>Форумы, дискорд, VK и другие социальные сети</value>
+  </data>
+  <data name="Index_Server_Dialog_Description" xml:space="preserve">
+    <value>Выберите раздел серверной документации.</value>
+  </data>
+  <data name="Index_Ecosystem_Launcher_Description" xml:space="preserve">
+    <value>Запуск и обновление игр в одном приложении</value>
+  </data>
+  <data name="Index_Link_Discovery_Description" xml:space="preserve">
+    <value>Крупнейшая ролевая модификация Freelancer с живой вселенной, множеством фракций, кораблей и возможностей для совместной игры.</value>
+  </data>
+  <data name="Index_Link_Sirius_Description" xml:space="preserve">
+    <value>Многопользовательская модификация с полностью переработанным балансом, ориентированная на исследование, торговлю и сражения с другими игроками.</value>
+  </data>
+  <data name="Index_Link_Nomad_Description" xml:space="preserve">
+    <value>Фанатское продолжение Freelancer с новой сюжетной кампанией, расширенной вселенной, современными технологиями и обновлённой графикой.</value>
+  </data>
+  <data name="Index_Link_Crossfire_Description" xml:space="preserve">
+    <value>Масштабное продолжение истории Эдисона Трента с десятками сюжетных миссий, новыми секторами, противниками и крупными космическими битвами.</value>
+  </data>
+  <data name="Index_Link_Hd_Description" xml:space="preserve">
+    <value>Графическое переиздание классического Freelancer с HD-текстурами, широкоформатным режимом, улучшенным звуком и исправлениями для современных систем.</value>
+  </data>
+  <data name="Index_Link_Rebirth_Description" xml:space="preserve">
+    <value>Огромное платное русскоязычное расширение Freelancer с сотнями новых систем, фракций, кораблей, товаров и доступной капитальной техникой.</value>
+  </data>
+  <data name="Index_Link_Orion_Description" xml:space="preserve">
+    <value>Русскоязычная многопользовательская модификация Freelancer с собственной вселенной, сервером и расширенным игровым контентом.</value>
   </data>
 </root>

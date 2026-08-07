@@ -1,0 +1,83 @@
+@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["Community_Title_Site"];
+}
+
+<article class="lizerium-community-page lizerium-section-page lizerium-section-page-community">
+    <section class="lizerium-page-hero lizerium-page-hero-community lizerium-reveal">
+        <div class="lizerium-page-hero-copy">
+            <span class="lizerium-page-hero-icon" aria-hidden="true">
+                <span class="nav-icon nav-icon-community" aria-hidden="true"></span>
+            </span>
+            <div>
+                <h1>@Localizer["Community_Title"]</h1>
+                <p>@Localizer["Community_Description"]</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="lizerium-community-grid" aria-label="@Localizer["Community_Title"]">
+        <div class="lizerium-community-card accent-purple community-forum-development lizerium-reveal">
+            <span class="lizerium-mini-icon"><img src="~/img/nav/community.webp" alt="" aria-hidden="true" /></span>
+            <span class="community-forum-state" aria-label="@Localizer["Community_Status_InDevelopment"]">@Localizer["Community_Status_InDevelopment"]</span>
+            <h2>@Localizer["Community_Forums_Title"]</h2>
+            <p>@Localizer["Community_Forums_Description"]</p>
+            <div class="community-forum-progress" aria-hidden="true">
+                <span></span>
+            </div>
+            <div class="community-forum-signals" aria-hidden="true">
+                <i></i>
+                <i></i>
+                <i></i>
+            </div>
+        </div>
+
+        <div class="lizerium-community-card accent-blue lizerium-reveal">
+            <span class="lizerium-mini-icon"><img src="~/img/nav/support.webp" alt="" aria-hidden="true" /></span>
+            <h2>@Localizer["Community_Social_Title"]</h2>
+            <div class="lizerium-community-links">
+                <a class="custom-cursor-hover" href="https://vk.com/lizerium" target="_blank" rel="noopener noreferrer">
+                    <img class="community-link-icon" src="~/img/social/vk.webp" alt="" aria-hidden="true" />
+                    <span>VK</span>
+                </a>
+                <a class="custom-cursor-hover" href="https://discord.gg/sMnhKeEk8K" target="_blank" rel="noopener noreferrer">
+                    <img class="community-link-icon" src="~/img/social/discord.webp" alt="" aria-hidden="true" />
+                    <span>Discord</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="lizerium-community-card accent-green lizerium-reveal">
+            <span class="lizerium-mini-icon community-video-icon"><img src="~/img/pages/home/community-video-tv.webp" alt="" aria-hidden="true" /></span>
+            <h2>@Localizer["Community_Video_Title"]</h2>
+            <div class="lizerium-community-links">
+                <a class="custom-cursor-hover" href="https://www.youtube.com/@@lizerium_game" target="_blank" rel="noopener noreferrer">
+                    <img class="community-link-icon" src="~/img/social/youtube.webp" alt="" aria-hidden="true" />
+                    <span>YouTube</span>
+                </a>
+                <a class="custom-cursor-hover" href="https://rutube.ru/channel/44085490/" target="_blank" rel="noopener noreferrer">
+                    <img class="community-link-icon" src="~/img/social/rutube.webp" alt="" aria-hidden="true" />
+                    <span>Rutube</span>
+                </a>
+                <a class="custom-cursor-hover" href="https://vk.com/lizerium" target="_blank" rel="noopener noreferrer">
+                    <img class="community-link-icon" src="~/img/social/vk-video.webp" alt="" aria-hidden="true" />
+                    <span>VK Video</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="lizerium-community-card accent-server community-servers-card lizerium-reveal">
+            <span class="lizerium-mini-icon community-server-icon"><img src="~/img/pages/home/ecosystem-server.webp" alt="" aria-hidden="true" /></span>
+            <h2>@Localizer["Community_Servers_Title"]</h2>
+            <div class="lizerium-community-links community-server-list">
+                <a class="custom-cursor-hover community-server-link" href="https://www.gs4u.net/ru/s/398133" target="_blank" rel="noopener noreferrer">
+                    <img class="community-link-icon community-gs4-icon" src="~/img/social/gs4.webp" alt="" aria-hidden="true" />
+                    <span class="community-server-name">
+                        <span>Freelancer Lizerium</span>
+                        <span class="community-server-flag community-server-flag-ru" aria-label="@Localizer["Community_Server_Country_Russia"]" title="@Localizer["Community_Server_Country_Russia"]"></span>
+                    </span>
+                </a>
+            </div>
+        </div>
+    </section>
+</article>

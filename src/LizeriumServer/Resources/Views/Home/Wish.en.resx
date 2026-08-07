@@ -182,4 +182,10 @@
   <data name="Wish_Read_Default" xml:space="preserve">
     <value>Hide</value>
   </data>
+  <data name="Wish_Page_Header" xml:space="preserve">
+    <value>Support</value>
+  </data>
+  <data name="Wish_Page_Description" xml:space="preserve">
+    <value>Questions, user suggestions, and technical support.</value>
+  </data>
 </root>

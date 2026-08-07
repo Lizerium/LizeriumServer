@@ -58,8 +58,8 @@ module.exports = {
         },
         minimize: true,  // Включаем минимизацию
         minimizer: [
-            new TerserPlugin(),  // Плагин для минимизации JS
-            new CssMinimizerPlugin()  // Плагин для минимизации CSS
+            new TerserPlugin({ parallel: false }),  // Плагин для минимизации JS
+            new CssMinimizerPlugin({ parallel: false })  // Плагин для минимизации CSS
         ]
     },
 };

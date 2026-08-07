@@ -80,7 +80,7 @@ namespace LizeriumServer.Controllers
             if (!System.IO.File.Exists(fullPath))
                 return NotFound();
 
-            var parsed = MarkdownPage.Parse(fullPath, _env.ContentRootPath, new MdAlertData() {  
+            var parsed = MarkdownPage.Parse(fullPath, _storagePaths.KnowledgeBase, new MdAlertData() {
                 LocInfoName = _stringLocalizer["Shared_Info"],
                 LocNoteName = _stringLocalizer["Shared_Note"],
                 LocWarningName = _stringLocalizer["Shared_Caution"],

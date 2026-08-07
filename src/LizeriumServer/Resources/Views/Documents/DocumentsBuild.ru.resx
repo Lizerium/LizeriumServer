@@ -104,4 +104,46 @@
 	<data name="DocBuild_Site_Header" xml:space="preserve">
 		<value>Создание предметов</value>
 	</data>
+	<data name="DocBuild_Kicker" xml:space="preserve">
+		<value>Серверные решения</value>
+	</data>
+	<data name="DocBuild_Description" xml:space="preserve">
+		<value>Каталог предметов, которые можно создать на сервере Lizerium: категории, рецепты и количество компонентов.</value>
+	</data>
+	<data name="DocBuild_Catalog_Label" xml:space="preserve">
+		<value>Каталог рецептов</value>
+	</data>
+	<data name="DocBuild_Catalog_Title" xml:space="preserve">
+		<value>Предметы для создания</value>
+	</data>
+	<data name="DocBuild_Catalog_Description" xml:space="preserve">
+		<value>Выберите категорию и раскройте предмет, чтобы увидеть необходимые компоненты.</value>
+	</data>
+	<data name="DocBuild_Category_Label" xml:space="preserve">
+		<value>Категория</value>
+	</data>
+	<data name="DocBuild_Items_Count_Label" xml:space="preserve">
+		<value>предметов</value>
+	</data>
+	<data name="DocBuild_Recipe_Label" xml:space="preserve">
+		<value>Рецепт</value>
+	</data>
+	<data name="DocBuild_Search_Label" xml:space="preserve">
+		<value>Поиск предметов</value>
+	</data>
+	<data name="DocBuild_Search_Placeholder" xml:space="preserve">
+		<value>Найти предмет или категорию...</value>
+	</data>
+	<data name="DocBuild_Search_Clear" xml:space="preserve">
+		<value>Очистить поиск</value>
+	</data>
+	<data name="DocBuild_Search_Empty" xml:space="preserve">
+		<value>Ничего не найдено</value>
+	</data>
+	<data name="DocBuild_Search_Result" xml:space="preserve">
+		<value>результат</value>
+	</data>
+	<data name="DocBuild_Search_Results" xml:space="preserve">
+		<value>результатов</value>
+	</data>
 </root>

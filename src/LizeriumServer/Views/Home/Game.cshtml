@@ -1,106 +1,211 @@
-﻿@inject IViewLocalizer Localizer
+@model GameProductsViewModel
+@inject IViewLocalizer Localizer
 @{
     ViewData["Title"] = Localizer["Game_Title_Site"];
+
+    var isEnglish = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("en", StringComparison.OrdinalIgnoreCase);
+
+    string Text(string ru, string en)
+    {
+        if (isEnglish && !string.IsNullOrWhiteSpace(en))
+            return en;
+
+        return string.IsNullOrWhiteSpace(ru) ? en : ru;
+    }
+
+    string Asset(string path, string fallback)
+    {
+        return string.IsNullOrWhiteSpace(path) ? Url.Content(fallback) : Url.Content(path);
+    }
+
+    var categories = Model?.Categories ?? new();
 }
-@Html.ReCaptcha()
-<div class="main-news">
-    <section class="news-section">
+
+<div class="main-news lizerium-game-page">
+    <section class="news-section lizerium-section-page games lizerium-section-page-games">
         <div class="container_last_video">
-            <div class="downloadblock">
-                <h1 class="h-color-2 w-100 fw-bold mb-3 mt-5 text-center">🎮 @Localizer["Game_Title"]</h1>
-                <div class="news-grid links">
-                    <div class="card full">
-                        <div class="card-title purple"><span>💻 @Localizer["Game_Title_Mini"]</span></div>
-                        <div class="card-row small">
-                            <div class="subcard-block">
-                                <div class="subcard d-flex no-hover">
-                                    <div class="subcard-icon icon-style">🌠</div>
-                                    <div class="subcard-text">@Localizer["Game_Name_Lizerium_Launcher"]</div>
-                                    <div class="subcard custom-cursor-hover ms-auto p-0" onclick="window.open('/uploader/projects/download/steam', '_blank', 'noopener,noreferrer')">
-                                        <div class="subcard-icon icon-style">📥</div>
-                                        <div class="subcard-text p-2">@Localizer["Game_Download"]</div>
-                                    </div>
-                                </div>
-                                <div class="subcard-title">
-                                    <span class="badge text-bg-secondary">@Localizer["Game_Note_Lizerium_Launcher"]</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-row small">
-                            <div class="subcard-block">
-                                <div class="subcard d-flex no-hover">
-                                    <div class="subcard-icon icon-style"><img src="@Url.Content("~/img/Mode.png")" alt="Lizerium"></div>
-                                    <div class="subcard-text">@Localizer["Game_FL_Lizerium_Game"]</div>
-                                    <div class="subcard custom-cursor-hover ms-auto p-0" onclick="window.open('/uploader/projects/download/lizerium_game', '_blank', 'noopener,noreferrer')">
-                                        <div class="subcard-icon icon-style">📥</div>
-                                        <div class="subcard-text p-2">@Localizer["Game_Download"]</div>
-                                    </div>
-                                </div>
-                                <div class="subcard-title">
-                                    <span class="badge text-bg-secondary">@Localizer["Game_FL_Lizerium_Game_Note"]</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-row small">
-                            <div class="subcard-block">
-                                <div class="subcard d-flex no-hover">
-                                    <div class="subcard-icon icon-style"><img src="@Url.Content("~/img/Freelancer.png")" alt="Freelancer"></div>
-                                    <div class="subcard-text">@Localizer["Game_FL_Freelancer_Game"]</div>
-                                    <div class="subcard custom-cursor-hover ms-auto p-0" onclick="window.open('/uploader/projects/download/freelancer_game', '_blank', 'noopener,noreferrer')">
-                                        <div class="subcard-icon icon-style">📥</div>
-                                        <div class="subcard-text p-2">@Localizer["Game_Download"]</div>
-                                    </div>
-                                </div>
-                                <div class="subcard-title">
-                                    <span class="badge text-bg-secondary">@Localizer["Game_FL_Freelancer_Game_Note"]</span>
-                                </div>
-                            </div>
-                        </div>
+            <header class="lizerium-page-hero lizerium-page-hero-games lizerium-reveal">
+                <div class="lizerium-page-hero-copy">
+                    <span class="lizerium-page-hero-icon" aria-hidden="true">
+                        <span class="nav-icon nav-icon-games" aria-hidden="true"></span>
+                    </span>
+                    <div>
+                        <h1>@Localizer["Game_Page_Header"]</h1>
+                        <p>@Localizer["Game_Page_Description"]</p>
                     </div>
                 </div>
-            </div>
-            <div class="downloadblock">
-                <div class="news-grid links">
-                    <div class="card full">
-                        <div class="card-title purple"><span>📋 @Localizer["Game_Additional_Info"]</span></div>
-                        <div class="card-row small">
-                            <div class="subcard-block">
-                                <div class="subcard-note">
-                                    <span class="badge text-bg-secondary">@Localizer["Game_Additional_Info_1"]</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-row small">
-                            <div class="subcard-block">
-                                <div class="subcard-note">
-                                    <span class="badge text-bg-secondary">@Localizer["Game_Additional_Info_2"]</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-row small">
-                            <div class="subcard-block">
-                                <div class="subcard-note">
-                                    <span class="badge text-bg-secondary">@Localizer["Game_Additional_Info_3"]</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-row small">
-                            <div class="subcard-block">
-                                <div class="subcard-note">
-                                    <span class="badge text-bg-secondary">@Localizer["Game_Additional_Info_4"]</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-row small">
-                            <div class="subcard-block">
-                                <div class="subcard-note">
-                                    <span class="badge text-bg-secondary">@Localizer["Game_Additional_Info_5_1"] <a href="https://www.dvurechensky.pro" target="_blank">@Localizer["Game_Additional_Info_5_2"]</a></span>
-                                </div>
-                            </div>
-                        </div>
+            </header>
+
+            <section class="lizerium-game-catalog lizerium-reveal" aria-labelledby="game-products-title">
+                <div class="lizerium-game-catalog-head">
+                    <div>
+                        <span class="lizerium-game-kicker">@(isEnglish ? "Product catalog" : "Каталог продуктов")</span>
+                        <h2 id="game-products-title">@(isEnglish ? "Downloads and tools" : "Загрузки и инструменты")</h2>
                     </div>
+                    <p>
+                        @(isEnglish
+                            ? "Launcher, game builds and utility releases are grouped by product type. Choose a product and open a trusted download source."
+                            : "Лаунчер, игровые сборки и вспомогательные релизы собраны по типам продуктов. Выберите продукт и откройте нужный источник скачивания.")
+                    </p>
                 </div>
-            </div>
+
+                @if (categories.Count == 0)
+                {
+                    <div class="lizerium-game-empty">
+                        @(isEnglish ? "The product catalog is being prepared." : "Каталог продуктов подготавливается.")
+                    </div>
+                }
+                else
+                {
+                    @foreach (var category in categories)
+                    {
+                        var products = category.Products ?? new();
+                        var categoryTitle = Text(category.NameRu, category.NameEn);
+                        var categoryDescription = Text(category.DescriptionRu, category.DescriptionEn);
+                        var categoryIcon = Asset(category.IconUrl, "~/img/pages/game/ecosystem-projects.webp");
+                        var categoryBg = Asset(category.BackgroundUrl, "~/img/pages/home/feature-card-games-bg.webp");
+                        var hasMoreProducts = products.Count > 4;
+
+                        <section class="lizerium-game-category lizerium-reveal" style="--game-category-bg: url('@categoryBg');" aria-label="@categoryTitle" data-game-category>
+                            <header class="lizerium-game-category-head">
+                                <span class="lizerium-game-category-icon" aria-hidden="true">
+                                    <img src="@categoryIcon" alt="" loading="lazy" />
+                                </span>
+                                <div>
+                                    <span class="lizerium-game-kicker">@(isEnglish ? "Category" : "Категория")</span>
+                                    <h3>@categoryTitle</h3>
+                                    @if (!string.IsNullOrWhiteSpace(categoryDescription))
+                                    {
+                                        <p>@categoryDescription</p>
+                                    }
+                                </div>
+                                <span class="lizerium-game-category-count">
+                                    <strong>@products.Count</strong>
+                                </span>
+                            </header>
+
+                            @if (hasMoreProducts)
+                            {
+                                <div class="lizerium-game-category-tools" data-game-category-tools hidden>
+                                    <label class="lizerium-game-category-search">
+                                        <span>@(isEnglish ? "Search in category" : "Поиск в категории")</span>
+                                        <input type="search"
+                                               placeholder="@(isEnglish ? "Find a product..." : "Найти продукт...")"
+                                               data-game-category-search />
+                                    </label>
+                                </div>
+                            }
+
+                            <div class="lizerium-game-product-grid">
+                                @for (var productIndex = 0; productIndex < products.Count; productIndex++)
+                                {
+                                    var product = products[productIndex];
+                                    var productTitle = Text(product.TitleRu, product.TitleEn);
+                                    var productDescription = Text(product.DescriptionRu, product.DescriptionEn);
+                                    var productIcon = Asset(product.IconUrl, "~/img/pages/game/ecosystem-projects.webp");
+                                    var downloadLinks = product.DownloadLinks ?? new();
+                                    var downloadLinksCount = downloadLinks.Count;
+                                    var productSearch = $"{productTitle} {productDescription}";
+
+                                    <article class="lizerium-game-product-card"
+                                             data-game-product
+                                             data-game-product-index="@productIndex"
+                                             data-game-product-search="@productSearch"
+                                             @(hasMoreProducts && productIndex >= 4 ? "hidden" : string.Empty)>
+                                        <div class="lizerium-game-product-main">
+                                            <span class="lizerium-game-product-icon" aria-hidden="true">
+                                                <img src="@productIcon" alt="" loading="lazy" />
+                                            </span>
+                                            <div class="lizerium-game-product-copy">
+                                                <h4 data-game-product-title>@productTitle</h4>
+                                                @if (!string.IsNullOrWhiteSpace(productDescription))
+                                                {
+                                                    <p data-game-product-description>@productDescription</p>
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <button class="lizerium-game-download-button"
+                                                type="button"
+                                                data-game-download
+                                                data-product-icon="@productIcon"
+                                                @(downloadLinks.Count == 0 ? "disabled" : string.Empty)>
+                                            <span>@(isEnglish ? "Download" : "Скачать")</span>
+                                            @if (downloadLinksCount > 1)
+                                            {
+                                                <span class="lizerium-game-download-count" aria-label="@(isEnglish ? $"{downloadLinksCount} sources" : $"{downloadLinksCount} источника")">@downloadLinksCount</span>
+                                            }
+                                            <span aria-hidden="true">↗</span>
+                                        </button>
+
+                                        <div class="lizerium-game-product-sources" hidden>
+                                            @foreach (var source in downloadLinks)
+                                            {
+                                                var sourceName = Text(source.NameRu, source.NameEn);
+                                                var sourceIcon = Asset(source.IconUrl, "~/img/pages/game/source-portal.webp");
+
+                                                <a data-game-source
+                                                   data-source-name="@sourceName"
+                                                   data-source-icon="@sourceIcon"
+                                                   href="@source.Url"
+                                                   target="_blank"
+                                                   rel="noopener noreferrer">
+                                                    @sourceName
+                                                </a>
+                                            }
+                                        </div>
+                                    </article>
+                                }
+                            </div>
+
+                            @if (hasMoreProducts)
+                            {
+                                <div class="lizerium-game-category-actions">
+                                    <button class="lizerium-game-category-toggle"
+                                            type="button"
+                                            data-game-category-toggle
+                                            data-show-label="@(isEnglish ? $"Show all {products.Count}" : $"Показать все {products.Count}")"
+                                            data-hide-label="@(isEnglish ? "Collapse" : "Свернуть")"
+                                            aria-expanded="false">
+                                        <span data-game-category-toggle-text>@(isEnglish ? $"Show all {products.Count}" : $"Показать все {products.Count}")</span>
+                                        <span data-game-category-toggle-icon aria-hidden="true">↓</span>
+                                    </button>
+                                </div>
+                            }
+                        </section>
+                    }
+                }
+            </section>
+
+            <section class="lizerium-game-notes lizerium-reveal" aria-label="@(isEnglish ? "Additional information" : "Дополнительная информация")">
+                <span class="lizerium-game-kicker">@(isEnglish ? "Notes" : "Примечания")</span>
+                <h2>@Localizer["Game_Additional_Info"]</h2>
+                <div class="lizerium-game-note-grid">
+                    <p>@Localizer["Game_Additional_Info_1"]</p>
+                    <p>@Localizer["Game_Additional_Info_2"]</p>
+                    <p>@Localizer["Game_Additional_Info_3"]</p>
+                    <p>@Localizer["Game_Additional_Info_4"]</p>
+                    <p>@Localizer["Game_Additional_Info_5_1"] <a href="https://dvurechensky.pro" target="_blank" rel="noopener noreferrer">@Localizer["Game_Additional_Info_5_2"]</a></p>
+                </div>
+            </section>
         </div>
     </section>
+
+    <div class="lizerium-game-download-modal" data-game-download-modal hidden>
+        <div class="lizerium-game-download-backdrop" data-game-download-close></div>
+        <section class="lizerium-game-download-panel" role="dialog" aria-modal="true" aria-labelledby="game-download-title">
+            <button class="lizerium-game-download-close" type="button" aria-label="@(isEnglish ? "Close" : "Закрыть")" data-game-download-close>×</button>
+            <div class="lizerium-game-download-head">
+                <span class="lizerium-game-product-icon" aria-hidden="true">
+                    <img data-game-download-icon src="" alt="" />
+                </span>
+                <div>
+                    <span class="lizerium-game-kicker">@(isEnglish ? "Download sources" : "Источники скачивания")</span>
+                    <h2 id="game-download-title" data-game-download-title></h2>
+                    <p data-game-download-description></p>
+                </div>
+            </div>
+            <div class="lizerium-game-download-sources" data-game-download-sources></div>
+        </section>
+    </div>
 </div>

@@ -48,6 +48,17 @@
                 .ToList();
         }
     }
+
+    private static string GetNewsTypeOptionLabel(LauncherNewsTypeOption option)
+    {
+        var ru = option.Ru?.Trim() ?? string.Empty;
+        var en = option.En?.Trim() ?? string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(ru) && !string.IsNullOrWhiteSpace(en))
+            return $"{ru} / {en}";
+
+        return string.IsNullOrWhiteSpace(ru) ? en : ru;
+    }
 }
 
 <div class="container top with_left_side">
@@ -127,6 +138,21 @@
                     </label>
                     <input type="hidden" name="NewsType" value="" />
                     <label>
+                        <span>Existing news type</span>
+                        <select data-news-type-select>
+                            <option value="">Manual / new type</option>
+                            @for (var typeIndex = 0; typeIndex < Model.LauncherNewsTypes.Count; typeIndex++)
+                            {
+                                var option = Model.LauncherNewsTypes[typeIndex];
+                                <option value="@typeIndex"
+                                        data-news-type-ru="@option.Ru"
+                                        data-news-type-en="@option.En">
+                                    @GetNewsTypeOptionLabel(option)
+                                </option>
+                            }
+                        </select>
+                    </label>
+                    <label>
                         <span>Тип новости RU</span>
                         <input name="NewsTypeRu" placeholder="Крупное обновление" />
                     </label>
@@ -166,7 +192,7 @@
                     </label>
                     <label>
                         <span>GitHub проект</span>
-                        <input name="GithubProjectName" placeholder="Lizerium Launcher" />
+                        <input name="GithubProjectName" placeholder="Lizerium Steam" />
                     </label>
                     <label>
                         <span>GitHub URL</span>
@@ -248,6 +274,24 @@
                                     <input name="VkVideoUrl" value="@news.VkVideoUrl" />
                                 </label>
                                 <input type="hidden" name="NewsType" value="@news.NewsType" />
+                                <label>
+                                    <span>Existing news type</span>
+                                    <select data-news-type-select>
+                                        <option value="">Manual / new type</option>
+                                        @for (var typeIndex = 0; typeIndex < Model.LauncherNewsTypes.Count; typeIndex++)
+                                        {
+                                            var option = Model.LauncherNewsTypes[typeIndex];
+                                            var selected = string.Equals(news.NewsTypeRu?.Trim(), option.Ru, StringComparison.OrdinalIgnoreCase)
+                                                && string.Equals(news.NewsTypeEn?.Trim(), option.En, StringComparison.OrdinalIgnoreCase);
+                                            <option value="@typeIndex"
+                                                    selected="@selected"
+                                                    data-news-type-ru="@option.Ru"
+                                                    data-news-type-en="@option.En">
+                                                @GetNewsTypeOptionLabel(option)
+                                            </option>
+                                        }
+                                    </select>
+                                </label>
                                 <label>
                                     <span>Тип новости RU</span>
                                     <input name="NewsTypeRu" value="@news.NewsTypeRu" placeholder="Крупное обновление" />
@@ -376,3 +420,108 @@
         }
     </section>
 </div>
+
+<script>
+    (() => {
+        const closeAllTypeComboboxes = (except = null) => {
+            document.querySelectorAll('.news-type-combobox.is-open').forEach((combo) => {
+                if (combo !== except) {
+                    combo.classList.remove('is-open');
+                    combo.querySelector('.news-type-combobox__button')?.setAttribute('aria-expanded', 'false');
+                }
+            });
+        };
+
+        const syncTypeCombobox = (select, combo) => {
+            const selectedOption = select.selectedOptions && select.selectedOptions[0];
+            const value = selectedOption && selectedOption.value
+                ? selectedOption.textContent.trim()
+                : 'Manual / new type';
+
+            combo.querySelector('.news-type-combobox__value').textContent = value;
+            combo.querySelectorAll('.news-type-combobox__option').forEach((button) => {
+                button.classList.toggle('is-selected', button.dataset.value === select.value);
+            });
+        };
+
+        document.querySelectorAll('[data-news-type-select]').forEach((select) => {
+            if (!select.nextElementSibling || !select.nextElementSibling.classList.contains('news-type-combobox')) {
+                const combo = document.createElement('div');
+                combo.className = 'news-type-combobox';
+                combo.innerHTML = `
+                    <button class="news-type-combobox__button" type="button" aria-expanded="false">
+                        <span class="news-type-combobox__value"></span>
+                        <span class="news-type-combobox__chevron" aria-hidden="true"></span>
+                    </button>
+                    <div class="news-type-combobox__menu" role="listbox"></div>
+                `;
+
+                const menu = combo.querySelector('.news-type-combobox__menu');
+
+                Array.from(select.options).forEach((option) => {
+                    const item = document.createElement('button');
+                    item.type = 'button';
+                    item.className = 'news-type-combobox__option';
+                    item.dataset.value = option.value;
+                    item.textContent = option.textContent.trim();
+                    item.addEventListener('click', () => {
+                        select.value = option.value;
+                        select.dispatchEvent(new Event('change', { bubbles: true }));
+                        closeAllTypeComboboxes();
+                    });
+                    menu.appendChild(item);
+                });
+
+                combo.querySelector('.news-type-combobox__button').addEventListener('click', () => {
+                    const nextOpen = !combo.classList.contains('is-open');
+                    closeAllTypeComboboxes(combo);
+                    combo.classList.toggle('is-open', nextOpen);
+                    combo.querySelector('.news-type-combobox__button').setAttribute('aria-expanded', String(nextOpen));
+                });
+
+                select.insertAdjacentElement('afterend', combo);
+                select.classList.add('news-type-native-select');
+                syncTypeCombobox(select, combo);
+            }
+
+            select.addEventListener('change', () => {
+                const form = select.closest('form');
+                const option = select.selectedOptions && select.selectedOptions[0];
+                const combo = select.nextElementSibling && select.nextElementSibling.classList.contains('news-type-combobox')
+                    ? select.nextElementSibling
+                    : null;
+
+                if (combo) {
+                    syncTypeCombobox(select, combo);
+                }
+
+                if (!form || !option || !option.value) {
+                    return;
+                }
+
+                const ruInput = form.querySelector('input[name="NewsTypeRu"]');
+                const enInput = form.querySelector('input[name="NewsTypeEn"]');
+
+                if (ruInput) {
+                    ruInput.value = option.dataset.newsTypeRu || '';
+                }
+
+                if (enInput) {
+                    enInput.value = option.dataset.newsTypeEn || '';
+                }
+            });
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!event.target.closest('.news-type-combobox')) {
+                closeAllTypeComboboxes();
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeAllTypeComboboxes();
+            }
+        });
+    })();
+</script>

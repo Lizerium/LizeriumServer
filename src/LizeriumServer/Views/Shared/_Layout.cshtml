@@ -40,17 +40,25 @@
 	})
 	.Replace("\"context\"", "\"@context\"")
 	.Replace("\"type\"", "\"@type\"");
+
+	string currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+	string currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+	string currentCulture = CultureInfo.CurrentUICulture.Name == "en" ? "en" : "ru";
+	string currentCultureLabel = currentCulture == "en" ? "English" : "Русский";
+	bool isHomeIndex = currentController == "Home" && currentAction == "Index";
+	bool isHomeOrLauncher = currentController == "Home" && (currentAction == "Index" || currentAction == "Launcher");
+	bool isKnowledgeSection = currentController == "Documents" || currentController == "Knowledge";
 }
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="@currentCulture">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
 
 	<meta name="description " content="@(ViewData["Description"] ?? SharedLocalizer["Shared_Desc_Site"])" />
-    <meta name="keywords" content="Dvurechensky, dvurechensky_pro, freelancer, freelancer 2003, freelancer игра, freelancer com, скачать freelancer, Lizerium, космические симуляторы, Lizerium Launcher, Lizerium Mod, игры" />
+    <meta name="keywords" content="Dvurechensky, dvurechensky_pro, freelancer, freelancer 2003, freelancer игра, freelancer com, скачать freelancer, Lizerium, космические симуляторы, Lizerium Steam, Lizerium Mod, игры" />
     <meta name="author" content="Dvurechensky Nikolay" />
     <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#0d0d0d">
@@ -65,14 +73,27 @@
     <meta property="vk:image" content="@openGraphImageUrl">
     <link rel="canonical" href="@currentUrl" />
 
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap&subset=cyrillic" rel="stylesheet">
+    <script>
+        document.documentElement.classList.add('is-loading');
+    </script>
+    @if (!isHomeOrLauncher)
+    {
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap&subset=cyrillic" rel="stylesheet">
+    }
+    @if (isHomeIndex)
+    {
+        <link rel="preload" as="image" href="@Url.Content("~/img/pages/home/lizerium-hero-space.webp")" type="image/webp" fetchpriority="high" />
+        <link rel="preload" as="image" href="@Url.Content("~/img/Main.webp")" type="image/webp" />
+        <link rel="preload" as="image" href="@Url.Content("~/img/brand/lizerium-wordmark.svg")" type="image/svg+xml" />
+    }
     <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
     <link rel="shortcut icon" type="image/x-icon" href="~/favicon.ico" />
     <link rel="apple-touch-icon" href="~/img/Main.png" />
-    <link rel="icon" type="image/x-icon" href="~/LOGO.ico" />
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/global.min.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/layout.min.css" asp-append-version="true" />
     @RenderSection("PageStyle", required: false)
 	<script type="application/ld+json">
 		@Html.Raw(jsonLdString)
@@ -280,13 +301,18 @@
 	</script>
 </head>
 
-@{
-    string currentController = ViewContext.RouteData.Values["controller"]?.ToString();
-    string currentAction = ViewContext.RouteData.Values["action"]?.ToString();
-    string versionPrefix = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ru" ? "вер." : "ver.";
-}
-
 <body>
+    <div class="lizerium-page-transition" aria-hidden="true">
+        <div class="lizerium-page-transition-stars"></div>
+        <div class="lizerium-page-transition-panel">
+            <span class="lizerium-page-transition-mark">
+                <span class="lizerium-page-transition-orbit"></span>
+                <img src="~/img/Main.webp" alt="">
+            </span>
+            <strong>@SharedLocalizer["Shared_PageTransition_Title"]</strong>
+            <small>@SharedLocalizer["Shared_PageTransition_Subtitle"]</small>
+        </div>
+    </div>
     <div class="position-fixed pointer-eveb bottom-0 end-0 m-4 p-4" style="z-index: 1100; pointer-events: none;">
         <div id="copyToast" class="toast align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
@@ -298,62 +324,86 @@
         </div>
     </div>
 
-    <div id="preloader">
-        <div class="lds-ripple"><div></div><div></div></div>
+    <div id="preloader" aria-hidden="true">
+        <div class="lizerium-page-transition-stars"></div>
+        <div class="lizerium-page-transition-panel">
+            <span class="lizerium-page-transition-mark">
+                <span class="lizerium-page-transition-orbit"></span>
+                <img src="~/img/Main.webp" alt="">
+            </span>
+            <strong>@SharedLocalizer["Shared_PageTransition_Title"]</strong>
+            <small>@SharedLocalizer["Shared_PageTransition_Subtitle"]</small>
+        </div>
     </div>
     <header>
         <div class="header_icon_lang_block">
-            <div class="icon" onclick="window.location.href='@Url.Action("Index", "Home")'"><img src="~/img/Main.png" alt="Вернуться" class="logo"><h1 class="icon-color-lizerium fw-bold">Lizerium</h1></div>
+            <div class="icon" data-transition-href="@Url.Action("Index", "Home")"><img src="~/img/Main.webp" alt="Вернуться" class="logo"><img src="~/img/brand/lizerium-wordmark.svg" alt="LIZERIUM" class="lizerium-wordmark"></div>
+            <nav class="desktop-top-nav" aria-label="Основная навигация">
+                <a class="@(currentController == "Home" && currentAction == "Index" ? "active" : "")" href="@Url.Action("Index", "Home")">@SharedLocalizer["Shared_Nav_Home"]</a>
+                <a class="@(currentController == "Home" && currentAction == "Launcher" ? "active" : "")" href="@Url.Action("Launcher", "Home")">@SharedLocalizer["Shared_Nav_News"]</a>
+                <a class="@(currentController == "Home" && currentAction == "Game" ? "active" : "")" href="@Url.Action("Game", "Home")">@SharedLocalizer["Shared_Nav_Games"]</a>
+                <a class="@(isKnowledgeSection ? "active" : "")" href="/docs/all">@SharedLocalizer["Shared_Nav_Knowledge"]</a>
+                <a class="@(currentController == "Home" && currentAction == "Community" ? "active" : "")" href="@Url.Action("Community", "Home")">@SharedLocalizer["Shared_Nav_Community"]</a>
+                <a class="@(currentController == "Home" && currentAction == "Wish" ? "active" : "")" href="@Url.Action("Wish", "Home")">@SharedLocalizer["Shared_Nav_Support"]</a>
+            </nav>
             <form id="cultureForm" method="post" asp-controller="Culture" asp-action="SetLanguage">
                 <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
-                <select name="culture" onchange="document.getElementById('cultureForm').submit()" class="form-select">
-                    <option value="ru" selected="@((CultureInfo.CurrentUICulture.Name == "ru") ? "selected" : null)">Русский</option>
-                    <option value="en" selected="@((CultureInfo.CurrentUICulture.Name == "en") ? "selected" : null)">English</option>
-                </select>
+                <input id="cultureInput" type="hidden" name="culture" value="@currentCulture" />
+                <div class="language-combobox" data-language-combobox>
+                    <button class="language-combobox-button custom-cursor-hover" type="button" aria-haspopup="listbox" aria-expanded="false">
+                        <span class="language-globe" aria-hidden="true"></span>
+                        <span class="language-current">@currentCultureLabel</span>
+                        <span class="language-chevron" aria-hidden="true"></span>
+                    </button>
+                    <div class="language-combobox-menu" role="listbox" aria-label="Language">
+                        <button class="language-option @(currentCulture == "ru" ? "active" : "")" type="button" role="option" aria-selected="@(currentCulture == "ru" ? "true" : "false")" data-culture="ru">Русский</button>
+                        <button class="language-option @(currentCulture == "en" ? "active" : "")" type="button" role="option" aria-selected="@(currentCulture == "en" ? "true" : "false")" data-culture="en">English</button>
+                    </div>
+                </div>
             </form>
         </div>
         <hr />
         <div class="lizerium-sidebar">
-            <div class="lizerium-logo" title="Главная" onclick="window.location.href='/'">
-                <img src="@Url.Content("~/img/Main.png")" alt="Lizerium">
+            <div class="lizerium-logo" title="@SharedLocalizer["Shared_Nav_Home"]" data-transition-href="/">
+                <img src="@Url.Content("~/img/Main.webp")" alt="Lizerium">
             </div>
-            <div class="lizerium-menu-item @(currentController == "Home" && currentAction == "Index" ? "active" : "")" title="Главная" onclick="window.location.href='@Url.Action("Index", "Home")'">
-                🔮
+            <div class="lizerium-menu-item @(currentController == "Home" && currentAction == "Index" ? "active" : "")" title="@SharedLocalizer["Shared_Nav_Home"]" data-transition-href="@Url.Action("Index", "Home")">
+                <span class="nav-icon nav-icon-home" aria-hidden="true"></span>
             </div>
-            <div class="lizerium-menu-item @(currentController == "Home" && currentAction == "Launcher" ? "active" : "")" title="Новости" onclick="window.location.href='@Url.Action("Launcher", "Home")'">
-                📰
+            <div class="lizerium-menu-item @(currentController == "Home" && currentAction == "Launcher" ? "active" : "")" title="@SharedLocalizer["Shared_Nav_News"]" data-transition-href="@Url.Action("Launcher", "Home")">
+                <span class="nav-icon nav-icon-news" aria-hidden="true"></span>
             </div>
-            <div class="lizerium-menu-item @(currentController == "Home" && currentAction == "Game" ? "active" : "")" title="Игры" onclick="window.location.href='@Url.Action("Game", "Home")'">
-                🎮
+            <div class="lizerium-menu-item @(currentController == "Home" && currentAction == "Game" ? "active" : "")" title="@SharedLocalizer["Shared_Nav_Games"]" data-transition-href="@Url.Action("Game", "Home")">
+                <span class="nav-icon nav-icon-games" aria-hidden="true"></span>
             </div>
-            <div class="lizerium-menu-item @(currentController == "Documents" ? "active" : "")" title="Знания" onclick="window.location.href='@Url.Action("all", "docs")'">
-                ⚙️
+            <div class="lizerium-menu-item @(isKnowledgeSection ? "active" : "")" title="@SharedLocalizer["Shared_Nav_Knowledge"]" data-transition-href="/docs/all">
+                <span class="nav-icon nav-icon-knowledge" aria-hidden="true"></span>
             </div>
-            @* <div class="lizerium-menu-item @(currentController == "Forum" && currentAction == "ForumMain" ? "active" : "")" title="Форум" onclick="window.location.href='@Url.Action("ForumMain", "Forum")'"> *@
-@*                 💬
-            </div> *@
-            <div class="lizerium-menu-item @(currentController == "Home" && currentAction == "Wish" ? "active" : "")" title="Пожелания пользователей" onclick="window.location.href='@Url.Action("Wish", "Home")'">
-                ❓
+            <div class="lizerium-menu-item @(currentController == "Home" && currentAction == "Community" ? "active" : "")" title="@SharedLocalizer["Shared_Nav_Community"]" data-transition-href="@Url.Action("Community", "Home")">
+                <span class="nav-icon nav-icon-community" aria-hidden="true"></span>
+            </div>
+            <div class="lizerium-menu-item @(currentController == "Home" && currentAction == "Wish" ? "active" : "")" title="@SharedLocalizer["Shared_Nav_Support"]" data-transition-href="@Url.Action("Wish", "Home")">
+                <span class="nav-icon nav-icon-support" aria-hidden="true"></span>
             </div>
         </div>
         <div class="mobile-nav">
-            <div class="mobile-nav-item @(currentController == "Home" && currentAction == "Index" ? "active" : "")" title="Главная" onclick="window.location.href='@Url.Action("Index", "Home")'">
-                🔮
+            <div class="mobile-nav-item @(currentController == "Home" && currentAction == "Index" ? "active" : "")" title="@SharedLocalizer["Shared_Nav_Home"]" data-transition-href="@Url.Action("Index", "Home")">
+                <span class="nav-icon nav-icon-home" aria-hidden="true"></span>
             </div>
-            <div class="mobile-nav-item @(currentController == "Home" && currentAction == "Launcher" ? "active" : "")" title="Новости" onclick="window.location.href='@Url.Action("Launcher", "Home")'">
-                📰
+            <div class="mobile-nav-item @(currentController == "Home" && currentAction == "Launcher" ? "active" : "")" title="@SharedLocalizer["Shared_Nav_News"]" data-transition-href="@Url.Action("Launcher", "Home")">
+                <span class="nav-icon nav-icon-news" aria-hidden="true"></span>
             </div>
-            <div class="mobile-nav-item @(currentController == "Home" && currentAction == "Game" ? "active" : "")" title="Игры" onclick="window.location.href='@Url.Action("Game", "Home")'">
-                🎮
+            <div class="mobile-nav-item @(currentController == "Home" && currentAction == "Game" ? "active" : "")" title="@SharedLocalizer["Shared_Nav_Games"]" data-transition-href="@Url.Action("Game", "Home")">
+                <span class="nav-icon nav-icon-games" aria-hidden="true"></span>
             </div>
-            <div class="mobile-nav-item @(currentController == "Documents" ? "active" : "")" title="Знания" onclick="window.location.href='@Url.Action("all", "docs")'">
-                ⚙️
+            <div class="mobile-nav-item @(isKnowledgeSection ? "active" : "")" title="@SharedLocalizer["Shared_Nav_Knowledge"]" data-transition-href="/docs/all">
+                <span class="nav-icon nav-icon-knowledge" aria-hidden="true"></span>
             </div>
-@*             <div class="mobile-nav-item @(currentController == "Forum" && currentAction == "ForumMain" ? "active" : "")" title="Форум" onclick="window.location.href='@Url.Action("ForumMain", "Forum")'">
-                💬
-            </div> *@
-            <div class="mobile-nav-item @(currentController == "Home" && currentAction == "Wish" ? "active" : "")" title="Пожелания пользователей" onclick="window.location.href='@Url.Action("Wish", "Home")'">
-                ❓
+            <div class="mobile-nav-item @(currentController == "Home" && currentAction == "Community" ? "active" : "")" title="@SharedLocalizer["Shared_Nav_Community"]" data-transition-href="@Url.Action("Community", "Home")">
+                <span class="nav-icon nav-icon-community" aria-hidden="true"></span>
+            </div>
+            <div class="mobile-nav-item @(currentController == "Home" && currentAction == "Wish" ? "active" : "")" title="@SharedLocalizer["Shared_Nav_Support"]" data-transition-href="@Url.Action("Wish", "Home")">
+                <span class="nav-icon nav-icon-support" aria-hidden="true"></span>
             </div>
         </div>
     </header>
@@ -385,13 +435,22 @@
 		</ol>
 	</nav>
     <footer>
-        <img id="vk-link custom-cursor-hover" width="20px" height="20px" src="~/img/VK.svg.png" onclick="window.open('https://vk.com/lizerium_game', '_blank', 'noopener,noreferrer')" />
-        <img id="git-link custom-cursor-hover" width="20px" height="20px" src="~/img/git.png" onclick="window.open('https://github.com/Lizerium', '_blank', 'noopener,noreferrer')" />
-        <img id="me-link custom-cursor-hover" width="20px" height="20px" src="~/img/my.png" onclick="window.open('https://dvurechensky.pro', '_blank', 'noopener,noreferrer')" />
+        <div class="footer-brand">
+            <span>@SharedLocalizer["Shared_Footer_Copyright"]</span>
+            <small>@SharedLocalizer["Shared_Footer_Tagline"]</small>
+        </div>
+        <div class="footer-socials">
+            <a class="footer-social footer-social-vk custom-cursor-hover" href="https://vk.com/lizerium_game" target="_blank" rel="noopener noreferrer" aria-label="@SharedLocalizer["Shared_Social_Vk"]"><span aria-hidden="true"></span></a>
+            <a class="footer-social footer-social-discord custom-cursor-hover" href="https://discord.gg/sMnhKeEk8K" target="_blank" rel="noopener noreferrer" aria-label="@SharedLocalizer["Shared_Social_Discord"]"><span aria-hidden="true"></span></a>
+            <a class="footer-social footer-social-brand custom-cursor-hover" href="https://dvurechensky.pro" target="_blank" rel="noopener noreferrer" aria-label="@SharedLocalizer["Shared_Social_Brand"]"><span aria-hidden="true"></span></a>
+            <a class="footer-social footer-social-youtube custom-cursor-hover" href="https://www.youtube.com/@@lizerium_game" target="_blank" rel="noopener noreferrer" aria-label="@SharedLocalizer["Shared_Social_Youtube"]"><span aria-hidden="true"></span></a>
+            <a class="footer-social footer-social-rutube custom-cursor-hover" href="https://rutube.ru/channel/44085490/" target="_blank" rel="noopener noreferrer" aria-label="@SharedLocalizer["Shared_Social_Rutube"]"><span aria-hidden="true"></span></a>
+        </div>
     </footer>
-    <div class="server-version-badge" aria-label="@versionPrefix #@ServerVersionProvider.Version">
-        <span>@versionPrefix</span>
-        <strong>#@ServerVersionProvider.Version</strong>
+    <div class="server-version-badge" aria-label="@SharedLocalizer["Shared_Footer_Version"] v@(ServerVersionProvider.Version)">
+        <span>@SharedLocalizer["Shared_Footer_Version"]</span>
+        <strong>v@(ServerVersionProvider.Version)</strong>
+        <i aria-hidden="true"></i>
     </div>
     <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true"
          class="copy-docs-icon hidden">
@@ -405,6 +464,228 @@
     <script src="~/js/app.min.js" asp-append-version="true"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    <script>
+        (function () {
+            const root = document.documentElement;
+            let finished = false;
+
+            function finishPageLoad() {
+                if (finished) {
+                    return;
+                }
+
+                finished = true;
+                root.classList.remove('is-loading');
+                root.classList.add('is-ready');
+            }
+
+            function onReady(callback) {
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', callback, { once: true });
+                    return;
+                }
+
+                callback();
+            }
+
+            onReady(function () {
+                const isHomeIndex = @(isHomeIndex ? "true" : "false");
+
+                if (!isHomeIndex) {
+                    requestAnimationFrame(finishPageLoad);
+                    return;
+                }
+
+                const hero = new Image();
+                const timeout = window.setTimeout(finishPageLoad, 1200);
+
+                hero.decoding = 'async';
+                hero.src = '@Url.Content("~/img/pages/home/lizerium-hero-space.webp")';
+
+                const complete = function () {
+                    window.clearTimeout(timeout);
+                    requestAnimationFrame(finishPageLoad);
+                };
+
+                if (hero.decode) {
+                    hero.decode().then(complete).catch(complete);
+                    return;
+                }
+
+                hero.onload = complete;
+                hero.onerror = complete;
+            });
+        })();
+    </script>
+    <script>
+        (function () {
+            const combo = document.querySelector('[data-language-combobox]');
+            const form = document.getElementById('cultureForm');
+            const input = document.getElementById('cultureInput');
+
+            if (!combo || !form || !input) {
+                return;
+            }
+
+            const trigger = combo.querySelector('.language-combobox-button');
+            const options = combo.querySelectorAll('.language-option');
+
+            function closeCombo() {
+                combo.classList.remove('open');
+                trigger.setAttribute('aria-expanded', 'false');
+            }
+
+            trigger.addEventListener('click', function () {
+                const isOpen = combo.classList.toggle('open');
+                trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            });
+
+            options.forEach(function (option) {
+                option.addEventListener('click', function () {
+                    const culture = option.getAttribute('data-culture');
+                    if (culture && culture !== input.value) {
+                        input.value = culture;
+                        form.submit();
+                        return;
+                    }
+
+                    closeCombo();
+                });
+            });
+
+            document.addEventListener('click', function (event) {
+                if (!combo.contains(event.target)) {
+                    closeCombo();
+                }
+            });
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape') {
+                    closeCombo();
+                }
+            });
+        })();
+    </script>
+    <script>
+        (function () {
+            const root = document.documentElement;
+            let isNavigating = false;
+
+            function getNavigationUrl(trigger) {
+                if (!trigger) {
+                    return null;
+                }
+
+                if (trigger.hasAttribute('data-transition-href')) {
+                    return trigger.getAttribute('data-transition-href');
+                }
+
+                return trigger.getAttribute('href');
+            }
+
+            function normalizeRoutePath(pathname) {
+                const normalized = pathname.toLowerCase().replace(/\/+$/, '') || '/';
+
+                if (normalized === '/home' || normalized === '/home/index') {
+                    return '/';
+                }
+
+                return normalized;
+            }
+
+            function canUseTransition(event, trigger, url) {
+                if (!url || isNavigating) {
+                    return false;
+                }
+
+                if (trigger.closest('.active')) {
+                    return false;
+                }
+
+                if (event.type === 'click' && (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)) {
+                    return false;
+                }
+
+                if (trigger.matches('a[target="_blank"], a[download]')) {
+                    return false;
+                }
+
+                let targetUrl;
+
+                try {
+                    targetUrl = new URL(url, window.location.href);
+                } catch {
+                    return false;
+                }
+
+                if (targetUrl.origin !== window.location.origin) {
+                    return false;
+                }
+
+                const currentPath = window.location.pathname + window.location.search;
+                const targetPath = targetUrl.pathname + targetUrl.search;
+                const currentRoute = normalizeRoutePath(window.location.pathname);
+                const targetRoute = normalizeRoutePath(targetUrl.pathname);
+
+                if (currentPath === targetPath && targetUrl.hash) {
+                    return false;
+                }
+
+                if (window.location.href === targetUrl.href || (currentRoute === targetRoute && window.location.search === targetUrl.search)) {
+                    return false;
+                }
+
+                return true;
+            }
+
+            function startTransition(url) {
+                isNavigating = true;
+                root.classList.add('is-page-transitioning');
+                window.setTimeout(function () {
+                    window.location.href = url;
+                }, 280);
+            }
+
+            document.addEventListener('click', function (event) {
+                const trigger = event.target.closest('a[href], [data-transition-href]');
+                const url = getNavigationUrl(trigger);
+
+                if (!canUseTransition(event, trigger, url)) {
+                    return;
+                }
+
+                event.preventDefault();
+                event.stopPropagation();
+                startTransition(new URL(url, window.location.href).href);
+            }, true);
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key !== 'Enter' && event.key !== ' ') {
+                    return;
+                }
+
+                const trigger = event.target.closest('[data-transition-href]');
+                const url = getNavigationUrl(trigger);
+
+                if (!canUseTransition(event, trigger, url)) {
+                    return;
+                }
+
+                event.preventDefault();
+                startTransition(new URL(url, window.location.href).href);
+            });
+
+            document.querySelectorAll('[data-transition-href]').forEach(function (item) {
+                item.setAttribute('role', 'link');
+                item.setAttribute('tabindex', '0');
+            });
+
+            window.addEventListener('pageshow', function () {
+                isNavigating = false;
+                root.classList.remove('is-page-transitioning');
+            });
+        })();
+    </script>
 	<script>
 		(function () {
 			fetch("https://license.dvurechensky.pro/api/v1/log", {

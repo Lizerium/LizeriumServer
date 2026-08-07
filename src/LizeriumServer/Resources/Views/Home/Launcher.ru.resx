@@ -170,4 +170,37 @@
 	<data name="Launcher_Video_Generic_Platform" xml:space="preserve">
 		<value>Видео</value>
 	</data>
+	<data name="Launcher_Description" xml:space="preserve">
+		<value>Актуальные события, обновления и важные анонсы из вселенной Freelancer и Lizerium.</value>
+	</data>
+	<data name="Launcher_Filter_Button" xml:space="preserve">
+		<value>Фильтры</value>
+	</data>
+	<data name="Launcher_Filter_Dialog_Title" xml:space="preserve">
+		<value>Фильтры новостей</value>
+	</data>
+	<data name="Launcher_Filter_Dialog_Description" xml:space="preserve">
+		<value>Отберите публикации по видео, GitHub-ссылкам и типу новости.</value>
+	</data>
+	<data name="Launcher_Filter_Platform" xml:space="preserve">
+		<value>Видео площадка</value>
+	</data>
+	<data name="Launcher_Filter_Platform_All" xml:space="preserve">
+		<value>Все площадки</value>
+	</data>
+	<data name="Launcher_Filter_Github" xml:space="preserve">
+		<value>GitHub ссылки</value>
+	</data>
+	<data name="Launcher_Filter_Type" xml:space="preserve">
+		<value>Тип новости</value>
+	</data>
+	<data name="Launcher_Filter_Type_All" xml:space="preserve">
+		<value>Все типы</value>
+	</data>
+	<data name="Launcher_Filter_Apply" xml:space="preserve">
+		<value>Применить</value>
+	</data>
+	<data name="Launcher_Filter_Reset" xml:space="preserve">
+		<value>Сбросить</value>
+	</data>
 </root>

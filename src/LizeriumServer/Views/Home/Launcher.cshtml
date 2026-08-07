@@ -8,11 +8,23 @@
     var culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
     var isRussian = culture.Equals("ru", StringComparison.OrdinalIgnoreCase);
     var orderFilter = string.IsNullOrWhiteSpace(Model.SortOrderFilter) ? "new" : Model.SortOrderFilter;
+    var platformFilter = Model.PlatformFilter ?? string.Empty;
+    var typeFilter = Model.TypeFilter ?? string.Empty;
     var searchPlaceholder = Localizer["Launcher_Search_Placeholder"].Value;
     var orderLabel = Localizer["Launcher_Order_Label"].Value;
     var newLabel = Localizer["Launcher_Order_New"].Value;
     var oldLabel = Localizer["Launcher_Order_Old"].Value;
     var searchButtonLabel = Localizer["Launcher_Search_Button"].Value;
+    var filterLabel = Localizer["Launcher_Filter_Button"].Value;
+    var filterDialogTitle = Localizer["Launcher_Filter_Dialog_Title"].Value;
+    var filterDialogDescription = Localizer["Launcher_Filter_Dialog_Description"].Value;
+    var filterPlatformLabel = Localizer["Launcher_Filter_Platform"].Value;
+    var filterPlatformAllLabel = Localizer["Launcher_Filter_Platform_All"].Value;
+    var filterGithubLabel = Localizer["Launcher_Filter_Github"].Value;
+    var filterTypeLabel = Localizer["Launcher_Filter_Type"].Value;
+    var filterTypeAllLabel = Localizer["Launcher_Filter_Type_All"].Value;
+    var filterApplyLabel = Localizer["Launcher_Filter_Apply"].Value;
+    var filterResetLabel = Localizer["Launcher_Filter_Reset"].Value;
     var previousImageLabel = Localizer["Launcher_Previous_Image"].Value;
     var nextImageLabel = Localizer["Launcher_Next_Image"].Value;
     var videoPlatformsLabel = Localizer["Launcher_Video_Platforms"].Value;
@@ -177,7 +189,7 @@
 
         return !string.IsNullOrWhiteSpace(iconUrl)
             ? iconUrl
-            : "/img/Main.png";
+            : "/img/Main.webp";
     }
 
     private static string PickCoverImage(LizeriumUtilities.FormatsData.DataBase.Response.LauncherNewsDataResponse news)
@@ -285,19 +297,28 @@
         return text.Length > 260 || imageCount > 0 || GetMarkdownImages(markdown).Count > 0 || GetMarkdownVideos(markdown).Count > 0 || (hasVideo && text.Length > 80);
     }
 }
-@Html.ReCaptcha()
 <article>
     <section class="news-section launcher-news-page"
              data-news-video-blocked-template="@videoBlockedTemplate"
              data-news-video-generic-platform="@genericVideoPlatformLabel">
         <div class="container-fluid">
             <header class="launcher-news-hero">
-                <span class="launcher-news-hero-icon" aria-hidden="true"></span>
-                <h1>@Localizer["Launcher_Header"]</h1>
+                <div class="launcher-news-hero-copy">
+                    <span class="launcher-news-hero-icon" aria-hidden="true"></span>
+                    <div>
+                        <h1>@Localizer["Launcher_Header"]</h1>
+                        <p>@Localizer["Launcher_Description"]</p>
+                    </div>
+                </div>
+                <div class="launcher-news-hero-banner" aria-hidden="true"></div>
             </header>
 
             <form class="launcher-news-toolbar" method="get" action="@Url.Action("Launcher", "Home")">
-                <input name="search" value="@Model.Search" placeholder="@searchPlaceholder" />
+                <label class="launcher-news-search">
+                    <span aria-hidden="true"></span>
+                    <input name="search" value="@Model.Search" placeholder="@searchPlaceholder" />
+                    <button class="launcher-news-search-button" type="submit" name="order" value="@orderFilter" aria-label="@searchButtonLabel"></button>
+                </label>
                 <div class="launcher-news-sort" role="group" aria-label="@orderLabel">
                     <button class="@(orderFilter == "new" ? "active" : string.Empty)" type="submit" name="order" value="new">
                         @newLabel
@@ -306,7 +327,47 @@
                         @oldLabel
                     </button>
                 </div>
-                <button class="launcher-news-search-button" type="submit" name="order" value="@orderFilter">@searchButtonLabel</button>
+                <button class="launcher-news-filter-button" type="button" data-launcher-filter-open>
+                    <span aria-hidden="true"></span>
+                    @filterLabel
+                </button>
+                <dialog class="launcher-news-filter-dialog" data-launcher-filter-dialog>
+                    <div class="launcher-news-filter-dialog-header">
+                        <span class="launcher-news-hero-icon" aria-hidden="true"></span>
+                        <div>
+                            <h2>@filterDialogTitle</h2>
+                            <p>@filterDialogDescription</p>
+                        </div>
+                        <button type="button" class="launcher-news-filter-close" data-launcher-filter-close aria-label="@closeLabel">&times;</button>
+                    </div>
+                    <div class="launcher-news-filter-group">
+                        <strong>@filterPlatformLabel</strong>
+                        <div class="launcher-news-filter-options">
+                            <label><input type="radio" name="platform" value="" checked="@(string.IsNullOrWhiteSpace(platformFilter))" /> <span>@filterPlatformAllLabel</span></label>
+                            <label><input type="radio" name="platform" value="youtube" checked="@(platformFilter == "youtube")" /> <span>YouTube</span></label>
+                            <label><input type="radio" name="platform" value="rutube" checked="@(platformFilter == "rutube")" /> <span>Rutube</span></label>
+                            <label><input type="radio" name="platform" value="vk" checked="@(platformFilter == "vk")" /> <span>VK</span></label>
+                        </div>
+                    </div>
+                    <div class="launcher-news-filter-group">
+                        <strong>@filterGithubLabel</strong>
+                        <label class="launcher-news-filter-check"><input type="checkbox" name="github" value="true" checked="@Model.GithubFilter" /> <span>GitHub</span></label>
+                    </div>
+                    <div class="launcher-news-filter-group">
+                        <strong>@filterTypeLabel</strong>
+                        <select name="type">
+                            <option value="">@filterTypeAllLabel</option>
+                            @foreach (var newsType in Model.NewsTypes)
+                            {
+                                <option value="@newsType" selected="@(string.Equals(typeFilter, newsType, StringComparison.OrdinalIgnoreCase))">@newsType</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="launcher-news-filter-actions">
+                        <a href="@Url.Action("Launcher", "Home", new { search = Model.Search, order = orderFilter })">@filterResetLabel</a>
+                        <button type="submit" name="order" value="@orderFilter">@filterApplyLabel</button>
+                    </div>
+                </dialog>
             </form>
 
             <div class="launcher-news-grid">
@@ -351,9 +412,21 @@
                     var date = news.PublishedAtUnix > 0
                         ? DateTimeOffset.FromUnixTimeSeconds(news.PublishedAtUnix).ToLocalTime().ToString("dd.MM.yyyy")
                         : string.Empty;
+                    var newsType = PickNewsType(news, isRussian);
 
                     <article class="launcher-news-card @(hasBody ? "has-body" : "compact") @(hasCardMedia ? "has-media" : "no-media") @(hasInlineMedia ? "has-inline-media" : string.Empty)" id="news-card-@news.Id">
-                        @if (videoPlatforms.Count > 0)
+                        @if (videoPlatforms.Count > 0 && cardImages.Count > 0)
+                        {
+                            <button class="launcher-news-media launcher-news-video-poster"
+                                    type="button"
+                                    data-news-reader-open="@news.Id"
+                                    data-news-reader-platform="@(videoPlatforms.FirstOrDefault()?.Key ?? string.Empty)"
+                                    aria-label="@readFullLabel">
+                                <img src="@cardImages[0]" alt="@title" loading="lazy" onerror="this.closest('.launcher-news-media')?.remove();" />
+                                <span aria-hidden="true"></span>
+                            </button>
+                        }
+                        else if (videoPlatforms.Count > 0)
                         {
                             <div class="launcher-news-media launcher-news-card-video" data-news-card-video>
                                 <iframe src="@videoUrl"
@@ -389,10 +462,13 @@
                             </div>
                         }
                         <div class="launcher-news-content">
-                            @if (!string.IsNullOrWhiteSpace(date))
-                            {
-                                <time>@date</time>
-                            }
+                            <div class="launcher-news-meta-row">
+                                <span class="launcher-news-type-badge">@newsType</span>
+                                @if (!string.IsNullOrWhiteSpace(date))
+                                {
+                                    <time>@date</time>
+                                }
+                            </div>
                             <h2>@title</h2>
                             @if (hasBody && !string.IsNullOrWhiteSpace(excerpt))
                             {
@@ -470,7 +546,7 @@
                         <article class="launcher-news-reader-post" data-news-reader-post="@news.Id">
                             <header class="launcher-news-reader-header">
                                 <div class="launcher-news-reader-titlebar">
-                                    <img class="launcher-news-reader-icon" src="@iconUrl" alt="" loading="lazy" onerror="this.onerror=null;this.src='/img/Main.png';" />
+                                    <img class="launcher-news-reader-icon" src="@iconUrl" alt="" loading="lazy" onerror="this.onerror=null;this.src='/img/Main.webp';" />
                                     <div>
                                         <div class="launcher-news-reader-meta">
                                             <span>@newsType</span>
@@ -601,7 +677,7 @@
                     <button type="button" class="launcher-news-reader-close" data-news-reader-close aria-label="@closeLabel">&times;</button>
                     <button type="button" data-news-reader-previous aria-label="@newerLabel">&#9650;</button>
                     <button type="button" data-news-reader-next aria-label="@olderLabel">&#9660;</button>
-                    <img src="/img/Main.png" alt="" aria-hidden="true" />
+                    <img src="/img/Main.webp" alt="" aria-hidden="true" />
                 </div>
             </div>
 
@@ -611,7 +687,7 @@
                     @for (var i = 1; i <= Model.TotalPages; i++)
                     {
                         <a class="@(i == Model.CurrentPage ? "active" : string.Empty)"
-                           href="@Url.Action("Launcher", "Home", new { search = Model.Search, order = orderFilter, page = i })">
+                           href="@Url.Action("Launcher", "Home", new { search = Model.Search, order = orderFilter, platform = platformFilter, type = typeFilter, github = Model.GithubFilter, page = i })">
                             @i
                         </a>
                     }
@@ -620,3 +696,33 @@
         </div>
     </section>
 </article>
+<script>
+    (() => {
+        const dialog = document.querySelector('[data-launcher-filter-dialog]');
+        const openButton = document.querySelector('[data-launcher-filter-open]');
+        const closeButton = document.querySelector('[data-launcher-filter-close]');
+
+        if (!dialog || !openButton) {
+            return;
+        }
+
+        openButton.addEventListener('click', () => {
+            if (typeof dialog.showModal === 'function') {
+                dialog.showModal();
+            }
+        });
+
+        if (new URLSearchParams(window.location.search).get('filter') === 'open'
+            && typeof dialog.showModal === 'function') {
+            window.setTimeout(() => dialog.showModal(), 120);
+        }
+
+        closeButton?.addEventListener('click', () => dialog.close());
+
+        dialog.addEventListener('click', (event) => {
+            if (event.target === dialog) {
+                dialog.close();
+            }
+        });
+    })();
+</script>

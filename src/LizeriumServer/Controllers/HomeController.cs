@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
@@ -25,7 +25,6 @@ namespace LizeriumServer.Controllers
     /// <summary>
     /// Центральный контроллер
     /// </summary>
-    [ValidateReCaptcha]
     public class HomeController : Controller
     {
         private IDataBaseService AppDb { get; set; }
@@ -76,12 +75,22 @@ namespace LizeriumServer.Controllers
         /// <summary>
         /// Главная страница загрузчика
         /// </summary>
-        public async Task<IActionResult> Launcher(string search = "", string order = "new", int page = 1)
+        public async Task<IActionResult> Launcher(string search = "", string order = "new", string platform = "", string type = "", bool github = false, int page = 1)
         {
             var news = await AppDb.GetPublishedLauncherNewsAsync();
             page = Math.Max(1, page);
             order = string.IsNullOrWhiteSpace(order) ? "new" : order;
             search = search?.Trim() ?? string.Empty;
+            platform = platform?.Trim().ToLowerInvariant() ?? string.Empty;
+            type = type?.Trim() ?? string.Empty;
+
+            var newsTypes = news
+                .SelectMany(item => new[] { item.NewsTypeRu, item.NewsTypeEn, item.NewsType })
+                .Where(item => !string.IsNullOrWhiteSpace(item))
+                .Select(item => item!.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(item => item)
+                .ToList();
 
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -104,11 +113,41 @@ namespace LizeriumServer.Controllers
                     .ToList();
             }
 
+            if (!string.IsNullOrWhiteSpace(platform))
+            {
+                news = news
+                    .Where(item => platform switch
+                    {
+                        "youtube" => !string.IsNullOrWhiteSpace(item.YoutubeUrl),
+                        "rutube" => !string.IsNullOrWhiteSpace(item.RutubeUrl),
+                        "vk" => !string.IsNullOrWhiteSpace(item.VkVideoUrl),
+                        _ => true
+                    })
+                    .ToList();
+            }
+
+            if (github)
+            {
+                news = news
+                    .Where(item => !string.IsNullOrWhiteSpace(item.GithubUrl))
+                    .ToList();
+            }
+
+            if (!string.IsNullOrWhiteSpace(type))
+            {
+                news = news
+                    .Where(item =>
+                        string.Equals(item.NewsTypeRu?.Trim(), type, StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(item.NewsTypeEn?.Trim(), type, StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(item.NewsType?.Trim(), type, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
             news = string.Equals(order, "old", StringComparison.OrdinalIgnoreCase)
                 ? news.OrderBy(item => item.PublishedAtUnix).ThenBy(item => item.SortOrder).ToList()
                 : news.OrderByDescending(item => item.PublishedAtUnix).ThenBy(item => item.SortOrder).ToList();
 
-            const int pageSize = 6;
+            const int pageSize = 7;
             var totalCount = news.Count;
             var totalPages = Math.Max(1, (int)Math.Ceiling(totalCount / (double)pageSize));
             page = Math.Min(page, totalPages);
@@ -119,6 +158,10 @@ namespace LizeriumServer.Controllers
                 News = news,
                 Search = search,
                 SortOrderFilter = order,
+                PlatformFilter = platform,
+                TypeFilter = type,
+                GithubFilter = github,
+                NewsTypes = newsTypes,
                 CurrentPage = page,
                 TotalPages = totalPages,
                 PageSize = pageSize,
@@ -133,7 +176,7 @@ namespace LizeriumServer.Controllers
         }
 
         /// <summary>
-        /// RSS-лента опубликованных новостей Lizerium Launcher.
+        /// RSS-лента опубликованных новостей Lizerium Steam.
         /// </summary>
         [HttpGet]
         [Route("/news/rss.xml")]
@@ -167,8 +210,8 @@ namespace LizeriumServer.Controllers
                 await writer.WriteElementStringAsync(null, "title", null, isRussian ? "Новости Lizerium" : "Lizerium News");
                 await writer.WriteElementStringAsync(null, "link", null, $"{baseUrl}/Home/Launcher");
                 await writer.WriteElementStringAsync(null, "description", null, isRussian
-                    ? "Опубликованные новости Lizerium Launcher"
-                    : "Published Lizerium Launcher news");
+                    ? "Опубликованные новости Lizerium Steam"
+                    : "Published Lizerium Steam news");
                 await writer.WriteElementStringAsync(null, "language", null, isRussian ? "ru" : "en");
 
                 foreach (var item in news)
@@ -250,6 +293,19 @@ namespace LizeriumServer.Controllers
         /// </summary>
         public async Task<IActionResult> Game()
         {
+            var categories = await AppDb.GetPublishedProductCatalogAsync();
+
+            return View(new GameProductsViewModel
+            {
+                Categories = categories ?? new List<LizeriumUtilities.FormatsData.DataBase.Response.ProductCategoryDataResponse>()
+            });
+        }
+
+        /// <summary>
+        /// Страница сообщества Lizerium.
+        /// </summary>
+        public async Task<IActionResult> Community()
+        {
             return View();
         }
 
@@ -269,15 +325,22 @@ namespace LizeriumServer.Controllers
         /// </summary>
         /// <param name="PostModel">Данные пожелания</param>
         [HttpPost]
+        [ValidateReCaptcha]
         [Route("create")]
         public async Task<IActionResult> CreatePost([FromForm] CreatePostViewRequest PostModel)
         {
-            if (string.IsNullOrEmpty(PostModel.Autor) || string.IsNullOrEmpty(PostModel.Message)) return RedirectToAction("Index");
+            if (PostModel == null
+                || string.IsNullOrWhiteSpace(PostModel.Autor)
+                || string.IsNullOrWhiteSpace(PostModel.Message))
+                return RedirectToAction(nameof(Wish));
+
+            PostModel.Autor = PostModel.Autor.Trim();
+            PostModel.Message = PostModel.Message.Trim();
 
             //используем базу приложения
             PostModel.Status = -1;
             await AppDb.AddPostAsync(PostModel);
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Wish));
         }
 
         /// <summary>

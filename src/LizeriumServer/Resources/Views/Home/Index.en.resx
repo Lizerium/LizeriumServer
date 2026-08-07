@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -142,5 +142,128 @@
   <data name="Index_title_site" xml:space="preserve">
     <value>Lizerium - Main</value>
     <comment>Index_title_site</comment>
+  </data>
+  <data name="Index_Hero_Kicker" xml:space="preserve">
+    <value>Welcome to Lizerium</value>
+  </data>
+  <data name="Index_Hero_Title_Line1" xml:space="preserve">
+    <value>Lizerium —</value>
+  </data>
+  <data name="Index_Hero_Title_Line2" xml:space="preserve">
+    <value>universe portal</value>
+  </data>
+  <data name="Index_Hero_Subtitle" xml:space="preserve">
+    <value>Games, tools, modding, and community for the Freelancer universe and beyond.</value>
+  </data>
+  <data name="Index_Hero_Primary" xml:space="preserve">
+    <value>Explore the universe</value>
+  </data>
+  <data name="Index_Hero_Secondary" xml:space="preserve">
+    <value>Latest news</value>
+  </data>
+  <data name="Index_News_Description" xml:space="preserve">
+    <value>Project updates, important announcements, and current events.</value>
+  </data>
+  <data name="Index_News_Action" xml:space="preserve">
+    <value>Read news</value>
+  </data>
+  <data name="Index_Games_Feature_Title" xml:space="preserve">
+    <value>Lizerium game series</value>
+  </data>
+  <data name="Index_Games_Description" xml:space="preserve">
+    <value>Official and fan projects for the Freelancer universe.</value>
+  </data>
+  <data name="Index_Games_Action" xml:space="preserve">
+    <value>View games</value>
+  </data>
+  <data name="Index_Info_Description" xml:space="preserve">
+    <value>Documentation, guides, setup notes, and technical resources.</value>
+  </data>
+  <data name="Index_Info_Action" xml:space="preserve">
+    <value>Open section</value>
+  </data>
+  <data name="Index_Ecosystem_Launcher_Title" xml:space="preserve">
+    <value>Launcher</value>
+  </data>
+  <data name="Index_Server_Dialog_Builds_Title" xml:space="preserve">
+    <value>Craftable items</value>
+  </data>
+  <data name="Index_Ecosystem_Support_Title" xml:space="preserve">
+    <value>Support</value>
+  </data>
+  <data name="Index_Ecosystem_Docs_Description" xml:space="preserve">
+    <value>Knowledge base for Freelancer (2003)</value>
+  </data>
+  <data name="Index_Ecosystem_Tools_Title" xml:space="preserve">
+    <value>Tools</value>
+  </data>
+  <data name="Index_Ecosystem_Server_Title" xml:space="preserve">
+    <value>Server solutions</value>
+  </data>
+  <data name="Index_Ecosystem_Community_Title" xml:space="preserve">
+    <value>Community</value>
+  </data>
+  <data name="Index_Ecosystem_Server_Description" xml:space="preserve">
+    <value>Information about features on the Lizerium server</value>
+  </data>
+  <data name="Index_Dialog_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Index_Ecosystem_Support_Description" xml:space="preserve">
+    <value>Answers, feedback, and technical support</value>
+  </data>
+  <data name="Index_Ecosystem_Projects_Description" xml:space="preserve">
+    <value>All games and mods from the Lizerium universe</value>
+  </data>
+  <data name="Index_Ecosystem_Projects_Title" xml:space="preserve">
+    <value>Game projects</value>
+  </data>
+  <data name="Index_Ecosystem_Docs_Title" xml:space="preserve">
+    <value>Documentation</value>
+  </data>
+  <data name="Index_Ecosystem_Tools_Description" xml:space="preserve">
+    <value>Utilities, editors, and helper applications</value>
+  </data>
+  <data name="Index_Ecosystem_Title" xml:space="preserve">
+    <value>Lizerium Ecosystem</value>
+  </data>
+  <data name="Index_Server_Dialog_Builds_Description" xml:space="preserve">
+    <value>List of items that can be created on the Lizerium server</value>
+  </data>
+  <data name="Index_Server_Dialog_Hook_Description" xml:space="preserve">
+    <value>Command reference for the Lizerium server</value>
+  </data>
+  <data name="Index_Server_Dialog_Hook_Title" xml:space="preserve">
+    <value>Server commands</value>
+  </data>
+  <data name="Index_Ecosystem_Community_Description" xml:space="preserve">
+    <value>Forums, Discord, VK, and other social networks</value>
+  </data>
+  <data name="Index_Server_Dialog_Description" xml:space="preserve">
+    <value>Choose a server documentation section.</value>
+  </data>
+  <data name="Index_Ecosystem_Launcher_Description" xml:space="preserve">
+    <value>Launch and update games from one app</value>
+  </data>
+  <data name="Index_Link_Discovery_Description" xml:space="preserve">
+    <value>The largest role-playing mod for Freelancer, featuring a living universe, numerous factions and ships, and opportunities for cooperative play.</value>
+  </data>
+  <data name="Index_Link_Sirius_Description" xml:space="preserve">
+    <value>A multiplayer modification with a completely reworked balance, focused on exploration, trading, and combat with other players.</value>
+  </data>
+  <data name="Index_Link_Nomad_Description" xml:space="preserve">
+    <value>A fan-made sequel to Freelancer featuring a new story campaign, an expanded universe, modern technology, and updated graphics.</value>
+  </data>
+  <data name="Index_Link_Crossfire_Description" xml:space="preserve">
+    <value>An expansive continuation of Edison Trent's story, featuring dozens of story missions, new sectors, adversaries, and massive space battles.</value>
+  </data>
+  <data name="Index_Link_Hd_Description" xml:space="preserve">
+    <value>A graphical remaster of the classic Freelancer featuring HD textures, widescreen support, enhanced audio, and fixes for modern systems.</value>
+  </data>
+  <data name="Index_Link_Rebirth_Description" xml:space="preserve">
+    <value>A massive, paid Russian-language Freelancer expansion featuring hundreds of new systems, factions, ships, and commodities, as well as accessible capital ships.</value>
+  </data>
+  <data name="Index_Link_Orion_Description" xml:space="preserve">
+    <value>A Russian-language multiplayer modification for Freelancer featuring its own universe, a dedicated server, and expanded game content.</value>
   </data>
 </root>

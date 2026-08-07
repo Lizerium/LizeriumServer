@@ -138,4 +138,52 @@
   <data name="Shared_Desc2_Site" xml:space="preserve">
     <value>Lizerium - ecosystem of developments and games</value>
   </data>
+  <data name="Shared_Nav_Home" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="Shared_Nav_News" xml:space="preserve">
+    <value>News</value>
+  </data>
+  <data name="Shared_Nav_Games" xml:space="preserve">
+    <value>Games</value>
+  </data>
+  <data name="Shared_Nav_Knowledge" xml:space="preserve">
+    <value>Knowledge</value>
+  </data>
+  <data name="Shared_Nav_Community" xml:space="preserve">
+    <value>Community</value>
+  </data>
+  <data name="Shared_Nav_Support" xml:space="preserve">
+    <value>Support</value>
+  </data>
+  <data name="Shared_Footer_Copyright" xml:space="preserve">
+    <value>© 2026 Lizerium</value>
+  </data>
+  <data name="Shared_Footer_Tagline" xml:space="preserve">
+    <value>Freelancer universe portal</value>
+  </data>
+  <data name="Shared_Footer_Version" xml:space="preserve">
+    <value>Portal version:</value>
+  </data>
+  <data name="Shared_Social_Vk" xml:space="preserve">
+    <value>Lizerium on VK</value>
+  </data>
+  <data name="Shared_Social_Discord" xml:space="preserve">
+    <value>Lizerium on Discord</value>
+  </data>
+  <data name="Shared_Social_Brand" xml:space="preserve">
+    <value>Dvurechensky Pro website</value>
+  </data>
+  <data name="Shared_Social_Youtube" xml:space="preserve">
+    <value>Lizerium on YouTube</value>
+  </data>
+  <data name="Shared_Social_Rutube" xml:space="preserve">
+    <value>Lizerium on Rutube</value>
+  </data>
+  <data name="Shared_PageTransition_Title" xml:space="preserve">
+    <value>Sector sync</value>
+  </data>
+  <data name="Shared_PageTransition_Subtitle" xml:space="preserve">
+    <value>Preparing the Lizerium portal</value>
+  </data>
 </root>

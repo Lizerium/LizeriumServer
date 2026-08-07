@@ -1,102 +1,1013 @@
-﻿.modal {
-    flex-flow: row nowrap;
-    align-items: center;
-    justify-content: center;
-    display: none;
-    position: fixed;
-    z-index: 1110;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background-color: rgb(0, 0, 0);
-    background-color: rgba(0, 0, 0, 0.8);
+/* Wish page theme contract. Width tokens are reused by toolbar, feed and modal. */
+.lizerium-section-page-support {
+	--wish-panel: rgba(5, 13, 32, 0.74);
+	--wish-panel-strong: rgba(7, 16, 40, 0.88);
+	--wish-line: rgba(139, 92, 246, 0.42);
+	--wish-line-soft: rgba(109, 214, 255, 0.16);
+	--wish-text: #f3f7ff;
+	--wish-muted: rgba(211, 220, 238, 0.72);
+	--wish-cyan: #6be8ff;
+	--wish-violet: #9b63ff;
+	--wish-green: #6dff7a;
+	--wish-content-width: min(1680px, calc(100vw - 96px));
+	--wish-feed-width: min(1600px, calc(100vw - 176px));
+	width: 100%;
+	margin-inline: 0;
+	padding-top: 0;
+	padding-bottom: 96px;
+	background: transparent;
 }
 
-.modal_header {
-    display: flex;
-    flex-flow: row nowrap;
-    align-items: center;
-    justify-content: flex-start;
-    width: 100%;
-    flex-direction: column;
-    background-color: var(--dark_gray);
-    padding-left: 1rem;
-    /*   (XS) */
-    @media (max-width: 480px) {
-        padding: 0;
-        margin: 0;
-    }
+/* Filter/create toolbar above the wish feed. */
+.lizerium-wish-toolbar,
+.lizerium-section-page-support > .lizerium-wish-toolbar.block.status_page {
+	display: grid;
+	grid-template-columns: minmax(280px, 0.32fr) minmax(340px, 0.38fr);
+	justify-content: center;
+	gap: 18px;
+	align-items: center;
+	width: var(--wish-content-width);
+	margin: 16px auto 26px;
+	padding: 18px;
+	border: 1px solid var(--wish-line-soft);
+	border-radius: 8px;
+	background:
+		radial-gradient(
+			circle at 12% 0%,
+			rgba(107, 232, 255, 0.08),
+			transparent 32%
+		),
+		linear-gradient(
+			135deg,
+			rgba(4, 18, 38, 0.82),
+			rgba(5, 15, 42, 0.88) 62%,
+			rgba(18, 12, 52, 0.76)
+		);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+	backdrop-filter: blur(16px);
+	-webkit-backdrop-filter: blur(16px);
 }
 
-.modal_header h3 {
-    color: var(--white);
-    font-size: 18px;
-    font-family: 'Montserrat', 'CJK', sans-serif;
+.lizerium-wish-filter {
+	position: relative;
+	margin: 0;
+	min-width: 0;
 }
 
-.modal_content {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-start;
-    position: relative;
-    background-color: var(--white);
-    margin: auto;
-    padding: 0;
-    width: 70vw;
-    overflow: hidden;
-    border-radius: 0 0 5px 5px;
-    -webkit-animation-name: animatetop;
-    -webkit-animation-duration: 0.4s;
-    -webkit-animation-timing-function: ease-in-out;
-    -moz-animation-name: animatetop;
-    -moz-animation-duration: 0.4s;
-    -moz-animation-timing-function: ease-in-out;
-    animation-name: animatetop;
-    animation-duration: 0.4s;
-    animation-timing-function: ease-in-out;
-    /*   (XS) */
-    @media (max-width: 480px) {
-        width: 100vw;
-        padding: 0;
-        margin: 0;
-    }
+.lizerium-wish-filter-label {
+	display: none;
 }
 
-@-webkit-keyframes animatetop {
-    from {
-        top: -300px;
-        opacity: 0
-    }
-
-    to {
-        top: 0;
-        opacity: 1
-    }
+.lizerium-wish-filter::before {
+	content: '';
+	position: absolute;
+	left: 20px;
+	top: 50%;
+	width: 20px;
+	height: 16px;
+	border: 0;
+	background:
+		linear-gradient(rgba(225, 234, 255, 0.68), rgba(225, 234, 255, 0.68)) 0
+			2px / 20px 2px no-repeat,
+		linear-gradient(rgba(225, 234, 255, 0.68), rgba(225, 234, 255, 0.68)) 0
+			7px / 20px 2px no-repeat,
+		linear-gradient(rgba(225, 234, 255, 0.68), rgba(225, 234, 255, 0.68)) 0
+			12px / 20px 2px no-repeat,
+		radial-gradient(circle, rgba(225, 234, 255, 0.95) 0 2px, transparent 2.5px)
+			4px 0 / 6px 6px no-repeat,
+		radial-gradient(circle, rgba(225, 234, 255, 0.95) 0 2px, transparent 2.5px)
+			12px 5px / 6px 6px no-repeat,
+		radial-gradient(circle, rgba(225, 234, 255, 0.95) 0 2px, transparent 2.5px)
+			7px 10px / 6px 6px no-repeat;
+	transform: translateY(-50%);
+	pointer-events: none;
 }
 
-@-moz-keyframes animatetop {
-    from {
-        top: -300px;
-        opacity: 0
-    }
-
-    to {
-        top: 0;
-        opacity: 1
-    }
+.lizerium-wish-filter::after {
+	content: '';
+	position: absolute;
+	right: 20px;
+	top: 50%;
+	width: 9px;
+	height: 9px;
+	border-right: 2px solid rgba(225, 234, 255, 0.74);
+	border-bottom: 2px solid rgba(225, 234, 255, 0.74);
+	transform: translateY(-70%) rotate(45deg);
+	pointer-events: none;
 }
 
-@keyframes animatetop {
-    from {
-        top: -300px;
-        opacity: 0
-    }
+.lizerium-wish-select,
+.lizerium-section-page-support .block.status_page .lizerium-wish-select,
+.lizerium-wish-create-button,
+.lizerium-section-page-support .block.status_page .lizerium-wish-create-button {
+	width: 100%;
+	min-height: 54px;
+	margin: 0;
+	border: 1px solid rgba(116, 148, 210, 0.24);
+	border-radius: 8px;
+	background: rgba(5, 13, 32, 0.62);
+	color: rgba(240, 246, 255, 0.86);
+	font-size: clamp(16px, 1vw, 18px);
+	font-weight: 700;
+	outline: none;
+	transition:
+		border-color 0.18s ease,
+		background 0.18s ease,
+		box-shadow 0.18s ease,
+		transform 0.18s ease;
+}
 
-    to {
-        top: 0;
-        opacity: 1
-    }
+.lizerium-wish-select {
+	padding: 0 48px 0 58px;
+	appearance: none;
+	-webkit-appearance: none;
+	cursor: pointer;
+}
+
+.lizerium-wish-select option {
+	background: #071126;
+	color: var(--wish-text);
+}
+
+.lizerium-wish-create-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 12px;
+	padding: 0 24px;
+	cursor: pointer;
+	text-align: left;
+}
+
+.lizerium-wish-create-button::before {
+	content: '';
+	width: 20px;
+	height: 20px;
+	flex: 0 0 auto;
+	background: currentColor;
+	opacity: 0.78;
+	mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='black' d='M21.7 3.29a1 1 0 0 0-1.05-.22l-18 7a1 1 0 0 0 .08 1.89l7.25 2.42 2.42 7.25a1 1 0 0 0 .9.68h.05a1 1 0 0 0 .92-.6l7.65-17.35a1 1 0 0 0-.22-1.07ZM13.5 18.56l-1.73-5.18 4.64-4.64a1 1 0 0 0-1.41-1.41l-4.64 4.64-5.18-1.73 13.89-5.4-5.57 13.72Z'/%3E%3C/svg%3E")
+		center / contain no-repeat;
+	-webkit-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='black' d='M21.7 3.29a1 1 0 0 0-1.05-.22l-18 7a1 1 0 0 0 .08 1.89l7.25 2.42 2.42 7.25a1 1 0 0 0 .9.68h.05a1 1 0 0 0 .92-.6l7.65-17.35a1 1 0 0 0-.22-1.07ZM13.5 18.56l-1.73-5.18 4.64-4.64a1 1 0 0 0-1.41-1.41l-4.64 4.64-5.18-1.73 13.89-5.4-5.57 13.72Z'/%3E%3C/svg%3E")
+		center / contain no-repeat;
+}
+
+.lizerium-wish-select:hover,
+.lizerium-wish-select:focus,
+.lizerium-wish-create-button:hover,
+.lizerium-wish-create-button:focus-visible {
+	transform: translateY(-1px);
+	border-color: rgba(155, 99, 255, 0.58);
+	background: rgba(8, 18, 44, 0.78);
+	box-shadow: 0 0 0 3px rgba(155, 99, 255, 0.1);
+}
+
+/* Feed layout wrapper; cards own their internal grid and status coloring. */
+.lizerium-wish-feed,
+.lizerium-section-page-support > .lizerium-wish-feed.block.posts {
+	display: grid;
+	gap: 22px;
+	justify-items: stretch;
+	width: var(--wish-feed-width);
+	margin: 0 auto;
+	padding: 0;
+	border: 0;
+	background: transparent;
+}
+
+/* Wish card surface. Status classes only change the CSS variables below. */
+.lizerium-wish-card,
+.lizerium-section-page-support .block.posts .lizerium-wish-card {
+	--wish-status-color: #6dff7a;
+	--wish-status-bg: rgba(36, 255, 95, 0.08);
+	--wish-status-line: rgba(109, 255, 122, 0.28);
+	position: relative;
+	display: grid;
+	grid-template-columns: 88px minmax(0, 1fr);
+	gap: 22px;
+	overflow: hidden;
+	min-height: 178px;
+	margin: 0;
+	padding: 26px;
+	border: 1px solid var(--wish-line);
+	border-radius: 8px;
+	background:
+		radial-gradient(
+			circle at 94% 16%,
+			rgba(155, 99, 255, 0.1),
+			transparent 34%
+		),
+		radial-gradient(
+			circle at 8% 16%,
+			rgba(92, 206, 255, 0.09),
+			transparent 32%
+		),
+		linear-gradient(
+			135deg,
+			rgba(4, 18, 38, 0.86),
+			rgba(5, 16, 45, 0.88) 58%,
+			rgba(17, 12, 50, 0.86)
+		);
+	box-shadow:
+		0 24px 60px rgba(0, 10, 32, 0.28),
+		inset 0 1px 0 rgba(255, 255, 255, 0.04),
+		inset 0 0 0 1px rgba(107, 232, 255, 0.035);
+	animation: wishRevealUp 0.42s ease both;
+	transition:
+		transform 0.2s ease,
+		border-color 0.2s ease,
+		box-shadow 0.2s ease;
+}
+
+.lizerium-wish-card.status-delete {
+	--wish-status-color: #ff7da8;
+	--wish-status-bg: rgba(255, 86, 132, 0.1);
+	--wish-status-line: rgba(255, 106, 154, 0.38);
+}
+
+.lizerium-wish-card.status-complete {
+	--wish-status-color: #72ffd3;
+	--wish-status-bg: rgba(80, 255, 195, 0.09);
+	--wish-status-line: rgba(80, 255, 195, 0.34);
+}
+
+.lizerium-wish-card.status-new {
+	--wish-status-color: #6be8ff;
+	--wish-status-bg: rgba(107, 232, 255, 0.09);
+	--wish-status-line: rgba(107, 232, 255, 0.34);
+}
+
+.lizerium-wish-card.status-read {
+	--wish-status-color: #9db6ff;
+	--wish-status-bg: rgba(100, 132, 255, 0.1);
+	--wish-status-line: rgba(133, 166, 255, 0.36);
+}
+
+.lizerium-wish-card.status-job {
+	--wish-status-color: #6dff7a;
+	--wish-status-bg: rgba(36, 255, 95, 0.08);
+	--wish-status-line: rgba(109, 255, 122, 0.28);
+}
+
+.lizerium-wish-card::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background:
+		linear-gradient(90deg, rgba(101, 232, 255, 0.04), transparent 28%),
+		radial-gradient(
+			circle at 96% 90%,
+			rgba(155, 99, 255, 0.1),
+			transparent 36%
+		),
+		linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 24%);
+	pointer-events: none;
+}
+
+.lizerium-wish-card:hover {
+	transform: translateY(-2px);
+	border-color: rgba(171, 111, 255, 0.72);
+	box-shadow:
+		0 28px 72px rgba(0, 10, 32, 0.34),
+		0 0 28px rgba(155, 99, 255, 0.12),
+		inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+.lizerium-wish-card > * {
+	position: relative;
+	z-index: 1;
+}
+
+.lizerium-wish-avatar {
+	width: 78px;
+	height: 78px;
+	border: 1px solid rgba(155, 99, 255, 0.82);
+	border-radius: 50%;
+	background:
+		radial-gradient(
+			circle at 42% 34%,
+			rgba(116, 232, 255, 0.95),
+			transparent 8%
+		),
+		radial-gradient(
+			circle at 55% 48%,
+			rgba(100, 78, 255, 0.78),
+			transparent 18%
+		),
+		radial-gradient(circle at 30% 68%, rgba(6, 16, 42, 0.2), transparent 28%),
+		linear-gradient(145deg, #13284f, #130b38 72%);
+	box-shadow:
+		0 0 22px rgba(155, 99, 255, 0.22),
+		inset 0 0 18px rgba(101, 232, 255, 0.16);
+}
+
+.lizerium-wish-card-body,
+.lizerium-wish-card-head,
+.lizerium-wish-status-row,
+.lizerium-section-page-support
+	.block.posts
+	.lizerium-wish-card
+	.lizerium-wish-card-body,
+.lizerium-section-page-support
+	.block.posts
+	.lizerium-wish-card
+	.lizerium-wish-card-head,
+.lizerium-section-page-support
+	.block.posts
+	.lizerium-wish-card
+	.lizerium-wish-status-row {
+	margin: 0;
+	border: 0;
+	background: transparent;
+}
+
+.lizerium-wish-card-body {
+	display: grid;
+	gap: 16px;
+	min-width: 0;
+	background: transparent;
+}
+
+.lizerium-wish-card-head {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 18px;
+}
+
+.lizerium-wish-author,
+.lizerium-section-page-support
+	.block.posts
+	.lizerium-wish-card
+	.lizerium-wish-author:first-child {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--wish-violet);
+	font-size: 22px;
+	font-weight: 950;
+	line-height: 1.15;
+	overflow-wrap: anywhere;
+}
+
+.lizerium-wish-date {
+	flex: 0 0 auto;
+	color: rgba(211, 220, 238, 0.64);
+	font-size: 15px;
+	font-weight: 650;
+	line-height: 1.2;
+}
+
+.lizerium-wish-date::before {
+	content: '';
+	display: inline-block;
+	width: 15px;
+	height: 15px;
+	margin: 0 9px -2px 0;
+	border: 2px solid currentColor;
+	border-radius: 50%;
+	box-shadow: inset 5px 0 0 -3px currentColor;
+}
+
+.lizerium-wish-message,
+.lizerium-section-page-support
+	.block.posts
+	.lizerium-wish-card
+	.lizerium-wish-message.post-content {
+	min-height: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: rgba(232, 238, 252, 0.84);
+	font-size: 20px;
+	font-weight: 500;
+	line-height: 1.58;
+	overflow-wrap: anywhere;
+	box-shadow: none;
+}
+
+.lizerium-wish-message span,
+.lizerium-wish-message p {
+	margin: 0;
+}
+
+.lizerium-wish-message .read-more {
+	display: inline-flex;
+	margin-top: 10px;
+	color: var(--wish-cyan);
+	font-size: 15px;
+	font-weight: 850;
+	cursor: pointer;
+}
+
+.lizerium-wish-status-row,
+.lizerium-section-page-support
+	.block.posts
+	.lizerium-wish-card
+	.lizerium-wish-status-row {
+	display: flex;
+	align-items: center;
+	margin-top: 4px;
+	background: transparent;
+	border: 0;
+}
+
+.lizerium-wish-status-badge,
+.lizerium-section-page-support .block.posts .lizerium-wish-status-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 38px;
+	padding: 0 16px;
+	border: 1px solid var(--wish-status-line);
+	border-radius: 999px;
+	background: var(--wish-status-bg);
+	color: var(--wish-status-color);
+	font-size: 15px;
+	font-weight: 850;
+	line-height: 1;
+}
+
+.lizerium-wish-status-badge::before {
+	content: '';
+	width: 10px;
+	height: 10px;
+	margin-right: 12px;
+	border-radius: 50%;
+	background: currentColor;
+	box-shadow: 0 0 14px currentColor;
+}
+
+.lizerium-wish-status-badge.status-delete,
+.lizerium-section-page-support
+	.block.posts
+	.lizerium-wish-status-badge.status-delete {
+	--wish-status-line: rgba(255, 106, 154, 0.38);
+	--wish-status-bg: rgba(255, 86, 132, 0.1);
+	color: #ff88a8;
+}
+
+.lizerium-wish-status-badge.status-complete,
+.lizerium-section-page-support
+	.block.posts
+	.lizerium-wish-status-badge.status-complete {
+	--wish-status-line: rgba(80, 255, 195, 0.34);
+	--wish-status-bg: rgba(80, 255, 195, 0.09);
+	color: #72ffd3;
+}
+
+.lizerium-wish-status-badge.status-new,
+.lizerium-section-page-support
+	.block.posts
+	.lizerium-wish-status-badge.status-new {
+	--wish-status-line: rgba(107, 232, 255, 0.34);
+	--wish-status-bg: rgba(107, 232, 255, 0.09);
+	color: #6be8ff;
+}
+
+.lizerium-wish-status-badge.status-read,
+.lizerium-section-page-support
+	.block.posts
+	.lizerium-wish-status-badge.status-read {
+	--wish-status-line: rgba(133, 166, 255, 0.36);
+	--wish-status-bg: rgba(100, 132, 255, 0.1);
+	color: #9db6ff;
+}
+
+.lizerium-wish-status-badge.status-job,
+.lizerium-section-page-support
+	.block.posts
+	.lizerium-wish-status-badge.status-job {
+	--wish-status-line: rgba(109, 255, 122, 0.28);
+	--wish-status-bg: rgba(36, 255, 95, 0.08);
+	color: var(--wish-green);
+}
+
+/* Create-wish modal. Scoped through #modal_form to override legacy modal styles. */
+body.lizerium-modal-open {
+	overflow: hidden;
+}
+
+#modal_form.modal {
+	position: fixed;
+	inset: 0;
+	z-index: 1110;
+	display: none;
+	align-items: center;
+	justify-content: center;
+	padding: 28px;
+	overflow: auto;
+	background:
+		radial-gradient(
+			circle at 72% 18%,
+			rgba(80, 118, 214, 0.2),
+			transparent 34%
+		),
+		radial-gradient(
+			circle at 18% 78%,
+			rgba(42, 191, 217, 0.12),
+			transparent 32%
+		),
+		rgba(0, 5, 13, 0.82);
+	backdrop-filter: blur(18px);
+	-webkit-backdrop-filter: blur(18px);
+	opacity: 0;
+	transition: opacity 0.2s ease;
+}
+
+#modal_form.modal.is-open {
+	opacity: 1;
+}
+
+.lizerium-wish-modal-backdrop {
+	position: absolute;
+	inset: 0;
+	background:
+		linear-gradient(135deg, rgba(3, 18, 37, 0.5), rgba(6, 10, 34, 0.72)),
+		radial-gradient(
+			circle at 76% 18%,
+			rgba(155, 99, 255, 0.14),
+			transparent 34%
+		);
+}
+
+#modal_form .lizerium-wish-modal-panel {
+	position: relative;
+	z-index: 1;
+	width: min(680px, calc(100vw - 40px));
+	max-height: calc(100dvh - 56px);
+	margin: auto;
+	overflow: hidden;
+	border: 1px solid rgba(107, 232, 255, 0.18);
+	border-radius: 8px;
+	background:
+		radial-gradient(
+			circle at 100% 100%,
+			rgba(155, 99, 255, 0.14),
+			transparent 38%
+		),
+		linear-gradient(
+			135deg,
+			rgba(5, 18, 38, 0.97),
+			rgba(6, 16, 42, 0.98) 58%,
+			rgba(13, 10, 43, 0.96)
+		);
+	box-shadow:
+		0 34px 110px rgba(0, 8, 28, 0.58),
+		inset 0 1px 0 rgba(255, 255, 255, 0.05),
+		inset 0 0 0 1px rgba(155, 99, 255, 0.08);
+	animation: wishModalIn 0.24s ease-out both;
+}
+
+#modal_form .lizerium-wish-modal-close {
+	position: absolute;
+	top: 18px;
+	right: 18px;
+	z-index: 3;
+	width: 44px;
+	height: 44px;
+	border: 1px solid rgba(116, 148, 210, 0.34);
+	border-radius: 8px;
+	background: rgba(8, 18, 44, 0.7);
+	color: #edf5ff;
+	cursor: pointer;
+	outline: none;
+	transition:
+		border-color 0.18s ease,
+		background 0.18s ease,
+		box-shadow 0.18s ease,
+		transform 0.18s ease;
+}
+
+#modal_form .lizerium-wish-modal-close:hover,
+#modal_form .lizerium-wish-modal-close:focus-visible {
+	transform: translateY(-1px);
+	border-color: rgba(107, 232, 255, 0.5);
+	background: rgba(10, 31, 62, 0.86);
+	box-shadow: 0 0 0 3px rgba(107, 232, 255, 0.08);
+}
+
+.lizerium-wish-modal-close::before,
+.lizerium-wish-modal-close::after {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 20px;
+	height: 2px;
+	border-radius: 999px;
+	background: currentColor;
+}
+
+.lizerium-wish-modal-close::before {
+	transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.lizerium-wish-modal-close::after {
+	transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+#modal_form .lizerium-wish-modal-form,
+#modal_form .block.createpost.lizerium-wish-modal-form {
+	display: grid;
+	gap: 22px;
+	width: 100%;
+	height: auto;
+	margin: 0;
+	padding: 30px;
+	border: 0;
+	background: transparent;
+}
+
+#modal_form .lizerium-wish-modal-head {
+	display: grid;
+	grid-template-columns: 58px minmax(0, 1fr);
+	gap: 16px;
+	align-items: center;
+	margin-right: 60px;
+}
+
+#modal_form .lizerium-wish-modal-head .lizerium-page-hero-icon {
+	width: 58px;
+	height: 58px;
+	border-radius: 14px;
+}
+
+#modal_form .lizerium-wish-modal-head h3 {
+	margin: 5px 0 0;
+	color: var(--wish-text);
+	font-size: clamp(28px, 2.6vw, 38px);
+	font-weight: 950;
+	line-height: 1.08;
+	letter-spacing: 0;
+	text-wrap: balance;
+}
+
+#modal_form .lizerium-wish-kicker {
+	color: var(--wish-cyan);
+	font-size: 12px;
+	font-weight: 900;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+#modal_form .lizerium-wish-form,
+#modal_form .block form.lizerium-wish-form {
+	display: grid;
+	gap: 16px;
+	width: 100%;
+	height: auto;
+}
+
+#modal_form .lizerium-wish-input,
+.lizerium-section-page-support #modal_form .block form .lizerium-wish-input {
+	width: 100%;
+	min-height: 58px;
+	margin: 0;
+	padding: 0 18px;
+	border: 1px solid rgba(107, 232, 255, 0.18);
+	border-radius: 8px;
+	background: linear-gradient(
+		180deg,
+		rgba(5, 19, 42, 0.9),
+		rgba(3, 12, 29, 0.9)
+	);
+	color: var(--wish-text);
+	font-size: 16px;
+	font-weight: 700;
+	outline: none;
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.035),
+		0 0 0 1px rgba(155, 99, 255, 0.035);
+	transition:
+		border-color 0.18s ease,
+		box-shadow 0.18s ease,
+		background 0.18s ease;
+}
+
+#modal_form .lizerium-wish-input::placeholder {
+	color: rgba(211, 220, 238, 0.58);
+}
+
+#modal_form .lizerium-wish-input:hover,
+#modal_form .lizerium-wish-input:focus {
+	border-color: rgba(107, 232, 255, 0.48);
+	background: linear-gradient(
+		180deg,
+		rgba(7, 24, 50, 0.96),
+		rgba(4, 15, 35, 0.96)
+	);
+	box-shadow:
+		0 0 0 3px rgba(107, 232, 255, 0.08),
+		0 0 24px rgba(107, 232, 255, 0.08);
+}
+
+#modal_form .lizerium-wish-textarea,
+.lizerium-section-page-support
+	#modal_form
+	.block
+	form
+	textarea.lizerium-wish-textarea {
+	height: clamp(190px, 32dvh, 300px);
+	min-height: 190px;
+	padding-top: 16px;
+	padding-bottom: 16px;
+	resize: vertical;
+	line-height: 1.5;
+}
+
+#modal_form .lizerium-wish-modal-actions {
+	display: grid;
+	grid-template-columns: minmax(160px, 0.42fr) minmax(260px, 1fr);
+	gap: 12px;
+	margin-top: 2px;
+}
+
+#modal_form .lizerium-wish-submit,
+#modal_form .lizerium-wish-cancel,
+.lizerium-section-page-support
+	#modal_form
+	.block
+	form
+	input.lizerium-wish-submit {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 54px;
+	width: 100%;
+	margin: 0;
+	border: 1px solid rgba(116, 148, 210, 0.3);
+	border-radius: 8px;
+	background: rgba(7, 20, 45, 0.78);
+	color: rgba(240, 246, 255, 0.86);
+	font-size: clamp(15px, 1.1vw, 17px);
+	font-weight: 850;
+	cursor: pointer;
+	transition:
+		transform 0.18s ease,
+		border-color 0.18s ease,
+		background 0.18s ease,
+		box-shadow 0.18s ease;
+}
+
+#modal_form .lizerium-wish-submit {
+	border-color: rgba(107, 232, 255, 0.38);
+	background: linear-gradient(
+		90deg,
+		rgba(22, 117, 145, 0.94),
+		rgba(70, 54, 176, 0.94)
+	);
+	color: #ffffff;
+}
+
+#modal_form .lizerium-wish-cancel:hover,
+#modal_form .lizerium-wish-cancel:focus-visible,
+#modal_form .lizerium-wish-submit:hover,
+#modal_form .lizerium-wish-submit:focus-visible {
+	transform: translateY(-1px);
+	border-color: rgba(107, 232, 255, 0.54);
+	box-shadow: 0 0 0 3px rgba(107, 232, 255, 0.08);
+}
+
+#modal_form .lizerium-wish-submit:hover,
+#modal_form .lizerium-wish-submit:focus-visible {
+	box-shadow:
+		0 0 0 3px rgba(107, 232, 255, 0.08),
+		0 14px 34px rgba(70, 54, 176, 0.24);
+}
+
+/* Motion is decorative only; reduced-motion rules at the end disable it. */
+@keyframes wishRevealUp {
+	from {
+		opacity: 0;
+		transform: translateY(12px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes wishModalIn {
+	from {
+		opacity: 0;
+		transform: translateY(16px) scale(0.985);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+
+/* Responsive pass: narrow the feed first, then collapse card/modal internals. */
+@media (max-width: 980px) {
+	.lizerium-section-page-support {
+		--wish-content-width: min(720px, calc(100vw - 32px));
+		--wish-feed-width: var(--wish-content-width);
+	}
+
+	.lizerium-wish-toolbar,
+	.lizerium-section-page-support > .lizerium-wish-toolbar.block.status_page {
+		grid-template-columns: 1fr;
+		gap: 14px;
+	}
+}
+
+@media (max-width: 700px) {
+	.lizerium-section-page-support {
+		--wish-content-width: min(100%, calc(100vw - 24px));
+		--wish-feed-width: var(--wish-content-width);
+		padding-top: 28px;
+	}
+
+	.lizerium-wish-toolbar,
+	.lizerium-section-page-support > .lizerium-wish-toolbar.block.status_page {
+		width: var(--wish-content-width);
+		margin: 16px auto 22px;
+		padding: 14px;
+	}
+
+	.lizerium-wish-select,
+	.lizerium-section-page-support .block.status_page .lizerium-wish-select,
+	.lizerium-wish-create-button,
+	.lizerium-section-page-support
+		.block.status_page
+		.lizerium-wish-create-button {
+		min-height: 56px;
+		font-size: 16px;
+		line-height: 1.18;
+	}
+
+	.lizerium-wish-create-button {
+		align-items: center;
+		padding: 0 18px;
+		white-space: normal;
+	}
+
+	.lizerium-wish-feed,
+	.lizerium-section-page-support > .lizerium-wish-feed.block.posts {
+		width: var(--wish-content-width);
+		justify-items: stretch;
+		gap: 16px;
+	}
+
+	.lizerium-wish-card,
+	.lizerium-section-page-support .block.posts .lizerium-wish-card {
+		grid-template-columns: 1fr;
+		gap: 16px;
+		width: 100%;
+		min-height: 0;
+		margin-inline: auto;
+		padding: 18px;
+	}
+
+	.lizerium-wish-avatar {
+		width: 64px;
+		height: 64px;
+	}
+
+	.lizerium-wish-card-head {
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.lizerium-wish-author,
+	.lizerium-section-page-support
+		.block.posts
+		.lizerium-wish-card
+		.lizerium-wish-author:first-child {
+		font-size: clamp(24px, 7vw, 34px);
+		line-height: 1.08;
+	}
+
+	.lizerium-wish-date {
+		font-size: 15px;
+	}
+
+	.lizerium-wish-message,
+	.lizerium-section-page-support
+		.block.posts
+		.lizerium-wish-card
+		.lizerium-wish-message.post-content {
+		font-size: clamp(18px, 5.1vw, 24px);
+		line-height: 1.5;
+	}
+
+	.lizerium-wish-status-badge,
+	.lizerium-section-page-support .block.posts .lizerium-wish-status-badge {
+		min-height: 38px;
+		padding: 0 15px;
+		font-size: 15px;
+	}
+
+	#modal_form.modal {
+		align-items: flex-end;
+		padding: 12px;
+	}
+
+	#modal_form .lizerium-wish-modal-panel {
+		width: 100%;
+		max-height: calc(100dvh - 24px);
+		overflow-y: auto;
+	}
+
+	#modal_form .lizerium-wish-modal-form,
+	#modal_form .block.createpost.lizerium-wish-modal-form {
+		gap: 16px;
+		padding: 22px 16px 16px;
+	}
+
+	#modal_form .lizerium-wish-modal-head {
+		grid-template-columns: 48px minmax(0, 1fr);
+		gap: 12px;
+		margin-right: 46px;
+	}
+
+	#modal_form .lizerium-wish-modal-head .lizerium-page-hero-icon {
+		width: 48px;
+		height: 48px;
+	}
+
+	#modal_form .lizerium-wish-modal-head h3 {
+		font-size: clamp(24px, 7vw, 32px);
+		line-height: 1.08;
+	}
+
+	#modal_form .lizerium-wish-input,
+	.lizerium-section-page-support #modal_form .block form .lizerium-wish-input {
+		min-height: 54px;
+		font-size: 15px;
+	}
+
+	#modal_form .lizerium-wish-textarea,
+	.lizerium-section-page-support
+		#modal_form
+		.block
+		form
+		textarea.lizerium-wish-textarea {
+		height: 220px;
+		min-height: 180px;
+	}
+
+	#modal_form .lizerium-wish-modal-actions {
+		grid-template-columns: 1fr;
+	}
+
+	#modal_form .lizerium-wish-submit,
+	#modal_form .lizerium-wish-cancel,
+	.lizerium-section-page-support
+		#modal_form
+		.block
+		form
+		input.lizerium-wish-submit {
+		min-height: 52px;
+		font-size: 15px;
+		line-height: 1.18;
+		white-space: normal;
+	}
+}
+
+@media (max-width: 420px) {
+	.lizerium-section-page-support {
+		--wish-content-width: min(100%, calc(100vw - 18px));
+		--wish-feed-width: var(--wish-content-width);
+	}
+
+	.lizerium-wish-toolbar,
+	.lizerium-section-page-support > .lizerium-wish-toolbar.block.status_page {
+		padding: 12px;
+	}
+
+	.lizerium-wish-create-button,
+	.lizerium-section-page-support
+		.block.status_page
+		.lizerium-wish-create-button {
+		font-size: 15px;
+	}
+
+	.lizerium-wish-card,
+	.lizerium-section-page-support .block.posts .lizerium-wish-card {
+		padding: 16px;
+	}
+
+	#modal_form .lizerium-wish-modal-head h3 {
+		font-size: 24px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.lizerium-wish-card,
+	#modal_form .lizerium-wish-modal-panel {
+		animation: none;
+	}
+
+	.lizerium-wish-card:hover,
+	.lizerium-wish-select:hover,
+	.lizerium-wish-create-button:hover {
+		transform: none;
+	}
 }

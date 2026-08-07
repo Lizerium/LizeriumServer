@@ -89,6 +89,38 @@ export class Launcher {
         let renderedStart = 0;
         let renderedEnd = -1;
         let suppressScrollSyncUntil = 0;
+        const getVisibleHeaderInset = () => {
+            if (!window.matchMedia("(max-width: 900px)").matches)
+                return 0;
+            const header = document.querySelector(".header_icon_lang_block");
+            if (!header)
+                return 0;
+            const rect = header.getBoundingClientRect();
+            if (rect.bottom <= 0 || rect.top >= window.innerHeight)
+                return 0;
+            return Math.max(0, Math.min(rect.bottom, window.innerHeight * 0.42));
+        };
+        const updateReaderViewportInsets = () => {
+            feed.style.setProperty("--news-reader-header-inset", `${getVisibleHeaderInset()}px`);
+        };
+        const getFeedTopInset = () => {
+            updateReaderViewportInsets();
+            const paddingTop = Number.parseFloat(window.getComputedStyle(feed).paddingTop || "0");
+            return Math.max(16, paddingTop);
+        };
+        const withReaderTarget = (href, target) => {
+            const url = new URL(href, window.location.href);
+            url.searchParams.set("reader", target);
+            return `${url.pathname}${url.search}${url.hash}`;
+        };
+        const navigateReaderPage = (target) => {
+            const pageLinkSelector = target === "first"
+                ? ".launcher-news-pagination a.active + a"
+                : ".launcher-news-pagination a:has(+ a.active)";
+            const pageLink = document.querySelector(pageLinkSelector);
+            if (pageLink === null || pageLink === void 0 ? void 0 : pageLink.href)
+                window.location.href = withReaderTarget(pageLink.href, target);
+        };
         const releaseProgrammaticScroll = () => {
             suppressScrollSyncUntil = 0;
         };
@@ -148,7 +180,7 @@ export class Launcher {
         const alignPostToTop = (post, behavior = "auto", attempts = 8) => {
             suppressScrollSyncUntil = Date.now() + 1200;
             const align = (remainingAttempts) => {
-                const nextTop = Math.max(0, post.offsetTop);
+                const nextTop = Math.max(0, post.offsetTop - getFeedTopInset());
                 feed.scrollTo({ top: nextTop, behavior: remainingAttempts === attempts ? behavior : "auto" });
                 if (remainingAttempts <= 0) {
                     window.setTimeout(() => {
@@ -199,6 +231,7 @@ export class Launcher {
             reader.classList.add("open");
             reader.setAttribute("aria-hidden", "false");
             document.body.classList.add("news-reader-open");
+            updateReaderViewportInsets();
             const post = posts.find((item) => item.getAttribute("data-news-reader-post") === newsId);
             const postIndex = post ? posts.indexOf(post) : 0;
             feed.scrollTop = 0;
@@ -303,7 +336,7 @@ export class Launcher {
             }
             const targetIndex = Math.max(0, activeIndex - 1);
             if (targetIndex === activeIndex) {
-                scrollCurrentPostToTop();
+                navigateReaderPage("last");
                 return;
             }
             const targetPost = posts[targetIndex];
@@ -319,7 +352,7 @@ export class Launcher {
             }
             const targetIndex = Math.min(posts.length - 1, activeIndex + 1);
             if (targetIndex === activeIndex) {
-                scrollCurrentPostToBottom();
+                navigateReaderPage("first");
                 return;
             }
             const targetPost = posts[targetIndex];
@@ -358,6 +391,24 @@ export class Launcher {
                     button.textContent = shareLabel;
                 }, 1200);
             }));
+        });
+        const hashReaderTarget = window.location.hash === "#reader-first"
+            ? "first"
+            : window.location.hash === "#reader-last"
+                ? "last"
+                : "";
+        const readerTarget = new URLSearchParams(window.location.search).get("reader") || hashReaderTarget;
+        if (readerTarget === "first" && posts[0]) {
+            window.setTimeout(() => open(posts[0].getAttribute("data-news-reader-post") || ""), 120);
+        }
+        else if (readerTarget === "last" && posts[posts.length - 1]) {
+            window.setTimeout(() => open(posts[posts.length - 1].getAttribute("data-news-reader-post") || ""), 120);
+        }
+        window.addEventListener("resize", () => {
+            if (!reader.classList.contains("open"))
+                return;
+            updateReaderViewportInsets();
+            alignPostToTop(posts[activeIndex], "auto", 2);
         });
         document.addEventListener("keydown", (event) => {
             if (event.key === "Escape" && reader.classList.contains("open"))

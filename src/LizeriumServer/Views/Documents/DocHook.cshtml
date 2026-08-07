@@ -1,7 +1,7 @@
 ﻿@using LizeriumServer.FormatsData.AppSeo
 @inject IViewLocalizer Localizer
 @section PageStyle {
-    <link rel="stylesheet" href="/css/doc_hook.min.css" />
+    <link rel="stylesheet" href="~/css/doc_hook.min.css" asp-append-version="true" />
 }
 @model DocumentViewModel
 @{
@@ -19,26 +19,31 @@
     ViewData["Title"] = Localizer["DocHookItem_Title_Site"].Value + categoryName;
 }
 
-@Html.ReCaptcha()
-
-<h1 id="@Model.Category" class="h-color-2 w-100 fw-bold mb-3 mt-5 text-center">
-    ⚙️ @categoryName
-</h1>
-
-<article class="markdown-body">
-    <div class="card-row small margin-left-right-10 custom-cursor-hover">
-        <div class="subcard" onclick="window.location.href = '/docs/hook'">
-            <div class="subcard-icon icon-style">📳</div>
-            <div class="subcard-text">@SharedLocalizer["Shared_Commands_List"]</div>
+<section class="doc-hook-page doc-hook-detail">
+    <header class="doc-hook-hero doc-hook-detail-hero lizerium-reveal">
+        <span class="doc-hook-hero-icon" aria-hidden="true">
+            <img src="~/img/pages/home/ecosystem-server.webp" alt="" />
+        </span>
+        <div class="doc-hook-hero-copy">
+            <span>@SharedLocalizer["Shared_Commands_List"]</span>
+            <h1 id="@Model.Category">@categoryName</h1>
+            <p>@Localizer["DocHookItem_Description"]</p>
         </div>
-    </div>
-    <div class="search_doc_hook custom-cursor-hover mb-1 mt-1">
-        <input type="text" id="commandSearch" class="form-control mb-3" placeholder="@Localizer["DocHookItem_Search_Placeholder"]">
-        <div id="searchResults" class="row row-cols-1 row-cols-md-2 g-3 justify-content-center"></div>
+    </header>
+
+    <article class="markdown-body doc-hook-shell lizerium-reveal">
+        <a class="doc-hook-back custom-cursor-hover" href="/docs/hook">
+            <span class="doc-hook-back-icon" aria-hidden="true">↵</span>
+            <span>@SharedLocalizer["Shared_Commands_List"]</span>
+        </a>
+
+    <div class="search_doc_hook doc-hook-search custom-cursor-hover mb-1 mt-1 lizerium-reveal">
+        <input type="text" id="commandSearch" class="form-control mb-3" data-category="@Model.Category" placeholder="@Localizer["DocHookItem_Search_Placeholder"]">
+        <div id="searchResults" class="doc-hook-search-results"></div>
     </div>
 
     <!-- Пагинация только для этой категории -->
-    <nav>
+    <nav class="doc-hook-pagination lizerium-reveal">
         @if (Model.CommandsCount.TryGetValue(Model.Category, out var count))
         {
             int pages = (int)Math.Ceiling(count / (double)Model.PageSize);
@@ -62,95 +67,75 @@
     </nav>
     @foreach (var command in Model.Commands)
     {
-        <pre class="command_block">
-        <blockquote></blockquote>
-        <pre>
-        <code class="language-bash block_command">
-           @foreach (var name in command.CommandNamesList)
-           {
-            <div class="command_div" id="hook_@command.ClearId(@name)">
-            <code class="language-bash name_c">@name</code>
-                </div>
-           }
-          </code>
-        </pre>
-        <pre>
-        <code class="language-ini">
-        @{
-            var currentLang = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+        var currentLang = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
 
-            // Проверяем, есть ли перевод для текущей локали
-            string displayName = command.Description;
+        // Проверяем, есть ли перевод для текущей локали
+        string displayName = command.Description;
 
-            if (command.Translations != null
-                    && command.Translations.TryGetValue(currentLang, out var translationsList)
-                    && translationsList.Any())
-            {
-                displayName = translationsList.First();
-            }
-            else
-            {
-                displayName = command.Description ?? "No description";
-            }
-        }@displayName
-        </code>
-        </pre>
-        <blockquote>
-        @if (!string.IsNullOrEmpty(command.UrlGif))
+        if (command.Translations != null
+                && command.Translations.TryGetValue(currentLang, out var translationsList)
+                && translationsList.Any())
         {
-            <img id="gif" src="/gifs/@command.UrlGif" alt="@Localizer["DocHookItem_Gif_Alt"]">
+            displayName = translationsList.First();
         }
-        @if (command.Status == 1)
+        else
         {
-            <div style="display: flex; flex-direction: column;">
-            <span class="loader status-job short" style="display: flex; flex-direction: row; justify-content: center;">
-               @{
-                    var msg = Localizer["DocHookItem_Command_State3"].Value;
-                    @for (int i = 0; i < msg.Length; i++)
+            displayName = command.Description ?? "No description";
+        }
+
+        var statusClass = command.Status switch
+        {
+            1 => "is-active",
+            2 => "is-disabled",
+            3 => "is-develop",
+            _ => "is-neutral"
+        };
+
+        var statusText = command.Status switch
+        {
+            1 => Localizer["DocHookItem_Command_State3"].Value,
+            2 => Localizer["DocHookItem_Command_State1"].Value,
+            3 => Localizer["DocHookItem_Command_State2"].Value,
+            _ => string.Empty
+        };
+
+        var hasGif = !string.IsNullOrEmpty(command.UrlGif);
+
+        <section class="command_block doc-hook-command-card lizerium-reveal">
+            <div class="doc-hook-command-head">
+                <div class="doc-hook-command-aliases">
+                    @foreach (var name in command.CommandNamesList)
                     {
-                    <span>@msg[i]</span>
+                        <div class="command_div" id="hook_@command.ClearId(@name)">
+                            <code class="language-bash name_c">@name</code>
+                        </div>
                     }
-               }
-              </span>
-             </div>
-        }
-        @if (command.Status == 2)
-        {
-            <div style="display: flex; flex-direction: column;">
+                </div>
+            </div>
 
-            <span class="loader status-read short" style="display: flex; flex-direction: row; justify-content: center;">
-                @{
-                     var msg = Localizer["DocHookItem_Command_State1"].Value;
-                     @for (int i = 0; i < msg.Length; i++)
-                     {
-                    <span>@msg[i]</span>
-                     }
+            <div class="doc-hook-command-description">
+                @displayName
+            </div>
+
+            @if (hasGif)
+            {
+                <figure class="doc-hook-command-gif">
+                    <a class="doc-hook-command-gif-link" href="/gifs/@command.UrlGif" target="_blank" rel="noopener">
+                        <img src="/gifs/@command.UrlGif" alt="">
+                    </a>
+                </figure>
+            }
+
+            <div class="doc-hook-command-footer">
+                @if (!string.IsNullOrWhiteSpace(statusText))
+                {
+                    <span class="doc-hook-status @statusClass">@statusText</span>
                 }
-               </span>	
-               </div>
-
-        }
-        @if (command.Status == 3)
-        {
-            <div style="display: flex; flex-direction: column;">
-
-            <span class="loader status-complete short" style="display: flex; flex-direction: row; justify-content: center;">
-                @{
-                     var msg = Localizer["DocHookItem_Command_State2"].Value;
-                     @for (int i = 0; i < msg.Length; i++)
-                     {
-                    <span>@msg[i]</span>
-                     }
-                }
-               </span>	
-                 </div>
-
-        }
-       </blockquote>
-      </pre>
+            </div>
+        </section>
     }
     <!-- Пагинация только для этой категории -->
-    <nav>
+    <nav class="doc-hook-pagination lizerium-reveal">
         @if (Model.CommandsCount.TryGetValue(Model.Category, out var countLow))
         {
             int pages = (int)Math.Ceiling(countLow / (double)Model.PageSize);
@@ -183,6 +168,10 @@
               d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z">
         </path>
     </svg>
+    <div class="doc-hook-gif-lightbox" hidden aria-hidden="true">
+        <button class="doc-hook-gif-lightbox-close" type="button" aria-label="Close">×</button>
+        <img src="" alt="">
+    </div>
     <script>
         const copyIcon = `<svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" fill="#f1f1f1" class="copy-docs-icon">
                       <path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
@@ -232,5 +221,47 @@
             const doc = new DOMParser().parseFromString(input, "text/html");
             return doc.documentElement.textContent;
         }
+
+        const gifLightbox = document.querySelector(".doc-hook-gif-lightbox");
+        const gifLightboxImage = gifLightbox?.querySelector("img");
+        const gifLightboxClose = gifLightbox?.querySelector(".doc-hook-gif-lightbox-close");
+
+        document.querySelectorAll(".doc-hook-command-gif-link").forEach((link) => {
+            link.addEventListener("click", (event) => {
+                if (!gifLightbox || !gifLightboxImage) {
+                    return;
+                }
+
+                event.preventDefault();
+                gifLightboxImage.src = link.href;
+                gifLightbox.hidden = false;
+                gifLightbox.setAttribute("aria-hidden", "false");
+                document.documentElement.classList.add("doc-hook-lightbox-open");
+            });
+        });
+
+        function closeGifLightbox() {
+            if (!gifLightbox || !gifLightboxImage) {
+                return;
+            }
+
+            gifLightbox.hidden = true;
+            gifLightbox.setAttribute("aria-hidden", "true");
+            gifLightboxImage.src = "";
+            document.documentElement.classList.remove("doc-hook-lightbox-open");
+        }
+
+        gifLightboxClose?.addEventListener("click", closeGifLightbox);
+        gifLightbox?.addEventListener("click", (event) => {
+            if (event.target === gifLightbox) {
+                closeGifLightbox();
+            }
+        });
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+                closeGifLightbox();
+            }
+        });
     </script>
 </article>
+</section>

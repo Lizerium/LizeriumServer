@@ -1,6 +1,6 @@
 ﻿@inject IViewLocalizer Localizer
 @section PageStyle {
-    <link rel="stylesheet" href="/css/wish.min.css" />
+    <link rel="stylesheet" href="~/css/wish.min.css" asp-append-version="true" />
 }
 @model WishViewModel
 @{
@@ -8,14 +8,23 @@
     var isDev = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
 }
 
-@Html.ReCaptcha()
-
 <input type="hidden" id="last_user_id" value="@Model.Posts.LastUserId" />
-<section class="news-section">
-    <h1 class="h-color-2 w-100 fw-bold mb-2 mt-2 text-center">❓ @Localizer["Wish_Title"]</h1>
-    <div class="status_page block">
-        <div class="filter">
-            <select id="status">
+<section class="news-section lizerium-section-page support lizerium-section-page-support">
+    <header class="lizerium-page-hero lizerium-page-hero-support lizerium-reveal">
+        <div class="lizerium-page-hero-copy">
+            <span class="lizerium-page-hero-icon" aria-hidden="true">
+                <span class="nav-icon nav-icon-support" aria-hidden="true"></span>
+            </span>
+            <div>
+                <h1>@Localizer["Wish_Page_Header"]</h1>
+                <p>@Localizer["Wish_Page_Description"]</p>
+            </div>
+        </div>
+    </header>
+    <div class="status_page block lizerium-wish-toolbar lizerium-reveal">
+        <label class="filter lizerium-wish-filter" for="status">
+            <span class="lizerium-wish-filter-label">@Localizer["Wish_Title"]</span>
+            <select id="status" class="lizerium-wish-select">
                 <option value="0">@Localizer["Wish_Status_0"]</option>
                 <option value="1">@Localizer["Wish_Status_1"]</option>
                 <option value="2">@Localizer["Wish_Status_2"]</option>
@@ -23,10 +32,10 @@
                 <option value="4">@Localizer["Wish_Status_4"]</option>
                 <option value="5">@Localizer["Wish_Status_5"]</option>
             </select>
-        </div>
-        <button id="create-post-btn">@Localizer["Wish_Send_Wish_Btn_Msg"]</button>
+        </label>
+        <button id="create-post-btn" class="lizerium-wish-create-button" type="button">@Localizer["Wish_Send_Wish_Btn_Msg"]</button>
     </div>
-    <div class="posts block">
+    <div class="posts block lizerium-wish-feed lizerium-reveal" aria-live="polite">
     </div>
     @if (isDev)
     {
@@ -39,21 +48,33 @@
 </section>
 
 <!--Start Modal Form-->
-<div id="modal_form" class="modal hidden">
-    <div class="modal_content">
-        <div class="modal_header">
-            <div class="createpost block">
-                <h3 class="h-color-2 w-100 fw-bold mb-1 mt-1 text-center">@Localizer["Wish_Modal_Title"]</h3>
-                <form action="/create" method="post">
-                    <input type="text" name="autor" placeholder="@Localizer["Wish_Modal_Name_Placeholder"]" />
-                    <textarea maxlength="3500" type="text" name="message" placeholder="@Localizer["Wish_Modal_Message_Placeholder"]"></textarea>
-                    <input type="submit" value="@Localizer["Wish_Modal_Input"]" />
-                </form>
+<div id="modal_form" class="modal hidden" data-wish-modal>
+    <div class="lizerium-wish-modal-backdrop" data-wish-modal-close></div>
+    <section class="modal_content lizerium-wish-modal-panel" role="dialog" aria-modal="true" aria-labelledby="wish-modal-title">
+        <button class="lizerium-wish-modal-close" type="button" aria-label="@Localizer["Wish_Modal_Cancel"]" data-wish-modal-close></button>
+        <div class="createpost block lizerium-wish-modal-form">
+            <div class="lizerium-wish-modal-head">
+                <span class="lizerium-page-hero-icon" aria-hidden="true">
+                    <span class="nav-icon nav-icon-support" aria-hidden="true"></span>
+                </span>
+                <div>
+                    <span class="lizerium-wish-kicker">@Localizer["Wish_Send_Wish_Btn_Msg"]</span>
+                    <h3 id="wish-modal-title">@Localizer["Wish_Modal_Title"]</h3>
+                </div>
             </div>
-            <h3></h3>
+
+            <form action="/create" method="post" class="lizerium-wish-form">
+                @Html.AntiForgeryToken()
+                @Html.ReCaptcha()
+                <input class="lizerium-wish-input" type="text" name="autor" autocomplete="off" spellcheck="false" placeholder="@Localizer["Wish_Modal_Name_Placeholder"]" />
+                <textarea class="lizerium-wish-input lizerium-wish-textarea" maxlength="3500" name="message" autocomplete="off" spellcheck="false" placeholder="@Localizer["Wish_Modal_Message_Placeholder"]"></textarea>
+                <div class="lizerium-wish-modal-actions">
+                    <button class="lizerium-wish-cancel" type="button" data-wish-modal-close>@Localizer["Wish_Modal_Cancel"]</button>
+                    <input class="lizerium-wish-submit" type="submit" value="@Localizer["Wish_Modal_Input"]" />
+                </div>
+            </form>
         </div>
-        <div class="modal_body"></div>
-    </div>
+    </section>
 </div>
 <!--End Modal Form-->
 

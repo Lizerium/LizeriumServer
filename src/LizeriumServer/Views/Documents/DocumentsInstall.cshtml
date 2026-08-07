@@ -3,14 +3,51 @@
 @{
     ViewData["Title"] = Localizer["DocInstall_Title_Site"];
 }
-@Html.ReCaptcha()
+@section PageStyle {
+    <link rel="stylesheet" href="~/css/doc_hook.min.css" asp-append-version="true" />
+}
 
-<h1 class="h-color-2 w-100 fw-bold mb-3 mt-5 text-center">⚙️ @Localizer["DocInstall_Header"]</h1>
-<article class="markdown-body">
-    <div class="card-row small custom-cursor-hover">
-        <div class="subcard" onclick="window.location.href = '/docs/all'">
-            <div class="subcard-icon icon-style">📳</div>
-            <div class="subcard-text">@SharedLocalizer["Shared_Docs"]</div>
+<section class="doc-hook-page doc-install-page">
+    <header class="doc-hook-hero doc-install-hero lizerium-reveal">
+        <span class="doc-hook-hero-icon doc-install-hero-icon" aria-hidden="true">
+            <img src="~/img/nav/knowledge.webp" alt="" />
+        </span>
+        <div class="doc-hook-hero-copy">
+            <span>@Localizer["DocInstall_Kicker"]</span>
+            <h1>@Localizer["DocInstall_Header"]</h1>
+            <p>@Localizer["DocInstall_Description"]</p>
         </div>
-    </div>
-</article>
+    </header>
+
+    <article class="markdown-body doc-hook-shell doc-install-shell lizerium-reveal">
+        <a class="doc-hook-back custom-cursor-hover" href="/docs/all">
+            <span class="doc-hook-back-icon" aria-hidden="true">&#8617;</span>
+            <span>@SharedLocalizer["Shared_Docs"]</span>
+        </a>
+
+        <section class="doc-install-panel">
+            <div class="doc-install-status">
+                <span>@Localizer["DocInstall_Status"]</span>
+            </div>
+            <div class="doc-install-content">
+                <span>@Localizer["DocInstall_Panel_Label"]</span>
+                <h2>@Localizer["DocInstall_Panel_Title"]</h2>
+                <p>@Localizer["DocInstall_Panel_Text"]</p>
+            </div>
+            <div class="doc-install-roadmap" aria-label="@Localizer["DocInstall_Roadmap_Label"]">
+                <div>
+                    <strong>01</strong>
+                    <span>@Localizer["DocInstall_Point_Install"]</span>
+                </div>
+                <div>
+                    <strong>02</strong>
+                    <span>@Localizer["DocInstall_Point_Config"]</span>
+                </div>
+                <div>
+                    <strong>03</strong>
+                    <span>@Localizer["DocInstall_Point_Check"]</span>
+                </div>
+            </div>
+        </section>
+    </article>
+</section>

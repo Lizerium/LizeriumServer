@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
@@ -315,6 +315,93 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
 
             Assert.IsTrue(result.Any(c => c.CommandNames == "Cmd1"), "В списке должна быть команда Cmd1");
             Assert.IsTrue(result.Any(c => c.CommandNames == "Cmd2"), "В списке должна быть команда Cmd2");
+        }
+
+        [TestMethod]
+        public async Task GetPublishedProductsCatalog_ReturnsActiveCategoriesProductsAndLinksInSortOrder()
+        {
+            // Arrange
+            var service = this.CreateService();
+
+            await service.ProductCategories.AddRangeAsync(
+                new ProductCategoryDataResponse
+                {
+                    Id = 1,
+                    Key = "hidden",
+                    NameRu = "Скрытая",
+                    NameEn = "Hidden",
+                    SortOrder = 1,
+                    IsActive = false
+                },
+                new ProductCategoryDataResponse
+                {
+                    Id = 2,
+                    Key = "launcher",
+                    NameRu = "Лаунчер",
+                    NameEn = "Launcher",
+                    SortOrder = 2,
+                    IsActive = true
+                });
+
+            await service.Products.AddRangeAsync(
+                new ProductDataResponse
+                {
+                    Id = 1,
+                    ProductCategoryId = 2,
+                    TitleRu = "Скрытый продукт",
+                    TitleEn = "Hidden product",
+                    SortOrder = 1,
+                    IsActive = false
+                },
+                new ProductDataResponse
+                {
+                    Id = 2,
+                    ProductCategoryId = 2,
+                    TitleRu = "Загрузчик Лизериум",
+                    TitleEn = "Lizerium uploader",
+                    DescriptionRu = "Скачивание обновлений",
+                    DescriptionEn = "Downloads updates",
+                    IconUrl = "/img/pages/game/launcher.webp",
+                    SortOrder = 2,
+                    IsActive = true
+                });
+
+            await service.ProductDownloadLinks.AddRangeAsync(
+                new ProductDownloadLinkDataResponse
+                {
+                    Id = 1,
+                    ProductId = 2,
+                    NameRu = "Яндекс Диск",
+                    NameEn = "Yandex Disk",
+                    Url = "https://disk.yandex.ru/example",
+                    IconUrl = "/img/pages/game/yandex-disk.webp",
+                    SortOrder = 2,
+                    IsActive = true
+                },
+                new ProductDownloadLinkDataResponse
+                {
+                    Id = 2,
+                    ProductId = 2,
+                    NameRu = "С Портала",
+                    NameEn = "Portal",
+                    Url = "/uploader/projects/download/steam",
+                    IconUrl = "/img/pages/game/portal.webp",
+                    SortOrder = 1,
+                    IsActive = true
+                });
+            await service.SaveChangesAsync();
+
+            // Act
+            var result = await service.GetPublishedProductCatalogAsync(false);
+
+            // Assert
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual("launcher", result[0].Key);
+            Assert.AreEqual(1, result[0].Products.Count);
+            Assert.AreEqual("Загрузчик Лизериум", result[0].Products[0].TitleRu);
+            Assert.AreEqual(2, result[0].Products[0].DownloadLinks.Count);
+            Assert.AreEqual("С Портала", result[0].Products[0].DownloadLinks[0].NameRu);
+            Assert.AreEqual("Яндекс Диск", result[0].Products[0].DownloadLinks[1].NameRu);
         }
 
         [TestMethod]

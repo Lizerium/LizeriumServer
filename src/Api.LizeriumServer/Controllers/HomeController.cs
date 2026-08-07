@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
@@ -68,7 +68,7 @@ public class HomeController : Controller
         //получаем объект сессии администратора
         var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
         //если объект сессии администратора не задан или не авторизован, отдаем страницу авторизации
-        if (adminSession is not { IsAuth: true }) 
+        if (adminSession is not { IsAuth: true })
             return View(new MainModel(null, null) { ShowLeftSide = false });
 
         return Redirect("~/cabinet");
@@ -607,7 +607,7 @@ public class HomeController : Controller
     }
 
     /// <summary>
-    /// Страница управления новостями Lizerium Launcher.
+    /// Страница управления новостями Lizerium Steam.
     /// </summary>
     [HttpGet]
     [Route("/news")]
@@ -626,6 +626,18 @@ public class HomeController : Controller
             if (adminSession is not { IsAuth: true }) return Redirect("~/");
 
             var news = await appDb.GetAllAdminLauncherNewsAsync();
+            var newsTypeOptions = news
+                .Select(item => new LauncherNewsTypeOption
+                {
+                    Ru = item.NewsTypeRu?.Trim() ?? string.Empty,
+                    En = item.NewsTypeEn?.Trim() ?? string.Empty
+                })
+                .Where(item => !string.IsNullOrWhiteSpace(item.Ru) || !string.IsNullOrWhiteSpace(item.En))
+                .GroupBy(item => $"{item.Ru}\u001f{item.En}", StringComparer.OrdinalIgnoreCase)
+                .Select(group => group.First())
+                .OrderBy(item => string.IsNullOrWhiteSpace(item.Ru) ? item.En : item.Ru, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
             page = Math.Max(1, page);
             status = string.IsNullOrWhiteSpace(status) ? "all" : status;
             search = search?.Trim() ?? string.Empty;
@@ -668,6 +680,7 @@ public class HomeController : Controller
             {
                 ShowLeftSide = true,
                 LauncherNews = news,
+                LauncherNewsTypes = newsTypeOptions,
                 NewsSearch = search,
                 NewsStatusFilter = status,
                 NewsCurrentPage = page,
@@ -683,8 +696,215 @@ public class HomeController : Controller
         }
     }
 
+    // Product catalog admin: category/product/link CRUD plus image library endpoints.
+    [HttpGet]
+    [Route("/products")]
+    public async Task<IActionResult> Products()
+    {
+        try
+        {
+            if (!AdminAccessGuard.IsAllowed(HttpContext))
+                return View("AccessClosed", new MainModel(null, null) { ShowLeftSide = false });
+
+            var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString();
+            if (await securityService.IsBlocked(ip))
+                return StatusCode(403);
+
+            var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
+            if (adminSession is not { IsAuth: true }) return Redirect("~/");
+
+            return View(new MainModel(null, null)
+            {
+                ShowLeftSide = true,
+                ProductCatalog = await appDb.GetAllAdminProductCatalogAsync()
+            });
+        }
+        catch (Exception exception)
+        {
+            exception.LogException();
+            return StatusCode(404);
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Route("/products/category/save")]
+    public async Task<IActionResult> SaveProductCategory([FromForm] ProductCategoryDataResponse category)
+    {
+        if (!await CanEditAdminDataAsync())
+            return WantsJsonResponse()
+                ? Unauthorized(new { ok = false, message = "need authorization" })
+                : Unauthorized("need authorization");
+
+        await appDb.SaveProductCategoryAsync(category);
+        return ProductMutationResult();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Route("/products/category/delete")]
+    public async Task<IActionResult> DeleteProductCategory([FromForm] int id)
+    {
+        if (!await CanEditAdminDataAsync())
+            return Unauthorized("need authorization");
+
+        await appDb.DeleteProductCategoryAsync(id);
+        return Redirect("~/products");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Route("/products/product/save")]
+    public async Task<IActionResult> SaveProduct([FromForm] ProductDataResponse product)
+    {
+        if (!await CanEditAdminDataAsync())
+            return WantsJsonResponse()
+                ? Unauthorized(new { ok = false, message = "need authorization" })
+                : Unauthorized("need authorization");
+
+        await appDb.SaveProductAsync(product);
+        return ProductMutationResult();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Route("/products/product/delete")]
+    public async Task<IActionResult> DeleteProduct([FromForm] int id)
+    {
+        if (!await CanEditAdminDataAsync())
+            return Unauthorized("need authorization");
+
+        await appDb.DeleteProductAsync(id);
+        return Redirect("~/products");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Route("/products/link/save")]
+    public async Task<IActionResult> SaveProductDownloadLink([FromForm] ProductDownloadLinkDataResponse link)
+    {
+        if (!await CanEditAdminDataAsync())
+            return WantsJsonResponse()
+                ? Unauthorized(new { ok = false, message = "need authorization" })
+                : Unauthorized("need authorization");
+
+        await appDb.SaveProductDownloadLinkAsync(link);
+        return ProductMutationResult();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Route("/products/link/delete")]
+    public async Task<IActionResult> DeleteProductDownloadLink([FromForm] int id)
+    {
+        if (!await CanEditAdminDataAsync())
+            return Unauthorized("need authorization");
+
+        await appDb.DeleteProductDownloadLinkAsync(id);
+        return Redirect("~/products");
+    }
+
+    [HttpGet]
+    [Route("/products/assets")]
+    public async Task<IActionResult> GetProductAssets()
+    {
+        if (!await CanEditAdminDataAsync())
+            return Unauthorized(new { ok = false, message = "need authorization" });
+
+        // Product assets are stored under the portal image root so API deploys do not own public media.
+        var imagesPath = GetPortalImagesPath();
+        if (!Directory.Exists(imagesPath))
+            return Json(new { ok = true, assets = Array.Empty<object>() });
+
+        var allowedExtensions = GetProductAssetExtensions();
+        var assets = Directory
+            .EnumerateFiles(imagesPath, "*.*", SearchOption.AllDirectories)
+            .Where(file => allowedExtensions.Contains(Path.GetExtension(file)))
+            .Select(file =>
+            {
+                var relativePath = Path.GetRelativePath(imagesPath, file)
+                    .Replace(Path.DirectorySeparatorChar, '/')
+                    .Replace(Path.AltDirectorySeparatorChar, '/');
+
+                var group = Path.GetDirectoryName(relativePath)?
+                    .Replace(Path.DirectorySeparatorChar, '/')
+                    .Replace(Path.AltDirectorySeparatorChar, '/') ?? string.Empty;
+
+                return new
+                {
+                    url = $"/img/{relativePath}",
+                    previewUrl = $"/products/assets/preview?url={Uri.EscapeDataString($"/img/{relativePath}")}",
+                    name = Path.GetFileName(file),
+                    group
+                };
+            })
+            .OrderBy(asset => asset.group)
+            .ThenBy(asset => asset.name)
+            .ToList();
+
+        return Json(new { ok = true, assets });
+    }
+
+    [HttpGet]
+    [Route("/products/assets/preview")]
+    public async Task<IActionResult> PreviewProductAsset([FromQuery] string url)
+    {
+        if (!await CanEditAdminDataAsync())
+            return Unauthorized();
+
+        if (string.IsNullOrWhiteSpace(url) || !url.StartsWith("/img/", StringComparison.OrdinalIgnoreCase))
+            return BadRequest();
+
+        var relativePath = url.Substring("/img/".Length)
+            .Replace('/', Path.DirectorySeparatorChar)
+            .Replace('\\', Path.DirectorySeparatorChar);
+
+        if (relativePath.Contains("..", StringComparison.Ordinal))
+            return BadRequest();
+
+        var imagesPath = GetPortalImagesPath();
+        var fullPath = Path.GetFullPath(Path.Combine(imagesPath, relativePath));
+        var rootPath = Path.GetFullPath(imagesPath);
+        var normalizedRootPath = rootPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+            + Path.DirectorySeparatorChar;
+
+        // Never serve a preview outside the configured /img root, even if a crafted url reaches this endpoint.
+        if (!fullPath.StartsWith(normalizedRootPath, StringComparison.OrdinalIgnoreCase) || !System.IO.File.Exists(fullPath))
+            return NotFound();
+
+        var extension = Path.GetExtension(fullPath);
+        if (!GetProductAssetExtensions().Contains(extension))
+            return BadRequest();
+
+        return PhysicalFile(fullPath, GetProductAssetContentType(extension));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Route("/products/assets/upload")]
+    public async Task<IActionResult> UploadProductAsset([FromForm] IFormFile imageFile)
+    {
+        if (!await CanEditAdminDataAsync())
+            return Unauthorized(new { ok = false, message = "need authorization" });
+
+        try
+        {
+            var imageUrl = await SaveProductAssetAsync(imageFile);
+            return Json(new
+            {
+                ok = true,
+                url = imageUrl,
+                previewUrl = $"/products/assets/preview?url={Uri.EscapeDataString(imageUrl)}"
+            });
+        }
+        catch (InvalidOperationException exception)
+        {
+            return BadRequest(new { ok = false, message = exception.Message });
+        }
+    }
+
     /// <summary>
-    /// Сохраняет новость Lizerium Launcher.
+    /// Сохраняет новость Lizerium Steam.
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -791,7 +1011,7 @@ public class HomeController : Controller
     }
 
     /// <summary>
-    /// Удаляет новость Lizerium Launcher.
+    /// Удаляет новость Lizerium Steam.
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -932,6 +1152,27 @@ public class HomeController : Controller
             || Request.Headers["Accept"].Any(value => value.Contains("application/json", StringComparison.OrdinalIgnoreCase));
     }
 
+    private IActionResult ProductMutationResult()
+    {
+        // Product admin supports AJAX saves, while plain form submits keep the redirect fallback.
+        return WantsJsonResponse()
+            ? Json(new { ok = true })
+            : Redirect("~/products");
+    }
+
+    private async Task<bool> CanEditAdminDataAsync()
+    {
+        if (!AdminAccessGuard.IsAllowed(HttpContext))
+            return false;
+
+        var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString();
+        if (await securityService.IsBlocked(ip))
+            return false;
+
+        var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
+        return adminSession is { IsAuth: true };
+    }
+
     private static bool ContainsNewsText(string value, string search)
     {
         return !string.IsNullOrWhiteSpace(value)
@@ -970,6 +1211,122 @@ public class HomeController : Controller
         return publishedAtUnix > 0
             ? DateTimeOffset.FromUnixTimeSeconds(publishedAtUnix).ToLocalTime().ToString("yyyy-MM-ddTHH:mm")
             : string.Empty;
+    }
+
+    private static async Task<string> SaveProductAssetAsync(IFormFile imageFile)
+    {
+        if (imageFile == null || imageFile.Length == 0)
+            throw new InvalidOperationException("Image file is empty.");
+
+        const long maxImageBytes = 8 * 1024 * 1024;
+        if (imageFile.Length > maxImageBytes)
+            throw new InvalidOperationException("Image file is too large.");
+
+        var extension = Path.GetExtension(imageFile.FileName)?.ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(extension) || !GetProductAssetExtensions().Contains(extension))
+            throw new InvalidOperationException("Unsupported image type.");
+
+        var contentType = imageFile.ContentType?.ToLowerInvariant() ?? string.Empty;
+        if (!contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase) && extension != ".svg")
+            throw new InvalidOperationException("Uploaded file is not an image.");
+
+        var uploadPath = GetProductAssetUploadPath();
+        Directory.CreateDirectory(uploadPath);
+
+        // Timestamp keeps files sortable; GUID prevents overwrites when uploads share the same name.
+        var fileName = $"{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid():N}{extension}";
+        var fullPath = Path.Combine(uploadPath, fileName);
+
+        await using (var stream = System.IO.File.Create(fullPath))
+        {
+            await imageFile.CopyToAsync(stream);
+        }
+
+        return $"/img/admin/products/{fileName}";
+    }
+
+    private static HashSet<string> GetProductAssetExtensions()
+    {
+        return new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ".webp",
+            ".png",
+            ".jpg",
+            ".jpeg",
+            ".gif",
+            ".svg"
+        };
+    }
+
+    private static string GetProductAssetContentType(string extension)
+    {
+        return extension?.ToLowerInvariant() switch
+        {
+            ".svg" => "image/svg+xml",
+            ".webp" => "image/webp",
+            ".png" => "image/png",
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".gif" => "image/gif",
+            _ => "application/octet-stream"
+        };
+    }
+
+    private static string GetProductAssetUploadPath()
+    {
+        return Path.Combine(GetPortalImagesPath(), "admin", "products");
+    }
+
+    private static string GetPortalImagesPath()
+    {
+        var configuredPath = Program.Configuration["appSettings:portalImagesPath"];
+        if (!string.IsNullOrWhiteSpace(configuredPath))
+        {
+            return Path.GetFullPath(Path.IsPathRooted(configuredPath)
+                ? configuredPath
+                : Path.Combine(Directory.GetCurrentDirectory(), configuredPath));
+        }
+
+        if (Program.SettingsApp.IsRelease)
+        {
+            // In production the API writes images to the main portal wwwroot, not to its own publish folder.
+            var wwwRoot = Directory.GetParent(Directory.GetCurrentDirectory())?.FullName
+                ?? Directory.GetCurrentDirectory();
+
+            return Path.GetFullPath(Path.Combine(wwwRoot, "uploader", "wwwroot", "img"));
+        }
+
+        return FindDevelopmentPortalImagesPath();
+    }
+
+    private static string FindDevelopmentPortalImagesPath()
+    {
+        var roots = new[]
+        {
+            AppContext.BaseDirectory,
+            Directory.GetCurrentDirectory()
+        };
+
+        foreach (var root in roots)
+        {
+            var current = new DirectoryInfo(Path.GetFullPath(root));
+            while (current != null)
+            {
+                var portalProject = Path.Combine(current.FullName, "LizeriumServer", "LizeriumServer.csproj");
+                var portalImages = Path.Combine(current.FullName, "LizeriumServer", "wwwroot", "img");
+
+                if (System.IO.File.Exists(portalProject) && Directory.Exists(portalImages))
+                    return portalImages;
+
+                current = current.Parent;
+            }
+        }
+
+        return Path.GetFullPath(Path.Combine(
+            Directory.GetCurrentDirectory(),
+            "..",
+            "LizeriumServer",
+            "wwwroot",
+            "img"));
     }
 
     private static async Task<string> SaveNewsImageAsync(IFormFile imageFile)
@@ -1234,7 +1591,7 @@ public class HomeController : Controller
 
             //отдаем страницу ошибки
             return View(new MainModel(null, null)
-                { ShowLeftSide = false });
+            { ShowLeftSide = false });
         }
         catch (Exception exception)
         {

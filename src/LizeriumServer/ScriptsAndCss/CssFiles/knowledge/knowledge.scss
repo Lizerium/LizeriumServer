@@ -174,10 +174,10 @@
     --ifm-hr-background-color: var(--ifm-color-emphasis-500);
     --ifm-hr-height: 1px;
     --ifm-hr-margin-vertical: 1.5rem;
-    --ifm-scrollbar-size: 7px;
-    --ifm-scrollbar-track-background-color: #f1f1f1;
-    --ifm-scrollbar-thumb-background-color: silver;
-    --ifm-scrollbar-thumb-hover-background-color: #a7a7a7;
+    --ifm-scrollbar-size: var(--liz-scrollbar-size);
+    --ifm-scrollbar-track-background-color: var(--liz-scrollbar-track);
+    --ifm-scrollbar-thumb-background-color: var(--liz-scrollbar-thumb);
+    --ifm-scrollbar-thumb-hover-background-color: var(--liz-scrollbar-thumb-hover);
     --ifm-alert-background-color: inherit;
     --ifm-alert-border-color: inherit;
     --ifm-alert-border-radius: var(--ifm-global-radius);
@@ -291,8 +291,8 @@
     --ifm-code-font-size: 95%;
     --docusaurus-highlighted-code-line-bg: #0000001a;
     --ifm-table-cell-padding: 0.35rem;
-    --ifm-scrollbar-thumb-background-color: #000;
-    --ifm-scrollbar-track-background-color: #000;
+    --ifm-scrollbar-thumb-background-color: var(--liz-scrollbar-thumb);
+    --ifm-scrollbar-track-background-color: var(--liz-scrollbar-track);
     --ifm-navbar-height: 59px;
     --docsearch-primary-color: #5468ff;
     --docsearch-text-color: #1c1e21;
@@ -967,4 +967,782 @@ pre[class*=language-] {
 .form-check-input:focus {
     border-color: #8a0de4;
     box-shadow: 0 0 8px rgba(138, 43, 226, 0.6);
+}
+
+/* Lizerium portal wiki refresh.
+   Everything below intentionally overrides the generic markdown/Docusaurus layer above. */
+:root {
+    --wiki-portal-bg: #020812;
+    --wiki-portal-panel: rgba(7, 12, 26, 0.82);
+    --wiki-portal-panel-strong: rgba(9, 16, 32, 0.94);
+    --wiki-portal-border: rgba(94, 226, 243, 0.18);
+    --wiki-portal-border-strong: rgba(126, 236, 255, 0.34);
+    --wiki-portal-text: rgba(225, 237, 250, 0.86);
+    --wiki-portal-muted: rgba(184, 201, 232, 0.72);
+    --wiki-portal-cyan: #72f2ff;
+    --wiki-portal-violet: #b994ff;
+}
+
+body:has(.custombody) {
+    background: var(--wiki-portal-bg);
+}
+
+.custombody {
+    position: relative;
+    gap: 22px;
+    min-height: calc(100vh - 76px);
+    padding: 32px 34px 112px;
+    overflow: hidden;
+    background:
+        linear-gradient(
+            90deg,
+            rgba(2, 8, 18, 0.98) 0%,
+            rgba(2, 8, 18, 0.88) 35%,
+            rgba(2, 8, 18, 0.54) 62%,
+            rgba(2, 8, 18, 0.84) 100%
+        ),
+        linear-gradient(180deg, rgba(2, 8, 18, 0), #020812 64%),
+        url('../../../wwwroot/img/pages/home/feature-card-info-bg-big.webp') right top / min(1180px, 78vw) auto no-repeat,
+        #020812;
+    color: var(--wiki-portal-text);
+}
+
+.custombody::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 28% 8%, rgba(185, 148, 255, 0.08), transparent 28%),
+        radial-gradient(circle at 78% 22%, rgba(114, 242, 255, 0.08), transparent 30%);
+    pointer-events: none;
+}
+
+.custombody > * {
+    position: relative;
+    z-index: 1;
+}
+
+.sidebar {
+    position: sticky;
+    top: 98px;
+    flex: 0 0 274px;
+    width: 274px;
+    max-height: calc(100vh - 178px);
+    overflow: auto;
+    padding: 14px 10px 14px 14px;
+    border: 1px solid var(--wiki-portal-border);
+    border-radius: 8px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.026), rgba(255, 255, 255, 0.004)),
+        rgba(5, 10, 22, 0.88);
+    box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.36),
+        inset 0 1px 0 rgba(255, 255, 255, 0.045);
+    scrollbar-gutter: stable;
+}
+
+.sidebar .menu,
+.sidebar .submenu {
+    position: relative;
+    margin-left: 0 !important;
+    border-left: 0 !important;
+    border-radius: 0 !important;
+}
+
+.sidebar .submenu::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    left: 8px;
+    width: 1px;
+    background: linear-gradient(
+        180deg,
+        rgba(126, 236, 255, 0),
+        rgba(126, 236, 255, 0.34) 18%,
+        rgba(185, 148, 255, 0.22) 72%,
+        rgba(126, 236, 255, 0)
+    );
+}
+
+.sidebar .menu > li {
+    margin-bottom: 8px;
+}
+
+.sidebar li {
+    position: relative;
+    list-style: none;
+}
+
+.sidebar a,
+.sidebar button {
+    position: relative;
+    min-height: 38px;
+    padding: 9px 12px;
+    border: 1px solid rgba(126, 236, 255, 0.08);
+    border-radius: 8px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.026), rgba(255, 255, 255, 0.004)),
+        rgba(10, 15, 30, 0.64);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.032);
+    color: rgba(203, 245, 255, 0.86);
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1.35;
+    text-shadow: none;
+    transition:
+        border-color 0.18s ease,
+        background 0.18s ease,
+        color 0.18s ease,
+        transform 0.18s ease;
+}
+
+.sidebar button.submenu-toggle {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    color: rgba(225, 237, 250, 0.86);
+}
+
+.sidebar a.active,
+.sidebar a:hover,
+.sidebar button:hover,
+.sidebar button:focus-visible {
+    border-color: rgba(126, 236, 255, 0.34);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.008)),
+        rgba(12, 24, 45, 0.88);
+    color: #ffffff;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.submenu {
+    padding-left: 18px;
+}
+
+.submenu li a {
+    margin: 5px 0;
+    padding: 8px 10px;
+    color: rgba(196, 221, 246, 0.76);
+}
+
+.submenu .submenu {
+    padding-left: 14px;
+}
+
+.sidebar .submenu a,
+.sidebar .submenu button {
+    font-size: 12px;
+}
+
+.sidebar .submenu .submenu-toggle,
+.sidebar .submenu a {
+    border-color: rgba(126, 236, 255, 0.07);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.003)),
+        rgba(7, 12, 25, 0.58);
+}
+
+.sidebar .submenu .submenu .submenu-toggle,
+.sidebar .submenu .submenu a {
+    min-height: 34px;
+    padding: 7px 10px;
+    font-size: 12px;
+}
+
+.sidebar a.active {
+    border-color: rgba(126, 236, 255, 0.48);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.052), rgba(255, 255, 255, 0.01)),
+        rgba(13, 31, 55, 0.92);
+    color: #ffffff;
+}
+
+.content {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0;
+    overflow: visible;
+}
+
+.content article {
+    position: relative;
+    overflow: hidden;
+    padding: 26px 28px;
+    border: 1px solid var(--wiki-portal-border);
+    border-radius: 8px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.005)),
+        linear-gradient(135deg, rgba(9, 15, 30, 0.94), rgba(5, 10, 22, 0.98));
+    box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.34),
+        inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+.content article::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(90deg, rgba(126, 236, 255, 0.06), transparent 44%),
+        radial-gradient(circle at 90% 8%, rgba(185, 148, 255, 0.1), transparent 34%);
+    pointer-events: none;
+}
+
+.content article > * {
+    position: relative;
+    z-index: 1;
+}
+
+.theme-doc-markdown,
+.markdown {
+    color: var(--wiki-portal-text);
+    font-family: 'Montserrat', 'CJK', sans-serif;
+    font-size: 15px;
+    line-height: 1.68;
+}
+
+.markdown p,
+.markdown li {
+    color: var(--wiki-portal-text);
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4,
+.markdown h5,
+.markdown h6 {
+    margin-right: 0;
+    margin-left: 0;
+    color: #ffffff;
+    font-weight: 900;
+    letter-spacing: 0;
+    text-shadow: none;
+}
+
+.markdown h1:first-child {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 0 0 24px;
+    padding: 0 0 22px;
+    border-bottom: 1px solid rgba(126, 236, 255, 0.14);
+    color: #dffbff;
+    font-size: clamp(28px, 3vw, 38px);
+    line-height: 1.08;
+}
+
+.markdown h1:first-child::before {
+    content: '';
+    display: grid;
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
+    border: 1px solid rgba(185, 148, 255, 0.42);
+    border-radius: 8px;
+    background:
+        linear-gradient(135deg, #ffffff 0%, #b994ff 40%, #66efff 100%);
+    -webkit-mask: url('../../../wwwroot/img/nav/knowledge.webp') center / 28px 28px no-repeat;
+    mask: url('../../../wwwroot/img/nav/knowledge.webp') center / 28px 28px no-repeat;
+}
+
+.markdown h2 {
+    margin-top: 30px;
+    color: #ffffff;
+    font-size: clamp(24px, 2.2vw, 32px);
+}
+
+.markdown h3 {
+    margin-top: 24px;
+    color: #dffbff;
+}
+
+.markdown a,
+.markdown a.tag,
+.content a {
+    color: var(--wiki-portal-cyan);
+    text-shadow: none;
+    text-decoration: none;
+}
+
+.markdown a:hover,
+.content a:hover {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+/* Alert blocks and knowledge panels are generated by MarkdownPage.cs. */
+.knowledge_panel_1,
+.knowledge_panel_2,
+.knowledge_panel_3,
+.knowledge_panel_4,
+.knowledge_panel_5,
+.knowledge_panel_6,
+.note,
+.info,
+.caution {
+    margin: 16px 0;
+    padding: 16px 18px;
+    border: 1px solid rgba(126, 236, 255, 0.18);
+    border-left: 3px solid rgba(126, 236, 255, 0.54);
+    border-radius: 8px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.004)),
+        rgba(9, 14, 29, 0.78);
+    color: rgba(215, 238, 250, 0.88);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.caution {
+    border-left-color: rgba(255, 205, 96, 0.78);
+}
+
+.info {
+    border-left-color: rgba(141, 255, 215, 0.72);
+}
+
+table {
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid rgba(126, 236, 255, 0.16);
+    background: rgba(5, 10, 22, 0.72);
+}
+
+table th {
+    background: rgba(12, 24, 45, 0.94);
+    color: #ffffff;
+}
+
+table tr,
+table thead,
+table tr:nth-child(2n) {
+    background: transparent;
+}
+
+table td,
+table th {
+    border-color: rgba(126, 236, 255, 0.14);
+}
+
+pre[class*=language-],
+:not(pre) > code[class*=language-] {
+    border-color: rgba(126, 236, 255, 0.16);
+    background: rgba(2, 6, 15, 0.9);
+    box-shadow: none;
+}
+
+.button-copy-code {
+    border: 1px solid rgba(126, 236, 255, 0.18) !important;
+    border-radius: 8px;
+    background: rgba(7, 13, 27, 0.9) !important;
+}
+
+.pagination-nav {
+    gap: 18px;
+    margin-top: 24px;
+}
+
+.pagination-nav__link {
+    max-width: none;
+    min-height: 92px;
+    padding: 18px;
+    border: 1px solid var(--wiki-portal-border);
+    border-radius: 8px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.005)),
+        rgba(8, 14, 28, 0.82);
+    color: rgba(225, 237, 250, 0.86);
+}
+
+.pagination-nav__link:hover {
+    border-color: var(--wiki-portal-border-strong);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.008)),
+        rgba(12, 24, 45, 0.9);
+}
+
+.pagination-nav__sublabel {
+    color: var(--wiki-portal-cyan);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.pagination-nav__label {
+    margin-top: 8px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #ffffff;
+    font-size: 17px;
+    font-weight: 850;
+    line-height: 1.28;
+}
+
+.custombody .sidebar,
+.custombody .content article,
+.custombody .pagination-nav {
+    animation: lizerium-reveal-up 0.54s ease both;
+}
+
+.custombody .content article {
+    animation-delay: 0.08s;
+}
+
+.custombody .pagination-nav {
+    animation-delay: 0.14s;
+}
+
+.custombody .markdown > *,
+.custombody .knowledge_panel_1,
+.custombody .knowledge_panel_2,
+.custombody .knowledge_panel_3,
+.custombody .knowledge_panel_4,
+.custombody .knowledge_panel_5,
+.custombody .knowledge_panel_6 {
+    animation: lizerium-reveal-up 0.46s ease both;
+}
+
+.custombody .markdown > :nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.custombody .markdown > :nth-child(2) {
+    animation-delay: 0.09s;
+}
+
+.custombody .markdown > :nth-child(3) {
+    animation-delay: 0.13s;
+}
+
+.custombody .markdown > :nth-child(n + 4) {
+    animation-delay: 0.17s;
+}
+
+@media (max-width: 980px) {
+    .custombody {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 22px 14px 132px;
+        background:
+            linear-gradient(180deg, rgba(2, 8, 18, 0.3), rgba(2, 8, 18, 0.92) 36%, #020812 100%),
+            url('../../../wwwroot/img/pages/home/feature-card-info-bg-big.webp') 62% top / auto 420px no-repeat,
+            #020812;
+    }
+
+    .sidebar {
+        position: relative;
+        top: auto;
+        left: auto;
+        width: 100%;
+        max-height: 250px;
+        flex-basis: auto;
+    }
+
+    .content article {
+        padding: 22px 18px;
+    }
+}
+
+@media (max-width: 640px) {
+    .custombody {
+        padding-right: 10px;
+        padding-left: 10px;
+    }
+
+    .sidebar {
+        max-height: 220px;
+        padding: 12px;
+    }
+
+    .sidebar a,
+    .sidebar button {
+        min-height: 40px;
+        font-size: 13px;
+    }
+
+    .content article {
+        padding: 20px 16px;
+    }
+
+/* Base markdown content styling before the Lizerium portal refresh overrides. */
+.markdown {
+        font-size: 14px;
+        line-height: 1.62;
+    }
+
+    .markdown h1:first-child {
+        display: grid;
+        grid-template-columns: 42px minmax(0, 1fr);
+        gap: 12px;
+        font-size: 26px;
+    }
+
+    .markdown h1:first-child::before {
+        width: 42px;
+        height: 42px;
+        flex-basis: 42px;
+        -webkit-mask-size: 24px 24px;
+        mask-size: 24px 24px;
+    }
+
+    .markdown h2 {
+        font-size: 23px;
+    }
+
+    .pagination-nav {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .pagination-nav__link {
+        min-height: 0;
+        max-width: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .custombody {
+        padding-bottom: 44px;
+    }
+
+    .sidebar {
+        position: fixed;
+        top: 104px;
+        left: 14px;
+        z-index: 2600;
+        width: min(420px, calc(100vw - 28px));
+        max-height: min(520px, calc(100dvh - 214px));
+        padding: 14px;
+        overflow-y: auto;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateX(calc(-100% - 28px));
+        transition:
+            opacity 0.2s ease,
+            transform 0.26s ease;
+    }
+
+    .sidebar.open {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateX(0);
+    }
+
+    .menu-toggle {
+        position: fixed;
+        bottom: 116px;
+        left: 24px;
+        z-index: 2700;
+        display: grid;
+        width: 58px;
+        height: 58px;
+        place-items: center;
+        padding: 0;
+        border: 1px solid rgba(126, 236, 255, 0.24);
+        border-radius: 8px;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.012)),
+            rgba(8, 14, 28, 0.92);
+        color: #ffffff;
+        font-size: 28px;
+        line-height: 1;
+        box-shadow:
+            0 18px 42px rgba(0, 0, 0, 0.42),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+    }
+
+    .menu-toggle:hover,
+    .menu-toggle:focus-visible {
+        border-color: rgba(126, 236, 255, 0.44);
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.095), rgba(255, 255, 255, 0.018)),
+            rgba(12, 24, 45, 0.95);
+    }
+}
+
+.menu-toggle {
+    display: none;
+}
+
+@media (max-width: 980px) {
+    .custombody {
+        gap: 14px;
+        min-height: auto;
+        padding: 18px 16px 38px;
+        overflow: visible;
+    }
+
+    .content article {
+        border-color: rgba(126, 236, 255, 0.2);
+        padding: 18px;
+    }
+
+    .sidebar {
+        position: fixed;
+        top: 104px;
+        left: 92px;
+        z-index: 2600;
+        width: min(430px, calc(100vw - 116px));
+        max-height: min(520px, calc(100dvh - 146px));
+        padding: 14px;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateX(calc(-100% - 28px));
+        transition:
+            opacity 0.2s ease,
+            transform 0.26s ease;
+    }
+
+    .sidebar.open {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateX(0);
+    }
+
+    .menu-toggle {
+        position: fixed;
+        bottom: 28px;
+        left: 104px;
+        z-index: 2700;
+        display: grid;
+        width: 56px;
+        height: 56px;
+        place-items: center;
+        padding: 0;
+        border: 1px solid rgba(126, 236, 255, 0.32);
+        border-radius: 8px;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.012)),
+            rgba(8, 14, 28, 0.94);
+        color: #ffffff;
+        font-size: 28px;
+        line-height: 1;
+        box-shadow:
+            0 18px 42px rgba(0, 0, 0, 0.42),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+    }
+
+    .markdown,
+    .theme-doc-markdown {
+        font-size: 14px;
+        line-height: 1.62;
+    }
+
+    .markdown h1:first-child {
+        grid-template-columns: 44px minmax(0, 1fr);
+        gap: 12px;
+        margin-bottom: 18px;
+        padding-bottom: 16px;
+        font-size: clamp(25px, 5vw, 32px);
+    }
+
+    .markdown h1:first-child::before {
+        width: 44px;
+        height: 44px;
+        -webkit-mask-size: 25px 25px;
+        mask-size: 25px 25px;
+    }
+
+    .markdown h2 {
+        margin-top: 24px;
+        font-size: clamp(22px, 4.8vw, 28px);
+    }
+
+    .markdown h3 {
+        margin-top: 20px;
+        font-size: clamp(19px, 4.2vw, 24px);
+    }
+
+    .knowledge_panel_1,
+    .knowledge_panel_2,
+    .knowledge_panel_3,
+    .knowledge_panel_4,
+    .knowledge_panel_5,
+    .knowledge_panel_6,
+    .note,
+    .info,
+    .caution {
+        margin: 12px 0;
+        padding: 14px;
+        border-left-width: 2px;
+    }
+
+    .pagination-nav {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin: 18px 0 0;
+    }
+
+    .pagination-nav__link {
+        max-width: none;
+        min-height: 0;
+        padding: 14px 16px;
+        text-align: left;
+    }
+
+    .pagination-nav__link--next {
+        text-align: right;
+    }
+
+    .pagination-nav__sublabel {
+        font-size: 12px;
+    }
+
+    .pagination-nav__label {
+        margin-top: 5px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .custombody {
+        padding: 16px 12px 106px;
+    }
+
+    .sidebar {
+        top: 108px;
+        left: 12px;
+        width: calc(100vw - 24px);
+        max-height: min(500px, calc(100dvh - 214px));
+    }
+
+    .menu-toggle {
+        bottom: 112px;
+        left: 18px;
+    }
+}
+
+@media (max-width: 520px) {
+    .custombody {
+        padding-right: 10px;
+        padding-left: 10px;
+    }
+
+    .content article {
+        padding: 16px 14px;
+    }
+
+    .markdown h1:first-child {
+        font-size: 24px;
+    }
+
+    .markdown p,
+    .markdown li {
+        word-break: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .pagination-nav__link {
+        padding: 13px 14px;
+    }
 }

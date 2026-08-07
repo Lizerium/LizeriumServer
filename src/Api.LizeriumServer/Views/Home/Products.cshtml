@@ -1,0 +1,306 @@
+@model MainModel
+@{
+    ViewData["Title"] = "Продукты";
+    var categories = Model.ProductCatalog ?? new();
+}
+
+<div class="top with_left_side container">
+    <section class="admin-workspace products-admin-page">
+        <div class="dashboard-header">
+            <div>
+                <span class="dashboard-kicker">Каталог портала</span>
+                <h2>Продукты</h2>
+                <p>Категории, продукты и источники скачивания для публичной страницы игр.</p>
+            </div>
+            <div class="dashboard-status">@categories.Count категорий</div>
+        </div>
+
+        <div class="admin-panel products-admin-create">
+            <div class="admin-panel-header">
+                <div>
+                    <span>Новая запись</span>
+                    <h3>Категория продуктов</h3>
+                </div>
+            </div>
+            <form class="products-admin-form products-admin-category-form" method="post" action="/products/category/save">
+                @Html.AntiForgeryToken()
+                <label>
+                    <span>Ключ</span>
+                    <input name="Key" placeholder="launcher" required />
+                </label>
+                <label>
+                    <span>Название RU</span>
+                    <input name="NameRu" placeholder="Лаунчер" required />
+                </label>
+                <label>
+                    <span>Title EN</span>
+                    <input name="NameEn" placeholder="Launcher" />
+                </label>
+                <label>
+                    <span>Описание RU</span>
+                    <textarea name="DescriptionRu" placeholder="Короткое описание категории"></textarea>
+                </label>
+                <label>
+                    <span>Description EN</span>
+                    <textarea name="DescriptionEn" placeholder="Short category description"></textarea>
+                </label>
+                <label>
+                    <span>Иконка webp</span>
+                    <input name="IconUrl" placeholder="/img/pages/game/ecosystem-launcher.webp" />
+                </label>
+                <label>
+                    <span>Фон webp</span>
+                    <input name="BackgroundUrl" placeholder="/img/pages/home/feature-card-games-bg.webp" />
+                </label>
+                <label>
+                    <span>Порядок</span>
+                    <input name="SortOrder" type="number" value="100" />
+                </label>
+                <label class="products-admin-check">
+                    <input name="IsActive" type="checkbox" value="true" checked />
+                    <span>Активна</span>
+                </label>
+                <button class="admin-button primary" type="submit">Добавить категорию</button>
+            </form>
+        </div>
+
+        <div class="products-admin-list">
+            @foreach (var category in categories)
+            {
+                <article class="admin-panel products-admin-category">
+                    <div class="products-admin-category-head">
+                        <div>
+                            <span class="dashboard-kicker">@category.Key</span>
+                            <h3>@category.NameRu</h3>
+                            @if (!string.IsNullOrWhiteSpace(category.DescriptionRu))
+                            {
+                                <p>@category.DescriptionRu</p>
+                            }
+                        </div>
+                        <div class="dashboard-status">@((category.Products ?? new()).Count) продуктов</div>
+                    </div>
+
+                    <form class="products-admin-form products-admin-category-form" method="post" action="/products/category/save">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="Id" value="@category.Id" />
+                        <label>
+                            <span>Ключ</span>
+                            <input name="Key" value="@category.Key" placeholder="Ключ" required />
+                        </label>
+                        <label>
+                            <span>Название RU</span>
+                            <input name="NameRu" value="@category.NameRu" placeholder="Название RU" required />
+                        </label>
+                        <label>
+                            <span>Title EN</span>
+                            <input name="NameEn" value="@category.NameEn" placeholder="Title EN" />
+                        </label>
+                        <label>
+                            <span>Описание RU</span>
+                            <textarea name="DescriptionRu" placeholder="Описание RU">@category.DescriptionRu</textarea>
+                        </label>
+                        <label>
+                            <span>Description EN</span>
+                            <textarea name="DescriptionEn" placeholder="Description EN">@category.DescriptionEn</textarea>
+                        </label>
+                        <label>
+                            <span>Иконка webp</span>
+                            <input name="IconUrl" value="@category.IconUrl" placeholder="Иконка webp" />
+                        </label>
+                        <label>
+                            <span>Фон webp</span>
+                            <input name="BackgroundUrl" value="@category.BackgroundUrl" placeholder="Фон webp" />
+                        </label>
+                        <label>
+                            <span>Порядок</span>
+                            <input name="SortOrder" type="number" value="@category.SortOrder" />
+                        </label>
+                        <label class="products-admin-check">
+                            <input name="IsActive" type="checkbox" value="true" checked="@category.IsActive" />
+                            <span>Активна</span>
+                        </label>
+                        <button class="admin-button primary" type="submit">Сохранить категорию</button>
+                    </form>
+
+                    <form class="products-admin-danger-form" method="post" action="/products/category/delete">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@category.Id" />
+                        <button class="admin-button danger" type="submit">Удалить категорию</button>
+                    </form>
+
+                    <div class="products-admin-products">
+                        <div class="admin-panel-header compact">
+                            <div>
+                                <span>Состав категории</span>
+                                <h3>Продукты</h3>
+                            </div>
+                        </div>
+
+                        <form class="products-admin-form products-admin-product-form" method="post" action="/products/product/save">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="ProductCategoryId" value="@category.Id" />
+                            <label>
+                                <span>Название RU</span>
+                                <input name="TitleRu" placeholder="Название RU" required />
+                            </label>
+                            <label>
+                                <span>Title EN</span>
+                                <input name="TitleEn" placeholder="Title EN" />
+                            </label>
+                            <label>
+                                <span>Описание RU</span>
+                                <textarea name="DescriptionRu" placeholder="Описание RU"></textarea>
+                            </label>
+                            <label>
+                                <span>Description EN</span>
+                                <textarea name="DescriptionEn" placeholder="Description EN"></textarea>
+                            </label>
+                            <label>
+                                <span>Иконка webp</span>
+                                <input name="IconUrl" placeholder="/img/pages/game/launcher.webp" />
+                            </label>
+                            <label>
+                                <span>Порядок</span>
+                                <input name="SortOrder" type="number" value="100" />
+                            </label>
+                            <label class="products-admin-check">
+                                <input name="IsActive" type="checkbox" value="true" checked />
+                                <span>Активен</span>
+                            </label>
+                            <button class="admin-button primary" type="submit">Добавить продукт</button>
+                        </form>
+
+                        @foreach (var product in category.Products ?? new())
+                        {
+                            <section class="products-admin-product">
+                                <div class="products-admin-product-head">
+                                    <div>
+                                        <h4>@product.TitleRu</h4>
+                                        @if (!string.IsNullOrWhiteSpace(product.DescriptionRu))
+                                        {
+                                            <p>@product.DescriptionRu</p>
+                                        }
+                                    </div>
+                                    <span>@((product.DownloadLinks ?? new()).Count) источников</span>
+                                </div>
+
+                                <form class="products-admin-form products-admin-product-form" method="post" action="/products/product/save">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="Id" value="@product.Id" />
+                                    <input type="hidden" name="ProductCategoryId" value="@category.Id" />
+                                    <label>
+                                        <span>Название RU</span>
+                                        <input name="TitleRu" value="@product.TitleRu" placeholder="Название RU" required />
+                                    </label>
+                                    <label>
+                                        <span>Title EN</span>
+                                        <input name="TitleEn" value="@product.TitleEn" placeholder="Title EN" />
+                                    </label>
+                                    <label>
+                                        <span>Описание RU</span>
+                                        <textarea name="DescriptionRu" placeholder="Описание RU">@product.DescriptionRu</textarea>
+                                    </label>
+                                    <label>
+                                        <span>Description EN</span>
+                                        <textarea name="DescriptionEn" placeholder="Description EN">@product.DescriptionEn</textarea>
+                                    </label>
+                                    <label>
+                                        <span>Иконка webp</span>
+                                        <input name="IconUrl" value="@product.IconUrl" placeholder="Иконка webp" />
+                                    </label>
+                                    <label>
+                                        <span>Порядок</span>
+                                        <input name="SortOrder" type="number" value="@product.SortOrder" />
+                                    </label>
+                                    <label class="products-admin-check">
+                                        <input name="IsActive" type="checkbox" value="true" checked="@product.IsActive" />
+                                        <span>Активен</span>
+                                    </label>
+                                    <button class="admin-button primary" type="submit">Сохранить продукт</button>
+                                </form>
+
+                                <form class="products-admin-danger-form" method="post" action="/products/product/delete">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@product.Id" />
+                                    <button class="admin-button danger" type="submit">Удалить продукт</button>
+                                </form>
+
+                                <div class="products-admin-links">
+                                    <h5>Источники скачивания</h5>
+                                    <form class="products-admin-form products-admin-link-form" method="post" action="/products/link/save">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="ProductId" value="@product.Id" />
+                                        <label>
+                                            <span>Название RU</span>
+                                            <input name="NameRu" placeholder="С портала" required />
+                                        </label>
+                                        <label>
+                                            <span>Name EN</span>
+                                            <input name="NameEn" placeholder="From portal" />
+                                        </label>
+                                        <label>
+                                            <span>URL</span>
+                                            <input name="Url" placeholder="/uploader/projects/download/steam" required />
+                                        </label>
+                                        <label>
+                                            <span>Иконка webp</span>
+                                            <input name="IconUrl" placeholder="/img/pages/game/source-portal.webp" />
+                                        </label>
+                                        <label>
+                                            <span>Порядок</span>
+                                            <input name="SortOrder" type="number" value="100" />
+                                        </label>
+                                        <label class="products-admin-check">
+                                            <input name="IsActive" type="checkbox" value="true" checked />
+                                            <span>Активен</span>
+                                        </label>
+                                        <button class="admin-button primary" type="submit">Добавить источник</button>
+                                    </form>
+
+                                    @foreach (var link in product.DownloadLinks ?? new())
+                                    {
+                                        <form class="products-admin-form products-admin-link-form products-admin-link" method="post" action="/products/link/save">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="Id" value="@link.Id" />
+                                            <input type="hidden" name="ProductId" value="@product.Id" />
+                                            <label>
+                                                <span>Название RU</span>
+                                                <input name="NameRu" value="@link.NameRu" placeholder="Название RU" required />
+                                            </label>
+                                            <label>
+                                                <span>Name EN</span>
+                                                <input name="NameEn" value="@link.NameEn" placeholder="Name EN" />
+                                            </label>
+                                            <label>
+                                                <span>URL</span>
+                                                <input name="Url" value="@link.Url" placeholder="URL" required />
+                                            </label>
+                                            <label>
+                                                <span>Иконка webp</span>
+                                                <input name="IconUrl" value="@link.IconUrl" placeholder="Иконка webp" />
+                                            </label>
+                                            <label>
+                                                <span>Порядок</span>
+                                                <input name="SortOrder" type="number" value="@link.SortOrder" />
+                                            </label>
+                                            <label class="products-admin-check">
+                                                <input name="IsActive" type="checkbox" value="true" checked="@link.IsActive" />
+                                                <span>Активен</span>
+                                            </label>
+                                            <button class="admin-button primary" type="submit">Сохранить</button>
+                                        </form>
+                                        <form class="products-admin-danger-form" method="post" action="/products/link/delete">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@link.Id" />
+                                            <button class="admin-button danger" type="submit">Удалить источник</button>
+                                        </form>
+                                    }
+                                </div>
+                            </section>
+                        }
+                    </div>
+                </article>
+            }
+        </div>
+    </section>
+</div>

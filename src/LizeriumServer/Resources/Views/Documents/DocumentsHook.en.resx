@@ -105,4 +105,22 @@
 		<value>Lizerium - Documentation</value>
 		<comment>DocHook_Title_Site</comment>
 	</data>
+	<data name="DocHook_Kicker" xml:space="preserve">
+		<value>Server solutions</value>
+	</data>
+	<data name="DocHook_Description" xml:space="preserve">
+		<value>Command categories for the Lizerium server: navigation, trading, groups, safety, and administration.</value>
+	</data>
+	<data name="DocHook_Categories_Description" xml:space="preserve">
+		<value>Select a documentation section to view command aliases, descriptions, examples, and current state.</value>
+	</data>
+	<data name="DocHook_Category_Subtitle" xml:space="preserve">
+		<value>Documentation section</value>
+	</data>
+	<data name="DocHook_Command_Count_Label" xml:space="preserve">
+		<value>commands</value>
+	</data>
+	<data name="DocHook_Global_Search_Placeholder" xml:space="preserve">
+		<value>Global command search...</value>
+	</data>
 </root>

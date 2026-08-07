@@ -128,4 +128,7 @@
 	<data name="DocHookItem_Search_Status2" xml:space="preserve">
 		<value>Error retrieving data.</value>
 	</data>
+	<data name="DocHookItem_Description" xml:space="preserve">
+		<value>Search commands, copy aliases, and check the current command state.</value>
+	</data>
 </root>

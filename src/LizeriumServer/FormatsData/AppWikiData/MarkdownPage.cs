@@ -28,17 +28,15 @@ public class MarkdownPage
     public Dictionary<string, string> FrontMatter { get; set; } = new();
     public string HtmlContent { get; set; } = "";
 
-    public static MarkdownPage Parse(string fullPath, string rootPath, MdAlertData stringMdAlertData)
+    public static MarkdownPage Parse(string fullPath, string knowledgeBaseRootPath, MdAlertData stringMdAlertData)
     {
-        var baseRoute = Path.GetDirectoryName(fullPath)?
-            .Replace(rootPath, "")
-            .Replace(Path.DirectorySeparatorChar, '/')
-            .Trim('/');
+        var baseRoute = BuildWikiBaseRoute(fullPath, knowledgeBaseRootPath);
 
         Dictionary<string, string> frontMatter;
         string html;
         ConvertMDAndYamlToHTML(fullPath, out frontMatter, out html);
 
+        // Transformation order matters: links are normalized before headings are wrapped into panels.
         html = SetupLinks(html, baseRoute);
         html = PanelCreatorH1(html);
         html = ReplaceH1(html);
@@ -59,6 +57,28 @@ public class MarkdownPage
             FrontMatter = frontMatter,
             HtmlContent = html
         };
+    }
+
+    private static string BuildWikiBaseRoute(string fullPath, string knowledgeBaseRootPath)
+    {
+        var directoryPath = Path.GetDirectoryName(fullPath);
+
+        if (string.IsNullOrWhiteSpace(directoryPath))
+            return "KnowledgeBase";
+
+        if (!string.IsNullOrWhiteSpace(knowledgeBaseRootPath))
+        {
+            var normalizedDirectory = Path.GetFullPath(directoryPath);
+            var normalizedKnowledgeBaseRoot = Path.GetFullPath(knowledgeBaseRootPath);
+
+            if (normalizedDirectory.StartsWith(normalizedKnowledgeBaseRoot, StringComparison.OrdinalIgnoreCase))
+            {
+                var relativePath = Path.GetRelativePath(normalizedKnowledgeBaseRoot, normalizedDirectory);
+                return NormalizeWikiRoutePath($"KnowledgeBase/{relativePath}");
+            }
+        }
+
+        return NormalizeWikiRoutePath(directoryPath);
     }
 
     public static string WrapTableColumn(string html, string columnName, string wrapperClass)
@@ -417,26 +437,165 @@ public class MarkdownPage
 
     public static string SetupLinks(string html, string baseRoute)
     {
+        // Normalize relative markdown links to the /wiki route used by the portal router.
         html = Regex.Replace(
                 html,
-                "<a\\s+href=[\"'](\\.?\\.?/[^\"']+?)(\\.mdx?|\\.md)(#[^\"']*)?[\"']",
+                "<a\\s+href=[\"']((?:\\.\\./|\\./)[^\"']+?)(\\.mdx?|\\.md)(#[^\"']*)?[\"']",
                 match =>
                 {
                     var relativePath = match.Groups[1].Value;
                     var extension = match.Groups[2].Value; // ← сохраняем .md/.mdx
                     var anchor = match.Groups[3].Success ? match.Groups[3].Value : "";
 
-                    var combinedPath = Path.Combine(baseRoute ?? "", relativePath + extension)
-                        .Replace("\\", "/")
-                        .Replace("//", "/")
-                        .TrimStart('/');
+                    var combinedPath = NormalizeWikiRoutePath($"{baseRoute ?? ""}/{relativePath}{extension}");
 
                     // Сохраняем KnowledgeBase/en в пути
                     return $"<a href=\"/wiki/{combinedPath}{anchor}\"";
                 },
                 RegexOptions.IgnoreCase
             );
+        html = NormalizeKnowledgeBaseLinks(html);
+        html = NormalizeLocalHeadingLinks(html);
         return html;
+    }
+
+    private static string NormalizeLocalHeadingLinks(string html)
+    {
+        var document = new HtmlDocument();
+        document.LoadHtml(html);
+
+        // Markdig can generate localized/encoded heading ids, so compare visible text as a fallback.
+        var existingIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var headingIdsByComparableText = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var heading in document.DocumentNode.SelectNodes("//h2|//h3|//h4|//h5|//h6") ?? Enumerable.Empty<HtmlNode>())
+        {
+            var id = heading.GetAttributeValue("id", "");
+
+            if (string.IsNullOrWhiteSpace(id))
+                continue;
+
+            existingIds.Add(id);
+
+            var comparableText = BuildAnchorComparableText(heading.InnerText);
+
+            if (!string.IsNullOrWhiteSpace(comparableText) && !headingIdsByComparableText.ContainsKey(comparableText))
+                headingIdsByComparableText.Add(comparableText, id);
+        }
+
+        foreach (var link in document.DocumentNode.SelectNodes("//a[@href]") ?? Enumerable.Empty<HtmlNode>())
+        {
+            var href = link.GetAttributeValue("href", "");
+
+            if (string.IsNullOrWhiteSpace(href) || !href.StartsWith("#", StringComparison.Ordinal))
+                continue;
+
+            var fragment = Uri.UnescapeDataString(href.Substring(1));
+
+            if (existingIds.Contains(fragment))
+                continue;
+
+            var comparableFragment = BuildAnchorComparableText(fragment);
+
+            if (headingIdsByComparableText.TryGetValue(comparableFragment, out var headingId))
+                link.SetAttributeValue("href", $"#{headingId}");
+        }
+
+        return document.DocumentNode.InnerHtml;
+    }
+
+    private static string BuildAnchorComparableText(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return "";
+
+        value = HtmlEntity.DeEntitize(value);
+        value = Uri.UnescapeDataString(value);
+
+        var builder = new StringBuilder(value.Length);
+
+        foreach (var character in value.ToLowerInvariant())
+        {
+            if (char.IsLetterOrDigit(character))
+                builder.Append(character);
+        }
+
+        return builder.ToString();
+    }
+
+    private static string NormalizeKnowledgeBaseLinks(string html)
+    {
+        var document = new HtmlDocument();
+        document.LoadHtml(html);
+
+        foreach (var link in document.DocumentNode.SelectNodes("//a[@href]") ?? Enumerable.Empty<HtmlNode>())
+        {
+            var href = link.GetAttributeValue("href", "");
+            var normalizedHref = NormalizeKnowledgeBaseHref(href);
+
+            if (!string.IsNullOrEmpty(normalizedHref))
+                link.SetAttributeValue("href", normalizedHref);
+        }
+
+        return document.DocumentNode.InnerHtml;
+    }
+
+    private static string NormalizeKnowledgeBaseHref(string href)
+    {
+        if (string.IsNullOrWhiteSpace(href))
+            return "";
+
+        // Accept absolute-ish links that still point into KnowledgeBase and rewrite them to /wiki.
+        var anchorIndex = href.IndexOf('#');
+        var anchor = anchorIndex >= 0 ? href.Substring(anchorIndex) : "";
+        var path = anchorIndex >= 0 ? href.Substring(0, anchorIndex) : href;
+        path = Uri.UnescapeDataString(path).Replace("\\", "/");
+
+        var marker = "/KnowledgeBase/";
+        var markerIndex = path.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+
+        if (markerIndex < 0)
+        {
+            marker = "KnowledgeBase/";
+            markerIndex = path.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+        }
+
+        if (markerIndex < 0)
+            return "";
+
+        var relativePath = path.Substring(markerIndex + marker.Length);
+
+        if (!Regex.IsMatch(relativePath, "\\.mdx?$", RegexOptions.IgnoreCase))
+            return "";
+
+        return $"/wiki/KnowledgeBase/{NormalizeWikiRoutePath(relativePath)}{anchor}";
+    }
+
+    private static string NormalizeWikiRoutePath(string path)
+    {
+        var segments = path
+            .Replace("\\", "/")
+            .Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+        var normalized = new List<string>();
+
+        foreach (var segment in segments)
+        {
+            if (segment == ".")
+                continue;
+
+            if (segment == "..")
+            {
+                if (normalized.Count > 0)
+                    normalized.RemoveAt(normalized.Count - 1);
+
+                continue;
+            }
+
+            normalized.Add(segment);
+        }
+
+        return string.Join("/", normalized);
     }
 
     public static WikiPage GetPageWiki(string path, string slug)

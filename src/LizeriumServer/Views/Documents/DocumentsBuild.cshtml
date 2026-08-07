@@ -1,73 +1,150 @@
-﻿@inject IViewLocalizer Localizer
+@inject IViewLocalizer Localizer
 @model DocumentViewModel
 @{
     ViewData["Title"] = Localizer["DocBuild_Site_Title"];
 }
+@section PageStyle {
+    <link rel="stylesheet" href="~/css/doc_hook.min.css" asp-append-version="true" />
+}
 @Html.ReCaptcha()
 
-<h1 class="h-color-2 w-100 fw-bold mb-3 mt-5 text-center">⚙️ @Localizer["DocBuild_Site_Header"]</h1>
-<article class="markdown-body">
-    <div class="card-row small custom-cursor-hover">
-        <div class="subcard" onclick="window.location.href = '/docs/all'">
-            <div class="subcard-icon icon-style">📳</div>
-            <div class="subcard-text">@SharedLocalizer["Shared_Docs"]</div>
+<section class="doc-hook-page doc-build-page">
+    <header class="doc-hook-hero doc-build-hero lizerium-reveal">
+        <span class="doc-hook-hero-icon" aria-hidden="true">
+            <img src="~/img/pages/home/ecosystem-server.webp" alt="" />
+        </span>
+        <div class="doc-hook-hero-copy">
+            <span>@Localizer["DocBuild_Kicker"]</span>
+            <h1>@Localizer["DocBuild_Site_Header"]</h1>
+            <p>@Localizer["DocBuild_Description"]</p>
         </div>
-    </div>
-    <div class="text-light rounded-3 builds-block p-4">
+    </header>
 
-        <!-- Вкладки -->
-        <ul id="builds_category" class="nav nav-tabs d-flex align-items-center justify-content-center align-content-center flex-row flex-wrap" id="craftTabs" role="tablist">
-            @foreach (var build in Model.ListBuilds)
-            {
-               <li class="nav-item">
-                   @{
-                        var categoryName = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName switch
-                        {
-                            "en" => build.TranslationsNameCategory.English ?? "unknown",
-                            _ => build.TranslationsNameCategory.Russian ?? "unknown"
-                        };
-                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#@build.NameFile" type="button">@categoryName</button>
-                   }
-               </li>
-            }
-        </ul>
+    <article class="markdown-body doc-hook-shell doc-build-shell lizerium-reveal">
+        <a class="doc-hook-back custom-cursor-hover" href="/docs/all">
+            <span class="doc-hook-back-icon" aria-hidden="true">&#8617;</span>
+            <span>@SharedLocalizer["Shared_Docs"]</span>
+        </a>
 
-        <!-- Контент вкладок -->
-        <div class="tab-content mt-4" id="buildsTabsContent">
-            @foreach (var build in Model.ListBuilds)
-            {
-                <!-- Категория: Амуниция -->
-                <div class="tab-pane fade" id="@build.NameFile">
-                    <div class="accordion" id="@(@build.NameFile)Accordion">
-                        @foreach (var component in build.Components)
-                        {
-                            <!-- Предмет -->
-                            <div class="accordion-item rounded-3 bg-dark text-light m-1">
-                                <h2 id="builds_name_comp" class="accordion-header">
-                                    <button class="accordion-button collapsed text-light rounded-3 load-build-component"
-                                            type="button" 
-                                            data-name="@component.Nickname"
-                                            data-bs-toggle="collapse"
-                                            data-target="#@component.Nickname">
-                                        @{
-                                            var itemName = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName switch
-                                            {
-                                                "en" => component.TranslationsNameComponent.English ?? "unknown",
-                                                _ => component.TranslationsNameComponent.Russian ?? "unknown"
-                                            };
-                                        }
-                                        @itemName
-                                    </button>
-                                </h2>
-                                <div id="@component.Nickname" class="accordion-collapse collapse" data-bs-parent="#@(build.NameFile)Accordion">
-                                    <div class="accordion-body build-body"></div>
-                                </div>
-                            </div>
-                            <!-- Предмет -->
-                        }
-                    </div>
+        <section class="doc-build-catalog">
+            <div class="doc-build-catalog-header">
+                <div>
+                    <span>@Localizer["DocBuild_Catalog_Label"]</span>
+                    <h2>@Localizer["DocBuild_Catalog_Title"]</h2>
                 </div>
-            }
-        </div>
-    </div>
-</article>
+                <p>@Localizer["DocBuild_Catalog_Description"]</p>
+            </div>
+
+            <div class="doc-build-search">
+                <label class="visually-hidden" for="docBuildSearch">@Localizer["DocBuild_Search_Label"]</label>
+                <input id="docBuildSearch"
+                       type="search"
+                       autocomplete="off"
+                       placeholder="@Localizer["DocBuild_Search_Placeholder"]"
+                       data-empty-text="@Localizer["DocBuild_Search_Empty"]"
+                       data-result-text="@Localizer["DocBuild_Search_Result"]"
+                       data-results-text="@Localizer["DocBuild_Search_Results"]" />
+                <button class="doc-build-search-clear custom-cursor-hover"
+                        type="button"
+                        aria-label="@Localizer["DocBuild_Search_Clear"]"
+                        hidden>
+                    &times;
+                </button>
+            </div>
+
+            <div id="docBuildSearchResults" class="doc-build-search-results" aria-live="polite" hidden></div>
+
+            <ul id="builds_category" class="nav doc-build-tabs" role="tablist">
+                @{
+                    var tabIndex = 0;
+                }
+                @foreach (var build in Model.ListBuilds)
+                {
+                    var categoryName = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName switch
+                    {
+                        "en" => build.TranslationsNameCategory.English ?? "unknown",
+                        _ => build.TranslationsNameCategory.Russian ?? "unknown"
+                    };
+
+                    var isActive = tabIndex == 0;
+
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link custom-cursor-hover @(isActive ? "active" : string.Empty)"
+                                data-bs-toggle="tab"
+                                data-bs-target="#@build.NameFile"
+                                data-build-category="@categoryName"
+                                type="button"
+                                role="tab">
+                            <span>@categoryName</span>
+                            <small>@build.Components.Count</small>
+                        </button>
+                    </li>
+
+                    tabIndex++;
+                }
+            </ul>
+
+            <div class="tab-content doc-build-tabs-content" id="buildsTabsContent">
+                @{
+                    var paneIndex = 0;
+                }
+                @foreach (var build in Model.ListBuilds)
+                {
+                    var isActive = paneIndex == 0;
+                    var categoryName = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName switch
+                    {
+                        "en" => build.TranslationsNameCategory.English ?? "unknown",
+                        _ => build.TranslationsNameCategory.Russian ?? "unknown"
+                    };
+
+                    <div class="tab-pane fade @(isActive ? "show active" : string.Empty)" id="@build.NameFile" role="tabpanel">
+                        <div class="doc-build-category-head">
+                            <div>
+                                <span>@Localizer["DocBuild_Category_Label"]</span>
+                                <h3>@categoryName</h3>
+                            </div>
+                            <span class="doc-build-count">
+                                <strong>@build.Components.Count</strong>
+                                <small>@Localizer["DocBuild_Items_Count_Label"]</small>
+                            </span>
+                        </div>
+
+                        <div class="accordion doc-build-list" id="@(@build.NameFile)Accordion">
+                            @foreach (var component in build.Components)
+                            {
+                                var itemName = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName switch
+                                {
+                                    "en" => component.TranslationsNameComponent.English ?? "unknown",
+                                    _ => component.TranslationsNameComponent.Russian ?? "unknown"
+                                };
+
+                                <div class="accordion-item doc-build-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed load-build-component custom-cursor-hover"
+                                                type="button"
+                                                data-name="@component.Nickname"
+                                                data-build-title="@itemName"
+                                                data-build-category="@categoryName"
+                                                data-build-pane="@build.NameFile"
+                                                data-bs-toggle="collapse"
+                                                data-bs-target="#@component.Nickname"
+                                                data-target="#@component.Nickname">
+                                            <span class="doc-build-item-title">@itemName</span>
+                                            <span class="doc-build-item-meta">@Localizer["DocBuild_Recipe_Label"]</span>
+                                            <span class="doc-build-item-toggle" aria-hidden="true">&#8594;</span>
+                                        </button>
+                                    </h2>
+                                    <div id="@component.Nickname" class="accordion-collapse collapse" data-bs-parent="#@(build.NameFile)Accordion">
+                                        <div class="accordion-body build-body"></div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    paneIndex++;
+                }
+            </div>
+        </section>
+    </article>
+</section>

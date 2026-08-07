@@ -16,6 +16,7 @@ import { Launcher } from "./Home/launcher";
 import { DocBuilds } from "./Documents/doc_builds";
 import { DocHook } from "./Documents/doc_hook";
 import { Wiki } from "./Knowledge/wiki";
+import { Game } from "./Home/game";
 (() => {
     window.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, void 0, function* () {
         const utilities = new Utilities();
@@ -54,6 +55,10 @@ import { Wiki } from "./Knowledge/wiki";
                 }
                 break;
             case "game":
+                {
+                    const game = new Game();
+                    game.start();
+                }
                 break;
             case "all":
                 {

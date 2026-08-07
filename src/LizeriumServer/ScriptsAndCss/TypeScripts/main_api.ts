@@ -1,4 +1,4 @@
-﻿import { Cookies } from "./Shared/cookies";
+import { Cookies } from "./Shared/cookies";
 import { Wish } from "./Home/wish";
 import { ModalForm } from "./Shared/modal_form";
 import { Utilities } from "./Shared/utilities";
@@ -8,6 +8,7 @@ import { Launcher } from "./Home/launcher";
 import { DocBuilds } from "./Documents/doc_builds";
 import { DocHook } from "./Documents/doc_hook";
 import { Wiki } from "./Knowledge/wiki";
+import { Game } from "./Home/game";
 
 (() => {
     //по загрузке окна
@@ -67,7 +68,10 @@ import { Wiki } from "./Knowledge/wiki";
                 }
                 break;
             case "game":
-                //console.log("load game");
+                {
+                    const game = new Game();
+                    game.start();
+                }
                 break;
             case "all":
                 {

@@ -1,6 +1,5 @@
 ﻿import { Ajax } from "../Shared/ajax";
 import { Cookies } from "../Shared/cookies";
-import { ModalForm } from "../Shared/modal_form";
 import { LocalizationStrings, Utilities } from "../Shared/utilities";
 
 /**
@@ -77,21 +76,18 @@ export class Wish {
         if (createPost) {
             //console.log("add create Post btn");
             //привязываем метод на клик по ссылке выхода
-            createPost.addEventListener("click", async () => {
-
-                //создаем форму подтверждения
-                const confirmForm = new ModalForm(this.localizationStrings["Wish_Modal_Title"], "column");
-
-                //открываем форму подтверждения
-                const resultConfirm = await confirmForm.showConfirmForm("", "", this.localizationStrings["Wish_Modal_Cancel"]);
-
-                //если нет, не продолжаем
-                if (!resultConfirm) return;
-
-                //отправляем на выход
-                document.location.href = "/create";
-            });
+            createPost.addEventListener("click", () => this.openCreatePostModal());
         }
+
+        document.querySelectorAll("[data-wish-modal-close]").forEach(closeControl => {
+            closeControl.addEventListener("click", () => this.closeCreatePostModal());
+        });
+
+        document.addEventListener("keydown", event => {
+            if (event.key === "Escape") {
+                this.closeCreatePostModal();
+            }
+        });
 
         //добавляем событие на скролл окна
         window.addEventListener("scroll", async () => await this.handleScrollWindow());
@@ -100,6 +96,45 @@ export class Wish {
         });
     }
 
+    /**
+     * Opens the create-post modal and locks the page scroll while it is active.
+     */
+    private openCreatePostModal(): void {
+        const modal = document.getElementById("modal_form") as HTMLDivElement;
+
+        if (!modal) return;
+
+        modal.style.display = "flex";
+        window.requestAnimationFrame(() => modal.classList.add("is-open"));
+        document.body.classList.add("lizerium-modal-open");
+
+        const firstInput = modal.querySelector("input[name='autor']") as HTMLInputElement;
+        if (firstInput) {
+            window.setTimeout(() => firstInput.focus(), 80);
+        }
+    }
+
+    /**
+     * Closes the modal after the CSS transition finishes so the fade-out remains visible.
+     */
+    private closeCreatePostModal(): void {
+        const modal = document.getElementById("modal_form") as HTMLDivElement;
+
+        if (!modal) return;
+
+        modal.classList.remove("is-open");
+        document.body.classList.remove("lizerium-modal-open");
+
+        window.setTimeout(() => {
+            if (!modal.classList.contains("is-open")) {
+                modal.style.display = "none";
+            }
+        }, 200);
+    }
+
+    /**
+     * Reloads the first wish page after a status filter change.
+     */
     private async loadTablePosts(): Promise<void> {
         //получаем input с крайним полученным идентификатором пользователя
         this.inputLastUserId = document.getElementById("last_user_id") as HTMLInputElement;
@@ -115,7 +150,7 @@ export class Wish {
         //десериализуем из JSON
         const dataResponse = JSON.parse(response);
 
-        const blockPosts = document.querySelector(".block.posts");
+        const blockPosts = document.querySelector(".lizerium-wish-feed");
         if(blockPosts) {
             // Очищаем содержимое элемента
             blockPosts.innerHTML = '';
@@ -182,6 +217,9 @@ export class Wish {
    /**
    * Метод обрабатываем скролл окна
    */
+    /**
+     * Infinite-scroll loader. ajaxInProgress is the guard against duplicate page requests.
+     */
     private async handleScrollWindow(): Promise<void> {
         //получаем input с крайним полученным идентификатором пользователя
         this.inputLastUserId = document.getElementById("last_user_id") as HTMLInputElement;
@@ -227,6 +265,9 @@ export class Wish {
      * Метод подставляет посты пользователей
      * @param posts - массив постов
      */
+    /**
+     * Builds wish cards from API data. This is the main candidate for a future renderer refactor.
+     */
     private appendUsers(posts: any): void {
         //если в массиве нет данных не продолжаем
         if (posts.length < 1) {
@@ -249,7 +290,8 @@ export class Wish {
                 + <div class="status-job">
                 +     <label>Admin</label>*/
                 //создаем строку таблицы
-                const div = document.createElement("div");
+                const div = document.createElement("article");
+                div.classList.add("lizerium-wish-card");
 
                 switch (posts[i].Status) {
                     case 1:
@@ -271,7 +313,13 @@ export class Wish {
 
                 //autor <label>Admin</label>
                 const AutorLabel = document.createElement("p");
+                AutorLabel.classList.add("lizerium-wish-author");
                 AutorLabel.innerText = posts[i].Autor;
+
+                const avatar = document.createElement("span");
+                avatar.classList.add("lizerium-wish-avatar");
+                avatar.setAttribute("aria-hidden", "true");
+                avatar.style.setProperty("--wish-avatar-seed", `${(posts[i].Id % 6) + 1}`);
 
                 /*
                      <div class="post-content">
@@ -283,7 +331,7 @@ export class Wish {
                     </div>
                 */
                 const PostContentDiv = document.createElement("div");
-                PostContentDiv.classList.add("post-content");
+                PostContentDiv.classList.add("post-content", "lizerium-wish-message");
                 const spanTruncated = document.createElement("span");
                 spanTruncated.classList.add("truncated");
                 spanTruncated.innerText = posts[i].MessageMini;
@@ -306,8 +354,25 @@ export class Wish {
                     PostContentDiv.appendChild(AReadMore);
                 }
 
-                div.appendChild(AutorLabel);
-                div.appendChild(PostContentDiv);
+                const cardHeader = document.createElement("div");
+                cardHeader.classList.add("lizerium-wish-card-head");
+                cardHeader.appendChild(AutorLabel);
+
+                const cardDate = document.createElement("time");
+                cardDate.classList.add("lizerium-wish-date");
+                cardDate.innerText = posts[i].DateTimeUnixString ? posts[i].DateTimeUnixString : "";
+                cardHeader.appendChild(cardDate);
+
+                const cardBody = document.createElement("div");
+                cardBody.classList.add("lizerium-wish-card-body");
+                cardBody.appendChild(cardHeader);
+                cardBody.appendChild(PostContentDiv);
+
+                const statusSlot = document.createElement("div");
+                statusSlot.classList.add("lizerium-wish-status-row");
+
+                div.appendChild(avatar);
+                div.appendChild(cardBody);
 
                 switch (posts[i].Status) {
                     /*
@@ -320,18 +385,7 @@ export class Wish {
                         </div>
                     */
                     case 1:
-                        const labelStatusNew = document.createElement("p");
-                        labelStatusNew.classList.add("status-new");
-
-                        const divStatusNew = document.createElement("div");
-                        divStatusNew.classList.add("loader");
-                        divStatusNew.classList.add("status-new");
-
-                        const statusNewSpans = this.createSpansFromText(this.localizationStrings["Wish_Status_1"]);
-                        statusNewSpans.forEach(span => divStatusNew.appendChild(span));
-
-                        labelStatusNew.appendChild(divStatusNew);
-                        div.appendChild(labelStatusNew);
+                        statusSlot.appendChild(this.createStatusBadge(this.localizationStrings["Wish_Status_1"], "status-new"));
                         break;
                     /*
                         <div class="loader status-read  hidden">
@@ -347,19 +401,7 @@ export class Wish {
                         </div>
                     */
                     case 2:
-                        const labelStatusRead = document.createElement("p");
-                        labelStatusRead.classList.add("status-read");
-
-                        const divStatusRead = document.createElement("div");
-                        divStatusRead.classList.add("loader");
-                        divStatusRead.classList.add("status-read");
-
-                        const statusReadSpans = this.createSpansFromText(this.localizationStrings["Wish_Status_2"]);
-                        statusReadSpans.forEach(span => divStatusRead.appendChild(span));
-
-                        labelStatusRead.appendChild(divStatusRead);
-
-                        div.appendChild(labelStatusRead);
+                        statusSlot.appendChild(this.createStatusBadge(this.localizationStrings["Wish_Status_2"], "status-read"));
                         break;
                      /*
                      <div class="loader status-job  ">
@@ -374,18 +416,7 @@ export class Wish {
                         </div>
                      */
                     case 3:
-                        const labelStatusJob = document.createElement("p");
-                        labelStatusJob.classList.add("status-job");
-
-                        const divStatusJob = document.createElement("div");
-                        divStatusJob.classList.add("loader");
-                        divStatusJob.classList.add("status-job");
-
-                        const statusJobSpans = this.createSpansFromText(this.localizationStrings["Wish_Status_3"]);
-                        statusJobSpans.forEach(span => divStatusJob.appendChild(span));
-                      
-                        labelStatusJob.appendChild(divStatusJob);
-                        div.appendChild(labelStatusJob);
+                        statusSlot.appendChild(this.createStatusBadge(this.localizationStrings["Wish_Status_3"], "status-job"));
                         break;
                     /*
                         <div class="loader status-delete  hidden">
@@ -400,17 +431,7 @@ export class Wish {
                         </div>
                     */
                     case 4:
-                        const labelStatusDelete = document.createElement("p");
-                        labelStatusDelete.classList.add("status-delete");
-                        const divStatusDelete = document.createElement("div");
-                        divStatusDelete.classList.add("loader");
-                        divStatusDelete.classList.add("status-delete");
-
-                        const statusDeleteSpans = this.createSpansFromText(this.localizationStrings["Wish_Status_4"]);
-                        statusDeleteSpans.forEach(span => divStatusDelete.appendChild(span));
-
-                        labelStatusDelete.appendChild(divStatusDelete);
-                        div.appendChild(labelStatusDelete);
+                        statusSlot.appendChild(this.createStatusBadge(this.localizationStrings["Wish_Status_4"], "status-delete"));
                         break;
                     /*
                         <div class="loader status-complete  hidden">
@@ -426,27 +447,18 @@ export class Wish {
                         </div>
                     */
                     case 5:
-                        const labelStatusComplete = document.createElement("div");
-                        labelStatusComplete.classList.add("status-complete");
-                        const divStatusComplete = document.createElement("div");
-                        divStatusComplete.classList.add("loader");
-                        divStatusComplete.classList.add("status-complete");
-
-                        const statusCompleteSpans = this.createSpansFromText(this.localizationStrings["Wish_Status_5"]);
-                        statusCompleteSpans.forEach(span => divStatusComplete.appendChild(span));
-
-                        labelStatusComplete.style.textAlign = "center";
-                        labelStatusComplete.appendChild(divStatusComplete);
-                        div.appendChild(labelStatusComplete);
+                        statusSlot.appendChild(this.createStatusBadge(this.localizationStrings["Wish_Status_5"], "status-complete"));
                         break;
                 }
+
+                cardBody.appendChild(statusSlot);
 
                 //подставляем во фрагмент строку таблицы
                 fragment.appendChild(div);
             }
 
             //подставляем в таблицу пользователей
-            document.querySelector(".block.posts").appendChild(fragment);
+            document.querySelector(".lizerium-wish-feed").appendChild(fragment);
         } finally {
 
             //открываем получение через Ajax
@@ -455,6 +467,9 @@ export class Wish {
     }
 
 
+    /**
+     * Splits status labels into characters for the existing animated loader markup.
+     */
     private createSpansFromText(text: string): HTMLSpanElement[] {
         const spans: HTMLSpanElement[] = [];
         for (const char of text) {
@@ -463,5 +478,15 @@ export class Wish {
             spans.push(span);
         }
         return spans;
+    }
+
+    /**
+     * Creates the compact status badge shown in the refreshed wish card header.
+     */
+    private createStatusBadge(text: string, statusClass: string): HTMLSpanElement {
+        const badge = document.createElement("span");
+        badge.classList.add("lizerium-wish-status-badge", statusClass);
+        badge.innerText = text;
+        return badge;
     }
 }

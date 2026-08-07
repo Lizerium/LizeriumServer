@@ -128,7 +128,7 @@ builder.Services.AddSwaggerGen(options =>
     options.IncludeXmlComments(xmlPath);
 });
 
-builder.Services.Configure<ReCaptchaSettings>(builder.Configuration.GetSection("GoogleReCaptcha"));
+builder.Services.AddReCaptcha(builder.Configuration.GetSection("GoogleReCaptcha"));
 
 // Настройка базы данных
 var baseDir = AppContext.BaseDirectory;

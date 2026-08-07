@@ -139,7 +139,16 @@ namespace LizeriumServer.Controllers
         public async Task<IActionResult> DocumentsHook()
         {
             var CategoriesHook = await AppDb.GetAllCommandCategoriesAsync();
-            return View(new DocumentViewModel(null, "", CategoriesHook));
+            var counts = new Dictionary<string, int>();
+            foreach (var category in CategoriesHook)
+            {
+                counts[category.Key] = await AppDb.GetCommandsCountAsync(category.Key);
+            }
+
+            return View(new DocumentViewModel(null, "", CategoriesHook)
+            {
+                CommandsCount = counts
+            });
         }
 
 

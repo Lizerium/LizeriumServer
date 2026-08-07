@@ -27,12 +27,16 @@ export class DocHook {
             if (commandSearch && searchResults) {
                 commandSearch.addEventListener("input", () => __awaiter(this, void 0, void 0, function* () {
                     const query = commandSearch.value;
+                    const category = commandSearch.dataset.category;
                     if (query.length < 2) {
                         searchResults.innerHTML = "";
                         return;
                     }
                     try {
-                        const ajax = new Ajax(`searchCommands/${encodeURIComponent(query)}`, this.cookies);
+                        const requestUrl = category
+                            ? `searchCommands/${encodeURIComponent(query)}?category=${encodeURIComponent(category)}`
+                            : `searchCommands/${encodeURIComponent(query)}`;
+                        const ajax = new Ajax(requestUrl, this.cookies);
                         const response = yield ajax.sendRequest();
                         if (this.utilities.isEmpty(response))
                             return;
@@ -49,16 +53,16 @@ export class DocHook {
                                 : cmd.CommandNames.split(',')[0].trim();
                             yield this.ensureCategoryIndex(cmd.Category);
                             const url = this.buildDocUrl(cmd);
-                            card.className = "col";
+                            card.className = "doc-hook-search-result";
                             card.innerHTML = `
-                            <div class="card h-100 shadow-sm" onclick="window.location.href = '${url}'">
-                                ${cmd.urlGif ? `<img src="${cmd.urlGif}" class="card-img-top" alt="preview">` : ""}
-                                <div class="card-body">
-                                    <h5 class="card-title">${cmd.CommandNames}</h5>
-                                    <p class="card-text">${this.getLocalizedDescription(cmd)}</p>
-                                    <span class="badge bg-secondary">${this.getLocalizedTitleCategory(cmd)}</span>
-                                </div>
-                            </div>`;
+                            <a class="doc-hook-search-card custom-cursor-hover" href="${url}">
+                                ${this.getSearchPreview(cmd)}
+                                <span class="doc-hook-search-copy">
+                                    <strong>${cmd.CommandNames}</strong>
+                                    <small>${this.getLocalizedDescription(cmd)}</small>
+                                </span>
+                                <span class="doc-hook-search-category">${this.getLocalizedTitleCategory(cmd)}</span>
+                            </a>`;
                             searchResults.appendChild(card);
                         }
                     }
@@ -121,7 +125,15 @@ export class DocHook {
         if (translations && translations[locale] && translations[locale].length > 0) {
             return translations[locale];
         }
-        return cmd.Description;
+        return cmd.Category;
+    }
+    getSearchPreview(cmd) {
+        const gif = cmd.UrlGif || cmd.urlGif;
+        if (gif) {
+            const src = gif.startsWith("/") ? gif : `/gifs/${gif}`;
+            return `<span class="doc-hook-search-preview"><img src="${src}" alt=""></span>`;
+        }
+        return `<span class="doc-hook-search-preview is-empty" aria-hidden="true"></span>`;
     }
     getCurrentLocale() {
         const lang = this.cookies.getCookie(".AspNetCore.Culture");

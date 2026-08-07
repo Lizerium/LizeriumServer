@@ -56,8 +56,8 @@ namespace LizeriumServer.Services.Breadcrumb.Implements
         // Дерево сайта: URL -> Node
         private readonly Dictionary<string, BreadcrumbNode> _siteMap;
 
-        public BreadcrumbService(LinkGenerator linkGenerator, 
-            IServiceProvider serviceProvider, 
+        public BreadcrumbService(LinkGenerator linkGenerator,
+            IServiceProvider serviceProvider,
             IWebHostEnvironment env,
             IOptions<StoragePathsOptions> storagePathsOptions,
             IOptions<SeoDomainsOptions> seoDomainsOptions)
@@ -86,7 +86,8 @@ namespace LizeriumServer.Services.Breadcrumb.Implements
             {
                 Title = new Language()
                 {
-                    English = nameIndexEn, Russian = nameIndexRu
+                    English = nameIndexEn,
+                    Russian = nameIndexRu
                 },
                 Url = "/"
             };
@@ -95,7 +96,7 @@ namespace LizeriumServer.Services.Breadcrumb.Implements
 
             // Пример страниц
             AddNode("/Home/Error", new Language() { Russian = "Lizerium - Ошибка", English = "Lizerium - Error" }, home);
-            AddNode("/Home/Launcher", new Language() { Russian = "Lizerium - Загрузчик", English = "Lizerium Launcher" }, home);
+            AddNode("/Home/Launcher", new Language() { Russian = "Lizerium - Загрузчик", English = "Lizerium Steam" }, home);
             AddNode("/Home/Game", new Language() { Russian = "Lizerium Mode - Игры", English = "Lizerium Mode - Games" }, home);
             AddNode("/docs/all", new Language() { Russian = "Lizerium - Информация", English = "Lizerium - Information" }, home);
             AddNode("/docs/install", new Language() { Russian = "Lizerium - Установка", English = "Lizerium - Installation" }, _siteMap["/docs/all"]);
@@ -274,8 +275,8 @@ namespace LizeriumServer.Services.Breadcrumb.Implements
                     temp = temp.Parent;
                 }
 
-                var culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName; 
-                
+                var culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+
                 while (stack.Count > 0)
                 {
                     var n = stack.Pop();

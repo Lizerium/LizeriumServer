@@ -125,4 +125,19 @@
 	<data name="Documents_Builds" xml:space="preserve">
 		<value>ru</value>
 	</data>
+	<data name="Documents_Page_Description" xml:space="preserve">
+		<value>Документация, гайды, установки и технические ресурсы.</value>
+	</data>
+	<data name="Documents_Section_Main" xml:space="preserve">
+		<value>Основные материалы</value>
+	</data>
+	<data name="Documents_Wiki_Sub" xml:space="preserve">
+		<value>Справочная база по Freelancer и моддингу</value>
+	</data>
+	<data name="Documents_Section_Server" xml:space="preserve">
+		<value>Серверные решения</value>
+	</data>
+	<data name="Documents_Section_Server_Description" xml:space="preserve">
+		<value>Информация о возможностях на сервере Lizerium</value>
+	</data>
 </root>

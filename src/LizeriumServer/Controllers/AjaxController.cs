@@ -113,17 +113,25 @@ public class AjaxController : Controller
     /// Поиск команд по имени
     /// </summary>
     /// <param name="query">Поисковая строка (имя команды)</param>
+    /// <param name="category">Опциональный ключ категории для локального поиска</param>
     /// <returns>Список подходящих команд</returns>
     [HttpPost]
     [Route("{query}")]
     [Produces("application/json")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> SearchCommands(string query)
+    public async Task<IActionResult> SearchCommands(string query, [FromQuery] string category = null)
     {
         if (string.IsNullOrWhiteSpace(query))
             return Ok(new List<string>());
 
         var result = await appDb.SearchCommandsAsync(query.Trim());
+
+        if (!string.IsNullOrWhiteSpace(category))
+        {
+            result = result
+                .Where(command => string.Equals(command.Category, category, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
 
         return result.SuccessResponse();
     }
