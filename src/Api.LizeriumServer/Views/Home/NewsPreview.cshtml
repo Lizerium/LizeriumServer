@@ -15,7 +15,15 @@
     var coverUrl = GetNewsPreviewUrl(news?.ImageUrl);
     var iconUrl = GetNewsPreviewUrl(news?.IconUrl);
     var galleryUrls = GetGalleryPreviewUrls(news?.ImageGalleryJson);
-    var videoPlatforms = GetVideoPlatforms(news);
+    var videoPlatforms = GetVideoPlatforms(news, isRussian);
+    var videoPosterUrl = videoPlatforms.FirstOrDefault(platform => !string.IsNullOrWhiteSpace(platform.PosterUrl))?.PosterUrl ?? string.Empty;
+    var firstGalleryImageUrl = GetFirstGalleryImageUrl(news?.ImageGalleryJson);
+    var firstMarkdownImageUrl = GetMarkdownImages(markdown).FirstOrDefault() ?? string.Empty;
+    var cardImageRawUrl = PickText(news?.ImageUrl, PickText(firstGalleryImageUrl, firstMarkdownImageUrl));
+    var cardImageUrl = PickText(GetNewsPreviewUrl(cardImageRawUrl), videoPosterUrl);
+    var cardImageFallbackUrl = GetPublicImageFallbackUrl(cardImageRawUrl);
+    var hasCardImage = !string.IsNullOrWhiteSpace(cardImageUrl);
+    var cardHtml = BuildNewsCardHtml(markdown, title);
     ViewData["Title"] = $"Предпросмотр: {title}";
 }
 @functions {
@@ -25,6 +33,7 @@
         public string Name { get; init; } = string.Empty;
         public string Url { get; init; } = string.Empty;
         public string EmbedUrl { get; init; } = string.Empty;
+        public string PosterUrl { get; init; } = string.Empty;
     }
 
     private static string PickText(string primary, string fallback)
@@ -45,6 +54,16 @@
 
         var fileName = System.IO.Path.GetFileName(imageUrl);
         return string.IsNullOrWhiteSpace(fileName) ? imageUrl : $"/news/image/{fileName}";
+    }
+
+    private static string GetPublicImageFallbackUrl(string imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl) || Uri.TryCreate(imageUrl, UriKind.Absolute, out _))
+            return string.Empty;
+
+        return imageUrl.StartsWith("/img/news/", StringComparison.OrdinalIgnoreCase)
+            ? $"https://lizerium.com{imageUrl}"
+            : string.Empty;
     }
 
     private static IReadOnlyList<string> GetGalleryPreviewUrls(string imageGalleryJson)
@@ -70,19 +89,49 @@
         }
     }
 
-    private static List<NewsVideoPlatform> GetVideoPlatforms(LizeriumUtilities.FormatsData.DataBase.Response.LauncherNewsDataResponse news)
+    private static string GetFirstGalleryImageUrl(string imageGalleryJson)
+    {
+        if (string.IsNullOrWhiteSpace(imageGalleryJson))
+            return string.Empty;
+
+        try
+        {
+            return JsonSerializer.Deserialize<List<string>>(imageGalleryJson)?
+                .FirstOrDefault(url => !string.IsNullOrWhiteSpace(url)) ?? string.Empty;
+        }
+        catch
+        {
+            return imageGalleryJson
+                .Split(new[] { "\r\n", "\n", ";", "," }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(url => url.Trim())
+                .FirstOrDefault(url => !string.IsNullOrWhiteSpace(url)) ?? string.Empty;
+        }
+    }
+
+    private static List<NewsVideoPlatform> GetVideoPlatforms(LizeriumUtilities.FormatsData.DataBase.Response.LauncherNewsDataResponse news, bool isRussian)
     {
         var platforms = new List<NewsVideoPlatform>();
         if (news == null)
             return platforms;
 
-        AddVideo(platforms, "youtube", "YouTube", news.YoutubeUrl, BuildYoutubeEmbedUrl(news.YoutubeUrl));
-        AddVideo(platforms, "vk", "VK", news.VkVideoUrl, BuildVkEmbedUrl(news.VkVideoUrl));
-        AddVideo(platforms, "rutube", "Rutube", news.RutubeUrl, BuildRutubeEmbedUrl(news.RutubeUrl));
-        return platforms;
+        AddVideo(platforms, "youtube", "YouTube", news.YoutubeUrl, BuildYoutubeEmbedUrl(news.YoutubeUrl), BuildYoutubePosterUrl(news.YoutubeUrl));
+        AddVideo(platforms, "vk", "VK", news.VkVideoUrl, BuildVkEmbedUrl(news.VkVideoUrl), string.Empty);
+        AddVideo(platforms, "rutube", "Rutube", news.RutubeUrl, BuildRutubeEmbedUrl(news.RutubeUrl), BuildRutubePosterUrl(news.RutubeUrl));
+
+        var order = isRussian
+            ? new[] { "rutube", "vk", "youtube" }
+            : new[] { "youtube", "vk", "rutube" };
+
+        return platforms
+            .OrderBy(platform =>
+            {
+                var index = Array.IndexOf(order, platform.Key);
+                return index < 0 ? order.Length : index;
+            })
+            .ToList();
     }
 
-    private static void AddVideo(List<NewsVideoPlatform> platforms, string key, string name, string url, string embedUrl)
+    private static void AddVideo(List<NewsVideoPlatform> platforms, string key, string name, string url, string embedUrl, string posterUrl)
     {
         if (string.IsNullOrWhiteSpace(embedUrl))
             return;
@@ -92,7 +141,8 @@
             Key = key,
             Name = name,
             Url = url,
-            EmbedUrl = embedUrl
+            EmbedUrl = embedUrl,
+            PosterUrl = posterUrl
         });
     }
 
@@ -102,16 +152,128 @@
         return match.Success ? $"https://www.youtube.com/embed/{match.Groups[1].Value}" : string.Empty;
     }
 
+    private static string BuildYoutubePosterUrl(string url)
+    {
+        var match = Regex.Match(url ?? string.Empty, @"(?:youtube\.com/watch\?v=|youtube\.com/embed/|youtube\.com/shorts/|youtu\.be/)([A-Za-z0-9_-]{6,})", RegexOptions.IgnoreCase);
+        return match.Success ? $"https://img.youtube.com/vi/{match.Groups[1].Value}/hqdefault.jpg" : string.Empty;
+    }
+
     private static string BuildRutubeEmbedUrl(string url)
     {
         var match = Regex.Match(url ?? string.Empty, @"rutube\.ru/(?:video|play/embed)/([A-Za-z0-9]+)", RegexOptions.IgnoreCase);
         return match.Success ? $"https://rutube.ru/play/embed/{match.Groups[1].Value}/" : string.Empty;
     }
 
+    private static string BuildRutubePosterUrl(string url)
+    {
+        var match = Regex.Match(url ?? string.Empty, @"rutube\.ru/(?:video|play/embed)/([A-Za-z0-9]+)", RegexOptions.IgnoreCase);
+        return match.Success ? $"https://rutube.ru/api/video/{match.Groups[1].Value}/thumbnail/?redirect=1" : string.Empty;
+    }
+
     private static string BuildVkEmbedUrl(string url)
     {
         var match = Regex.Match(url ?? string.Empty, @"(?:video|clip)(-?\d+)_(\d+)", RegexOptions.IgnoreCase);
         return match.Success ? $"https://vk.com/video_ext.php?oid={match.Groups[1].Value}&id={match.Groups[2].Value}" : string.Empty;
+    }
+
+    private static string BuildNewsCardHtml(string markdown, string title)
+    {
+        var cardMarkdown = PickNewsCardMarkdown(markdown, title);
+        return string.IsNullOrWhiteSpace(cardMarkdown)
+            ? string.Empty
+            : ToInlineNewsCardHtml(RenderMarkdownPreview(cardMarkdown));
+    }
+
+    private static List<string> GetMarkdownImages(string markdown)
+    {
+        if (string.IsNullOrWhiteSpace(markdown))
+            return new List<string>();
+
+        return Regex.Matches(markdown, @"!\[[^\]]*\]\(([^)]+)\)")
+            .Select(match => match.Groups[1].Value.Trim())
+            .Where(image => !string.IsNullOrWhiteSpace(image))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private static string PickNewsCardMarkdown(string markdown, string title)
+    {
+        if (string.IsNullOrWhiteSpace(markdown))
+            return string.Empty;
+
+        var blocks = markdown
+            .Replace("\r\n", "\n")
+            .Replace('\r', '\n')
+            .Split(new[] { "\n\n" }, StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (var block in blocks)
+        {
+            var trimmed = RemoveNewsCardSkippedMarkdownLines(block, title);
+            if (string.IsNullOrWhiteSpace(trimmed) || string.IsNullOrWhiteSpace(StripNewsText(trimmed)))
+            {
+                continue;
+            }
+
+            return trimmed;
+        }
+
+        return string.Empty;
+    }
+
+    private static string RemoveNewsCardSkippedMarkdownLines(string block, string title)
+    {
+        var contentLines = string.Join("\n", block
+            .Replace("\r\n", "\n")
+            .Replace('\r', '\n')
+            .Split('\n')
+            .Select(line => line.Trim())
+            .Where(line => !string.IsNullOrWhiteSpace(line))
+            .Where(line => !IsNewsCardSkippedMarkdownLine(line)));
+
+        return string.Join("\n", contentLines
+            .Split('\n')
+            .Select(line => NormalizeNewsCardHeadingLine(line, title))
+            .Where(line => !string.IsNullOrWhiteSpace(line))
+        ).Trim();
+    }
+
+    private static bool IsNewsCardSkippedMarkdownLine(string line)
+    {
+        return Regex.IsMatch(line, @"^!\[[^\]]*\]\([^)]+\)$")
+            || Regex.IsMatch(line, @"^@video(?:-vertical)?\(https?://[^)\s]+\)$", RegexOptions.IgnoreCase)
+            || Regex.IsMatch(line, @"^https?://(?:www\.)?(?:youtube\.com/watch\?v=|youtube\.com/embed/|youtube\.com/shorts/|youtu\.be/|rutube\.ru/(?:video|play/embed)/|vk\.com/(?:video|clip))\S+$", RegexOptions.IgnoreCase);
+    }
+
+    private static string NormalizeNewsCardHeadingLine(string line, string title)
+    {
+        var normalizedLine = Regex.Replace(line, @"^#{1,6}\s+", string.Empty).Trim();
+        return string.Equals(StripNewsText(normalizedLine), StripNewsText(title), StringComparison.OrdinalIgnoreCase)
+            ? string.Empty
+            : normalizedLine;
+    }
+
+    private static string ToInlineNewsCardHtml(string html)
+    {
+        if (string.IsNullOrWhiteSpace(html))
+            return string.Empty;
+
+        var inline = Regex.Replace(html, @"</p>\s*<p>", " ", RegexOptions.IgnoreCase);
+        inline = Regex.Replace(inline, @"</?(?:p|h[1-6]|ul|ol|li|blockquote|figure)[^>]*>", " ", RegexOptions.IgnoreCase);
+        inline = Regex.Replace(inline, @"<br\s*/?>", " ", RegexOptions.IgnoreCase);
+        return Regex.Replace(inline, @"\s+", " ").Trim();
+    }
+
+    private static string StripNewsText(string markdown)
+    {
+        if (string.IsNullOrWhiteSpace(markdown))
+            return string.Empty;
+
+        var text = Regex.Replace(markdown, @"!\[[^\]]*\]\([^)]+\)", string.Empty);
+        text = Regex.Replace(text, @"^\s*@video(?:-vertical)?\(https?://[^)\s]+\)\s*$", string.Empty, RegexOptions.IgnoreCase | RegexOptions.Multiline);
+        text = Regex.Replace(text, @"^\s*https?://(?:www\.)?(?:youtube\.com/watch\?v=|youtube\.com/embed/|youtube\.com/shorts/|youtu\.be/|rutube\.ru/(?:video|play/embed)/|vk\.com/(?:video|clip))\S+\s*$", string.Empty, RegexOptions.IgnoreCase | RegexOptions.Multiline);
+        text = Regex.Replace(text, @"\[([^\]]+)\]\([^)]+\)", "$1");
+        text = Regex.Replace(text, @"[#>*_`~\-]+", " ");
+        return Regex.Replace(text, @"\s+", " ").Trim();
     }
 
     private static string RenderMarkdownPreview(string markdown)
@@ -137,8 +299,10 @@
         var imageMatch = Regex.Match(trimmed, @"^!\[[^\]]*\]\((?<url>[^)]+)\)$");
         if (imageMatch.Success)
         {
-            var imageUrl = HtmlEncoder.Default.Encode(GetNewsPreviewUrl(imageMatch.Groups["url"].Value.Trim()));
-            return $"<figure><img src=\"{imageUrl}\" alt=\"\" loading=\"lazy\" /></figure>";
+            var rawImageUrl = imageMatch.Groups["url"].Value.Trim();
+            var imageUrl = HtmlEncoder.Default.Encode(GetNewsPreviewUrl(rawImageUrl));
+            var fallbackUrl = HtmlEncoder.Default.Encode(GetPublicImageFallbackUrl(rawImageUrl));
+            return $"<figure><img src=\"{imageUrl}\" data-fallback-src=\"{fallbackUrl}\" alt=\"\" loading=\"lazy\" onerror=\"var fallback=this.dataset.fallbackSrc;if(fallback&&this.src.indexOf(fallback)<0){{this.src=fallback;}}else{{this.remove();}}\" /></figure>";
         }
 
         var safe = HtmlEncoder.Default.Encode(trimmed);
@@ -180,15 +344,62 @@
                 <span class="news-preview-state @(news.IsPublished ? "published" : "hidden")">@(news.IsPublished ? "опубликована" : "скрыта")</span>
             </div>
 
+            <div class="news-preview-section-title">
+                <span>Карточка в списке новостей</span>
+                <small>Краткий текст собирается из Markdown без изображений и видео.</small>
+            </div>
+
+            <article class="news-preview-list-card @(hasCardImage ? "has-image" : "no-image")">
+                @if (hasCardImage)
+                {
+                    <img class="news-preview-list-image" src="@cardImageUrl" data-fallback-src="@cardImageFallbackUrl" alt="" loading="lazy" onerror="var fallback=this.dataset.fallbackSrc;if(fallback&&this.src.indexOf(fallback)<0){this.src=fallback;}else{this.closest('.news-preview-list-card')?.classList.add('no-image');this.remove();}" />
+                }
+                <div class="news-preview-list-content">
+                    <div class="news-preview-list-meta">
+                        <span class="news-preview-type">@PickText(newsType, "News")</span>
+                        <time>@publishedAt</time>
+                    </div>
+                    <h2>@title</h2>
+                    @if (!string.IsNullOrWhiteSpace(cardHtml))
+                    {
+                        <div class="news-preview-card-markdown">
+                            @Html.Raw(cardHtml)
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="news-preview-empty">Для карточки нет текстового фрагмента: начало новости состоит только из медиа или пустого Markdown.</p>
+                    }
+                    @if (videoPlatforms.Count > 0)
+                    {
+                        <div class="news-preview-video-links card-links">
+                            @foreach (var platform in videoPlatforms)
+                            {
+                                <a class="@(platform == videoPlatforms[0] ? "active" : string.Empty)" href="@platform.Url" target="_blank" rel="noopener noreferrer">@platform.Name</a>
+                            }
+                        </div>
+                    }
+                    <div class="news-preview-list-actions">
+                        <span>★ @Math.Max(0, news.LikeCount)</span>
+                        <span>Читать полностью</span>
+                    </div>
+                </div>
+            </article>
+
+            <div class="news-preview-section-title">
+                <span>Полный текст новости</span>
+                <small>Так статья выглядит при открытии полного чтения.</small>
+            </div>
+
             <article class="news-preview-card">
                 @if (!string.IsNullOrWhiteSpace(coverUrl))
                 {
-                    <img class="news-preview-cover" src="@coverUrl" alt="" loading="lazy" />
+                    <img class="news-preview-cover" src="@coverUrl" data-fallback-src="@GetPublicImageFallbackUrl(news.ImageUrl)" alt="" loading="lazy" onerror="var fallback=this.dataset.fallbackSrc;if(fallback&&this.src.indexOf(fallback)<0){this.src=fallback;}else{this.remove();}" />
                 }
                 <header class="news-preview-header">
                     @if (!string.IsNullOrWhiteSpace(iconUrl))
                     {
-                        <img class="news-preview-icon" src="@iconUrl" alt="" loading="lazy" />
+                        <img class="news-preview-icon" src="@iconUrl" data-fallback-src="@GetPublicImageFallbackUrl(news.IconUrl)" alt="" loading="lazy" onerror="var fallback=this.dataset.fallbackSrc;if(fallback&&this.src.indexOf(fallback)<0){this.src=fallback;}else{this.remove();}" />
                     }
                     <div>
                         <span class="news-preview-type">@PickText(newsType, "News")</span>
@@ -219,7 +430,7 @@
                     <div class="news-preview-gallery">
                         @foreach (var imageUrl in galleryUrls)
                         {
-                            <img src="@imageUrl" alt="" loading="lazy" />
+                            <img src="@imageUrl" alt="" loading="lazy" onerror="this.remove();" />
                         }
                     </div>
                 }
@@ -231,6 +442,18 @@
 <style>
     .news-preview-workspace {
         max-width: 1180px;
+        text-align: left;
+    }
+
+    .news-preview-workspace h1,
+    .news-preview-workspace h2,
+    .news-preview-workspace h3,
+    .news-preview-workspace p,
+    .news-preview-workspace time,
+    .news-preview-workspace span,
+    .news-preview-workspace small,
+    .news-preview-workspace div {
+        text-align: left;
     }
 
     .news-preview-toolbar {
@@ -258,6 +481,140 @@
     .news-preview-state.hidden {
         color: #ffc17a;
         border-color: rgba(255, 193, 122, 0.35);
+    }
+
+    .news-preview-section-title {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 18px;
+        margin: 28px 0 12px;
+    }
+
+    .news-preview-section-title span {
+        color: #ffffff;
+        font-size: 22px;
+        font-weight: 800;
+    }
+
+    .news-preview-section-title small {
+        color: #8fa0ba;
+        font-weight: 700;
+        text-align: right;
+    }
+
+    .news-preview-list-card {
+        display: grid;
+        grid-template-columns: minmax(280px, 44%) minmax(0, 1fr);
+        overflow: hidden;
+        border: 1px solid #24344f;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #0b1220 0%, #100b2a 100%);
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
+    }
+
+    .news-preview-list-card.no-image {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .news-preview-list-image {
+        display: block;
+        width: 100%;
+        height: 100%;
+        min-height: 320px;
+        object-fit: cover;
+        background: #050914;
+    }
+
+    .news-preview-list-content {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        justify-content: flex-start;
+        min-width: 0;
+        min-height: 0;
+        padding: 32px;
+    }
+
+    .news-preview-list-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 14px;
+        border: 1px solid rgba(116, 231, 255, 0.2);
+        border-radius: 8px;
+        background: rgba(5, 12, 24, 0.62);
+    }
+
+    .news-preview-list-meta time {
+        color: #86e8ff;
+        font-weight: 800;
+    }
+
+    .news-preview-list-card h2 {
+        margin: 0;
+        color: #ffffff;
+        font-family: Montserrat, "Segoe UI", Arial, sans-serif;
+        font-size: 28px;
+        line-height: 1.15;
+    }
+
+    .news-preview-list-card p,
+    .news-preview-card-markdown {
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 4;
+        margin: 0;
+        color: #b7c2d4;
+        font-size: 17px;
+        line-height: 1.55;
+    }
+
+    .news-preview-card-markdown a {
+        color: #66e6ff;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .news-preview-card-markdown strong {
+        color: #ffffff;
+    }
+
+    .news-preview-card-markdown code {
+        padding: 2px 6px;
+        border-radius: 6px;
+        background: rgba(255, 79, 190, 0.1);
+        color: #ff5fbe;
+    }
+
+    .news-preview-video-links.card-links {
+        padding: 0;
+    }
+
+    .news-preview-video-links.card-links a.active {
+        background: rgba(97, 231, 255, 0.14);
+        color: #b6f6ff;
+        box-shadow: 0 0 18px rgba(97, 231, 255, 0.18);
+    }
+
+    .news-preview-list-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 2px;
+    }
+
+    .news-preview-list-actions span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 0 18px;
+        border: 1px solid rgba(130, 90, 255, 0.52);
+        border-radius: 8px;
+        color: #ffffff;
+        font-weight: 800;
     }
 
     .news-preview-card {
@@ -303,7 +660,8 @@
     .news-preview-header h1 {
         margin: 0 0 10px;
         color: #fff;
-        font-size: 34px;
+        font-family: Montserrat, "Segoe UI", Arial, sans-serif;
+        font-size: 32px;
         line-height: 1.15;
     }
 
@@ -347,8 +705,10 @@
     .news-preview-markdown {
         padding: 28px;
         color: #d4deef;
+        font-family: Montserrat, "Segoe UI", Arial, sans-serif;
         font-size: 17px;
         line-height: 1.7;
+        text-align: left;
     }
 
     .news-preview-markdown h1,
@@ -360,6 +720,7 @@
 
     .news-preview-markdown p {
         margin: 0 0 18px;
+        text-align: left;
     }
 
     .news-preview-markdown a {
@@ -393,5 +754,29 @@
 
     .news-preview-empty {
         color: #8f9db4;
+    }
+
+    @@media (max-width: 900px) {
+        .news-preview-section-title {
+            display: block;
+        }
+
+        .news-preview-section-title small {
+            display: block;
+            margin-top: 6px;
+            text-align: left;
+        }
+
+        .news-preview-list-card {
+            grid-template-columns: 1fr;
+        }
+
+        .news-preview-list-image {
+            min-height: 220px;
+        }
+
+        .news-preview-list-content {
+            padding: 22px;
+        }
     }
 </style>

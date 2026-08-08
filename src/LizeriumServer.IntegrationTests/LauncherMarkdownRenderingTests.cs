@@ -31,7 +31,8 @@ public class LauncherMarkdownRenderingTests : IAsyncLifetime
         var publishedAtUnix = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         appDb.LauncherNews.AddRange(
             MarkdownNewsTestData.CreateFullMarkdownPost(publishedAtUnix),
-            MarkdownNewsTestData.CreateCompactVideoPost(publishedAtUnix));
+            MarkdownNewsTestData.CreateCompactVideoPost(publishedAtUnix),
+            MarkdownNewsTestData.CreateGithubPostWithoutMarkdown(publishedAtUnix));
         await appDb.SaveChangesAsync();
     }
 
@@ -102,6 +103,19 @@ public class LauncherMarkdownRenderingTests : IAsyncLifetime
         AssertPlatformOrder(enHtml, "youtube", "vk", "rutube");
         Assert.DoesNotContain("data-news-card-video-src", enHtml);
         Assert.Contains("data-news-reader-platform=\"youtube\"", enHtml);
+    }
+
+    [Fact]
+    public async Task Launcher_RendersCardTextForGithubPostWithoutMarkdown()
+    {
+        var client = _factory.CreateClient();
+        var response = await client.GetAsync("/Home/Launcher?search=LizeriumSteam&order=old");
+        response.EnsureSuccessStatusCode();
+        var html = await response.Content.ReadAsStringAsync();
+
+        Assert.Contains("launcher-news-markdown", html);
+        Assert.Contains("LizeriumSteam", html);
+        Assert.Contains("launcher-news-github", html);
     }
 
     private static void AssertPlatformOrder(string html, params string[] platforms)

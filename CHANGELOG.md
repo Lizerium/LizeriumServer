@@ -19,12 +19,16 @@
 - Enabled `asp-append-version` for Knowledge Base, documentation and support page CSS files so user browsers receive updated styles after deployment without manual `Ctrl+F5`.
 - Fixed video-source visual states in news: only the selected platform is highlighted now, instead of all available YouTube/VK/Rutube buttons looking active at once.
 - Fixed video-platform switching on news cards: selecting YouTube/VK/Rutube now updates the active button and passes the selected platform into the full news reader, including cards that use a poster instead of an embedded iframe.
+- News cards now render the first meaningful Markdown block of the article with inline formatting, skipping covers, images, videos and headings that belong to the full reader.
 - Rebuilt `global.min.css` and `app.min.js` to ship the news-card style and behavior fixes.
 
 ### Api Lizerium Server
 
 - Added a closed admin-only news preview route at `/news/preview/{id}` protected by `AdminAccessGuard`, IP block checks and an authorized `AdminSession`.
 - The preview can open hidden/unpublished news, so drafts can be saved without publishing and reviewed before appearing on the public site.
+- Split the admin news preview into two states: the public news-list card and the full article reader view.
+- The admin preview card now uses the same Markdown excerpt logic as the public news card.
+- Fixed the admin news preview layout so article centering no longer leaks into the preview, image URLs can fall back to the public `lizerium.com` domain, and video-news cards show a YouTube/Rutube poster when no dedicated cover image exists.
 - Added a `Preview` button to each saved news item in the admin news list; it opens the closed preview page in a new tab.
 - Added a note to the create-news form explaining that preview becomes available after the first save and drafts should be kept unpublished.
 

@@ -1,5 +1,9 @@
 ﻿@model LauncherViewModel
+@section PageStyle {
+    <link rel="stylesheet" href="~/css/news.min.css" asp-append-version="true" />
+}
 @using LizeriumServer.Helpers
+@using System.Text.Encodings.Web
 @using System.Text.Json
 @using System.Text.RegularExpressions
 @inject IViewLocalizer Localizer
@@ -288,6 +292,71 @@
         return Regex.Replace(text, @"\s+", " ").Trim();
     }
 
+    private static string BuildNewsCardHtml(string markdown, string fallbackText = "")
+    {
+        var firstLine = markdown?
+            .Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.None)
+            .FirstOrDefault() ?? string.Empty;
+
+        var cardMarkdown = RemoveNewsCardMedia(firstLine);
+        if (!string.IsNullOrWhiteSpace(cardMarkdown))
+        {
+            var html = ToInlineNewsCardHtml(MarkdownHtmlHelper.ToSafeHtml(cardMarkdown, true));
+            if (!string.IsNullOrWhiteSpace(html))
+                return html;
+        }
+
+        var text = StripNewsText(cardMarkdown);
+        if (string.IsNullOrWhiteSpace(text))
+            text = StripNewsText(fallbackText);
+
+        return string.IsNullOrWhiteSpace(text)
+            ? string.Empty
+            : HtmlEncoder.Default.Encode(text);
+    }
+
+    private static string RemoveNewsCardMedia(string markdown)
+    {
+        if (string.IsNullOrWhiteSpace(markdown))
+            return string.Empty;
+
+        var contentLines = string.Join("\n", markdown
+            .Replace("\r\n", "\n")
+            .Replace('\r', '\n')
+            .Split('\n')
+            .Select(line => line.Trim())
+            .Where(line => !string.IsNullOrWhiteSpace(line))
+            .Where(line => !IsNewsCardSkippedMarkdownLine(line))
+            .Select(RemoveNewsCardInlineMedia)
+            .Where(line => !string.IsNullOrWhiteSpace(line)));
+
+        return contentLines.Trim();
+    }
+
+    private static bool IsNewsCardSkippedMarkdownLine(string line)
+    {
+        return Regex.IsMatch(line, @"^!\[[^\]]*\]\([^)]+\)$")
+            || Regex.IsMatch(line, @"^@video(?:-vertical)?\(https?://[^)\s]+\)$", RegexOptions.IgnoreCase)
+            || Regex.IsMatch(line, @"^https?://(?:www\.)?(?:youtube\.com/watch\?v=|youtube\.com/embed/|youtube\.com/shorts/|youtu\.be/|rutube\.ru/(?:video|play/embed)/|vk\.com/(?:video|clip)|vkvideo\.ru/video)\S+$", RegexOptions.IgnoreCase);
+    }
+
+    private static string RemoveNewsCardInlineMedia(string line)
+    {
+        var withoutImages = Regex.Replace(line, @"!\[[^\]]*\]\([^)]+\)", string.Empty);
+        return Regex.Replace(withoutImages, @"@video(?:-vertical)?\(https?://[^)\s]+\)", string.Empty, RegexOptions.IgnoreCase).Trim();
+    }
+
+    private static string ToInlineNewsCardHtml(string html)
+    {
+        if (string.IsNullOrWhiteSpace(html))
+            return string.Empty;
+
+        var inline = Regex.Replace(html, @"</p>\s*<p>", " ", RegexOptions.IgnoreCase);
+        inline = Regex.Replace(inline, @"</?(?:p|h[1-6]|ul|ol|li|blockquote)[^>]*>", " ", RegexOptions.IgnoreCase);
+        inline = Regex.Replace(inline, @"<br\s*/?>", " ", RegexOptions.IgnoreCase);
+        return Regex.Replace(inline, @"\s+", " ").Trim();
+    }
+
     private static bool ShouldShowFullRead(string markdown, int imageCount, bool hasVideo)
     {
         var text = StripNewsText(markdown);
@@ -406,7 +475,8 @@
                     }
                     var hasBody = !string.IsNullOrWhiteSpace(markdown);
                     var canReadFull = ShouldShowFullRead(markdown, galleryImages.Count, videoPlatforms.Count > 0);
-                    var excerpt = StripNewsText(markdown);
+                    var cardFallbackText = PickText(news.GithubProjectName, title);
+                    var cardHtml = BuildNewsCardHtml(markdown, cardFallbackText);
                     var hasCardMedia = cardImages.Count > 0 || videoPlatforms.Count > 0;
                     var hasInlineMedia = GetMarkdownImages(markdown).Count > 0 || GetMarkdownVideos(markdown).Count > 0;
                     var date = news.PublishedAtUnix > 0
@@ -470,10 +540,10 @@
                                 }
                             </div>
                             <h2>@title</h2>
-                            @if (hasBody && !string.IsNullOrWhiteSpace(excerpt))
+                            @if (!string.IsNullOrWhiteSpace(cardHtml))
                             {
                                 <div class="launcher-news-markdown">
-                                    <p>@excerpt</p>
+                                    @Html.Raw(cardHtml)
                                 </div>
                             }
                             @if (videoPlatforms.Count > 0)

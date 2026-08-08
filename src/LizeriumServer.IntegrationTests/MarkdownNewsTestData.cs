@@ -151,4 +151,21 @@ https://rutube.ru/video/f7359c52b38dbfd9eab1426349de6571/
             PublishedAtUnix = publishedAtUnix - 1
         };
     }
+
+    public static LauncherNewsDataResponse CreateGithubPostWithoutMarkdown(long publishedAtUnix)
+    {
+        return new LauncherNewsDataResponse
+        {
+            TitleRu = "Markdown QA: GitHub without body",
+            TitleEn = "Markdown QA: GitHub without body EN",
+            RutubeUrl = "https://rutube.ru/video/166b1de79791472c13f79c24838847c3/",
+            GithubUrl = "https://github.com/Lizerium/LizeriumSteam",
+            GithubProjectName = "LizeriumSteam",
+            NewsTypeRu = "QA GitHub",
+            NewsTypeEn = "QA GitHub",
+            IsPublished = true,
+            SortOrder = -80,
+            PublishedAtUnix = publishedAtUnix - 2
+        };
+    }
 }
