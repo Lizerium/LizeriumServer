@@ -1,9 +1,9 @@
-/*
+﻿/*
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 31 июля 2026 16:48:21
- * Version: 1.0.127
+ * Last Updated: 08 августа 2026 07:13:54
+ * Version: 1.0.134
  */
 
 using Api.LizeriumServer.FormatsData.Stats;
@@ -13,14 +13,14 @@ using LizeriumUtilities.FormatsData.DataBase.Response;
 namespace Api.LizeriumServer.Models;
 
 /// <summary>
-/// Объект модели для передачи во View
+/// РћР±СЉРµРєС‚ РјРѕРґРµР»Рё РґР»СЏ РїРµСЂРµРґР°С‡Рё РІРѕ View
 /// </summary>
 public class MainModel
 {
     /// <summary>
-    /// Точка входа
+    /// РўРѕС‡РєР° РІС…РѕРґР°
     /// </summary>
-    /// <param name="posts">Список постов</param>
+    /// <param name="posts">РЎРїРёСЃРѕРє РїРѕСЃС‚РѕРІ</param>
     public MainModel(List<PostDataResponse> posts, List<CommandDataResponse> commands,
         List<AdminCommandWithTranslations> translationsCommand = null)
     {
@@ -45,32 +45,32 @@ public class MainModel
     }
 
     /// <summary>
-    /// Флаг отображения LeftSide
+    /// Р¤Р»Р°Рі РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ LeftSide
     /// </summary>
     public bool ShowLeftSide { get; init; }
 
     /// <summary>
-    /// Идентификатор пользователя
+    /// РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
     /// </summary>
     public long IdUser { get; init; }
 
     /// <summary>
-    /// Данные статистики
+    /// Р”Р°РЅРЅС‹Рµ СЃС‚Р°С‚РёСЃС‚РёРєРё
     /// </summary>
     public List<MonitorData> MonitorData { get; set; }
 
     /// <summary>
-    /// Почасовая статистика мониторинга за сутки
+    /// РџРѕС‡Р°СЃРѕРІР°СЏ СЃС‚Р°С‚РёСЃС‚РёРєР° РјРѕРЅРёС‚РѕСЂРёРЅРіР° Р·Р° СЃСѓС‚РєРё
     /// </summary>
     public List<MonitorHourlyData> MonitorHourlyData { get; set; } = new();
 
     /// <summary>
-    /// Данные пользователя
+    /// Р”Р°РЅРЅС‹Рµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
     /// </summary>
     public List<MonitorData> UserDataStats { get; set; }
 
     /// <summary>
-    /// Количество посещений за день
+    /// РљРѕР»РёС‡РµСЃС‚РІРѕ РїРѕСЃРµС‰РµРЅРёР№ Р·Р° РґРµРЅСЊ
     /// </summary>
     public int AllUsersPerDay { get; set; }
 
@@ -97,7 +97,7 @@ public class MainModel
     public List<string> CommandCategories { get; set; } = new();
 
     /// <summary>
-    /// Новости Lizerium Steam.
+    /// РќРѕРІРѕСЃС‚Рё Lizerium Steam.
     /// </summary>
     public List<LauncherNewsDataResponse> LauncherNews { get; set; } = new();
 
@@ -120,17 +120,17 @@ public class MainModel
     public List<ProductCategoryDataResponse> ProductCatalog { get; set; } = new();
 
     /// <summary>
-    /// Объект данных о пользователях
+    /// РћР±СЉРµРєС‚ РґР°РЅРЅС‹С… Рѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏС…
     /// </summary>
     public DataPosts Posts { get; init; }
 
     /// <summary>
-    /// Объект данных
+    /// РћР±СЉРµРєС‚ РґР°РЅРЅС‹С…
     /// </summary>
     public DataCommands Commands { get; init; }
 
     /// <summary>
-    /// Версия API
+    /// Р’РµСЂСЃРёСЏ API
     /// </summary>
     public string Version { get; init; }
 }

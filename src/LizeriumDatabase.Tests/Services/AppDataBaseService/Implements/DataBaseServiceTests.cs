@@ -1,9 +1,9 @@
-/*
+﻿/*
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 31 июля 2026 16:48:21
- * Version: 1.0.127
+ * Last Updated: 08 августа 2026 07:13:54
+ * Version: 1.0.134
  */
 
 using LizeriumDatabase.Services.AppDataBaseService;
@@ -28,9 +28,9 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
 
         private IDataBaseService CreateService([System.Runtime.CompilerServices.CallerMemberName] string dbName = "")
         {
-            // Создаем реальные DbContextOptions с InMemory provider
+            // РЎРѕР·РґР°РµРј СЂРµР°Р»СЊРЅС‹Рµ DbContextOptions СЃ InMemory provider
             var optionsBuilder = new DbContextOptionsBuilder<DataBaseService>();
-            // Настраиваем реальные опции для in-memory БД
+            // РќР°СЃС‚СЂР°РёРІР°РµРј СЂРµР°Р»СЊРЅС‹Рµ РѕРїС†РёРё РґР»СЏ in-memory Р‘Р”
             optionsBuilder.UseInMemoryDatabase($"TestDb_{dbName}_{Guid.NewGuid()}");
             var options = optionsBuilder.Options;
             return new DataBaseService(options);
@@ -89,11 +89,11 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
                 Command, false);
 
             // Assert
-            Assert.IsTrue(result, "AddCommand должен вернуть true при успешном добавлении");
+            Assert.IsTrue(result, "AddCommand РґРѕР»Р¶РµРЅ РІРµСЂРЅСѓС‚СЊ true РїСЂРё СѓСЃРїРµС€РЅРѕРј РґРѕР±Р°РІР»РµРЅРёРё");
 
             var commandInDb = await service.Commands.FirstOrDefaultAsync(c => c.CommandNames == "TestCmd");
 
-            Assert.IsNotNull(commandInDb, "Команда должна быть добавлена в базу");
+            Assert.IsNotNull(commandInDb, "РљРѕРјР°РЅРґР° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РґРѕР±Р°РІР»РµРЅР° РІ Р±Р°Р·Сѓ");
             Assert.AreEqual(Command.Category, commandInDb.Category);
             Assert.AreEqual(Command.CommandNames, commandInDb.CommandNames);
             Assert.AreEqual(Command.ExampleInput, commandInDb.ExampleInput);
@@ -116,7 +116,7 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
                 Repository = "http://example.com/repo",
                 Title = new List<Language>
                 {
-                    new() { Russian = "Тестовая категория" },
+                    new() { Russian = "РўРµСЃС‚РѕРІР°СЏ РєР°С‚РµРіРѕСЂРёСЏ" },
                     new() { English = "Test Category" }
                 }
             };
@@ -125,12 +125,12 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
             var result = await service.AddCategoryAsync(category, false);
 
             // Assert
-            Assert.IsTrue(result, "AddCategory должен вернуть true при успешном добавлении");
+            Assert.IsTrue(result, "AddCategory РґРѕР»Р¶РµРЅ РІРµСЂРЅСѓС‚СЊ true РїСЂРё СѓСЃРїРµС€РЅРѕРј РґРѕР±Р°РІР»РµРЅРёРё");
 
             var categoriesInDb = await service.GetAllCommandCategoriesAsync(false);
             var categoryInDb = categoriesInDb.FirstOrDefault(c => c.Key == "TestCategoryKey");
 
-            Assert.IsNotNull(categoryInDb, "Категория должна быть добавлена в базу");
+            Assert.IsNotNull(categoryInDb, "РљР°С‚РµРіРѕСЂРёСЏ РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РґРѕР±Р°РІР»РµРЅР° РІ Р±Р°Р·Сѓ");
             Assert.AreEqual(category.Name, categoryInDb.Key);
             Assert.AreEqual(category.Title.FirstOrDefault(t => !string.IsNullOrEmpty(t.Russian))?.Russian, categoryInDb.NameRu);
             Assert.AreEqual(category.Title.FirstOrDefault(t => !string.IsNullOrEmpty(t.English))?.English, categoryInDb.NameEn);
@@ -145,7 +145,7 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
             // Arrange
             var service = this.CreateService();
 
-            // Создаем и добавляем тестовую команду в базу
+            // РЎРѕР·РґР°РµРј Рё РґРѕР±Р°РІР»СЏРµРј С‚РµСЃС‚РѕРІСѓСЋ РєРѕРјР°РЅРґСѓ РІ Р±Р°Р·Сѓ
             var initialCommand = new CommandDataResponse
             {
                 Id = 1,
@@ -176,10 +176,10 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
                 changedCommand, false);
 
             // Assert
-            Assert.IsTrue(result, "ChangeCommand должен вернуть true при успешном обновлении");
+            Assert.IsTrue(result, "ChangeCommand РґРѕР»Р¶РµРЅ РІРµСЂРЅСѓС‚СЊ true РїСЂРё СѓСЃРїРµС€РЅРѕРј РѕР±РЅРѕРІР»РµРЅРёРё");
 
             var updatedCommand = await service.Commands.FindAsync(1);
-            Assert.IsNotNull(updatedCommand, "Команда должна существовать в базе");
+            Assert.IsNotNull(updatedCommand, "РљРѕРјР°РЅРґР° РґРѕР»Р¶РЅР° СЃСѓС‰РµСЃС‚РІРѕРІР°С‚СЊ РІ Р±Р°Р·Рµ");
             Assert.AreEqual(changedCommand.Status, updatedCommand.Status);
             Assert.AreEqual(changedCommand.Description, updatedCommand.Description);
             Assert.AreEqual(changedCommand.UrlGif, updatedCommand.UrlGif);
@@ -194,7 +194,7 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
             // Arrange
             var service = this.CreateService();
 
-            // Добавляем тестовую команду в базу с id = 1
+            // Р”РѕР±Р°РІР»СЏРµРј С‚РµСЃС‚РѕРІСѓСЋ РєРѕРјР°РЅРґСѓ РІ Р±Р°Р·Сѓ СЃ id = 1
             var command = new CommandDataResponse
             {
                 Id = 1,
@@ -215,13 +215,13 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
             Assert.IsNotNull(updatedCommand);
             Assert.AreEqual(fileName, updatedCommand.UrlGif);
 
-            // Проверка поведения при несуществующем id
+            // РџСЂРѕРІРµСЂРєР° РїРѕРІРµРґРµРЅРёСЏ РїСЂРё РЅРµСЃСѓС‰РµСЃС‚РІСѓСЋС‰РµРј id
             var resultNotFound = await service.SaveGifCommandAsync("any.gif", "9999", false);
-            Assert.IsFalse(resultNotFound, "SaveGifCommand должен вернуть false если команда не найдена");
+            Assert.IsFalse(resultNotFound, "SaveGifCommand РґРѕР»Р¶РµРЅ РІРµСЂРЅСѓС‚СЊ false РµСЃР»Рё РєРѕРјР°РЅРґР° РЅРµ РЅР°Р№РґРµРЅР°");
 
-            // Проверка поведения с null id (ожидается исключение, можно проверить)
+            // РџСЂРѕРІРµСЂРєР° РїРѕРІРµРґРµРЅРёСЏ СЃ null id (РѕР¶РёРґР°РµС‚СЃСЏ РёСЃРєР»СЋС‡РµРЅРёРµ, РјРѕР¶РЅРѕ РїСЂРѕРІРµСЂРёС‚СЊ)
             var resultErrorParams = await service.SaveGifCommandAsync("any.gif", null, false);
-            Assert.IsFalse(resultErrorParams, "SaveGifCommand должен вернуть false если параметры не верные");
+            Assert.IsFalse(resultErrorParams, "SaveGifCommand РґРѕР»Р¶РµРЅ РІРµСЂРЅСѓС‚СЊ false РµСЃР»Рё РїР°СЂР°РјРµС‚СЂС‹ РЅРµ РІРµСЂРЅС‹Рµ");
         }
 
         [TestMethod]
@@ -264,7 +264,7 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
             // Assert
             var allCommands = await service.Commands.ToListAsync();
 
-            Assert.AreEqual(2, allCommands.Count, "Должно быть добавлено 2 команды");
+            Assert.AreEqual(2, allCommands.Count, "Р”РѕР»Р¶РЅРѕ Р±С‹С‚СЊ РґРѕР±Р°РІР»РµРЅРѕ 2 РєРѕРјР°РЅРґС‹");
 
             Assert.IsTrue(allCommands.Any(c => c.CommandNames == "cmd1" && c.Category == "TestCategory"));
             Assert.IsTrue(allCommands.Any(c => c.CommandNames == "cmd2" && c.Category == "TestCategory"));
@@ -276,7 +276,7 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
             // Arrange
             var service = this.CreateService();
 
-            // Добавляем тестовые посты с разными датами
+            // Р”РѕР±Р°РІР»СЏРµРј С‚РµСЃС‚РѕРІС‹Рµ РїРѕСЃС‚С‹ СЃ СЂР°Р·РЅС‹РјРё РґР°С‚Р°РјРё
             var post1 = new PostDataResponse { Id = 1, Message = "Post1", DateTimeUnix = 100 };
             var post2 = new PostDataResponse { Id = 2, Message = "Post2", DateTimeUnix = 200 };
             var post3 = new PostDataResponse { Id = 3, Message = "Post3", DateTimeUnix = 300 };
@@ -296,12 +296,12 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
             var result = await service.GetAllAdminPostsAsync();
 
             // Assert
-            Assert.IsNotNull(result, "Результат не должен быть null");
-            Assert.AreEqual(10, result.Count, "Должно вернуть ровно 10 последних постов");
+            Assert.IsNotNull(result, "Р РµР·СѓР»СЊС‚Р°С‚ РЅРµ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ null");
+            Assert.AreEqual(10, result.Count, "Р”РѕР»Р¶РЅРѕ РІРµСЂРЅСѓС‚СЊ СЂРѕРІРЅРѕ 10 РїРѕСЃР»РµРґРЅРёС… РїРѕСЃС‚РѕРІ");
 
-            // Проверяем, что возвращаются последние 10 по дате (т.е. с самым большим DateTimeUnix)
+            // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РІРѕР·РІСЂР°С‰Р°СЋС‚СЃСЏ РїРѕСЃР»РµРґРЅРёРµ 10 РїРѕ РґР°С‚Рµ (С‚.Рµ. СЃ СЃР°РјС‹Рј Р±РѕР»СЊС€РёРј DateTimeUnix)
             var expectedOrder = new[] { 11, 10, 9, 8, 7, 6, 5, 4, 3, 2 };
-            CollectionAssert.AreEqual(expectedOrder, result.Select(p => p.Id).ToList(), "Посты должны быть в правильном порядке");
+            CollectionAssert.AreEqual(expectedOrder, result.Select(p => p.Id).ToList(), "РџРѕСЃС‚С‹ РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РІ РїСЂР°РІРёР»СЊРЅРѕРј РїРѕСЂСЏРґРєРµ");
         }
 
         [TestMethod]
@@ -310,7 +310,7 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
             // Arrange
             var service = this.CreateService();
 
-            // Подготовка данных: добавим несколько команд
+            // РџРѕРґРіРѕС‚РѕРІРєР° РґР°РЅРЅС‹С…: РґРѕР±Р°РІРёРј РЅРµСЃРєРѕР»СЊРєРѕ РєРѕРјР°РЅРґ
             var command1 = new CommandDataResponse
             {
                 Id = 1,
@@ -342,11 +342,11 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
             var result = await service.GetAllAdminCommandsAsync(false);
 
             // Assert
-            Assert.IsNotNull(result, "Метод должен вернуть непустой список");
-            Assert.AreEqual(2, result.Count, "Должно быть 2 команды в списке");
+            Assert.IsNotNull(result, "РњРµС‚РѕРґ РґРѕР»Р¶РµРЅ РІРµСЂРЅСѓС‚СЊ РЅРµРїСѓСЃС‚РѕР№ СЃРїРёСЃРѕРє");
+            Assert.AreEqual(2, result.Count, "Р”РѕР»Р¶РЅРѕ Р±С‹С‚СЊ 2 РєРѕРјР°РЅРґС‹ РІ СЃРїРёСЃРєРµ");
 
-            Assert.IsTrue(result.Any(c => c.CommandNames == "Cmd1"), "В списке должна быть команда Cmd1");
-            Assert.IsTrue(result.Any(c => c.CommandNames == "Cmd2"), "В списке должна быть команда Cmd2");
+            Assert.IsTrue(result.Any(c => c.CommandNames == "Cmd1"), "Р’ СЃРїРёСЃРєРµ РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РєРѕРјР°РЅРґР° Cmd1");
+            Assert.IsTrue(result.Any(c => c.CommandNames == "Cmd2"), "Р’ СЃРїРёСЃРєРµ РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РєРѕРјР°РЅРґР° Cmd2");
         }
 
         [TestMethod]
@@ -360,7 +360,7 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
                 {
                     Id = 1,
                     Key = "hidden",
-                    NameRu = "Скрытая",
+                    NameRu = "РЎРєСЂС‹С‚Р°СЏ",
                     NameEn = "Hidden",
                     SortOrder = 1,
                     IsActive = false
@@ -369,7 +369,7 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
                 {
                     Id = 2,
                     Key = "launcher",
-                    NameRu = "Лаунчер",
+                    NameRu = "Р›Р°СѓРЅС‡РµСЂ",
                     NameEn = "Launcher",
                     SortOrder = 2,
                     IsActive = true
@@ -380,7 +380,7 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
                 {
                     Id = 1,
                     ProductCategoryId = 2,
-                    TitleRu = "Скрытый продукт",
+                    TitleRu = "РЎРєСЂС‹С‚С‹Р№ РїСЂРѕРґСѓРєС‚",
                     TitleEn = "Hidden product",
                     SortOrder = 1,
                     IsActive = false
@@ -389,9 +389,9 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
                 {
                     Id = 2,
                     ProductCategoryId = 2,
-                    TitleRu = "Загрузчик Лизериум",
+                    TitleRu = "Р—Р°РіСЂСѓР·С‡РёРє Р›РёР·РµСЂРёСѓРј",
                     TitleEn = "Lizerium uploader",
-                    DescriptionRu = "Скачивание обновлений",
+                    DescriptionRu = "РЎРєР°С‡РёРІР°РЅРёРµ РѕР±РЅРѕРІР»РµРЅРёР№",
                     DescriptionEn = "Downloads updates",
                     IconUrl = "/img/pages/game/launcher.webp",
                     SortOrder = 2,
@@ -403,7 +403,7 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
                 {
                     Id = 1,
                     ProductId = 2,
-                    NameRu = "Яндекс Диск",
+                    NameRu = "РЇРЅРґРµРєСЃ Р”РёСЃРє",
                     NameEn = "Yandex Disk",
                     Url = "https://disk.yandex.ru/example",
                     IconUrl = "/img/pages/game/yandex-disk.webp",
@@ -414,7 +414,7 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
                 {
                     Id = 2,
                     ProductId = 2,
-                    NameRu = "С Портала",
+                    NameRu = "РЎ РџРѕСЂС‚Р°Р»Р°",
                     NameEn = "Portal",
                     Url = "/uploader/projects/download/steam",
                     IconUrl = "/img/pages/game/portal.webp",
@@ -430,10 +430,10 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
             Assert.AreEqual(1, result.Count);
             Assert.AreEqual("launcher", result[0].Key);
             Assert.AreEqual(1, result[0].Products.Count);
-            Assert.AreEqual("Загрузчик Лизериум", result[0].Products[0].TitleRu);
+            Assert.AreEqual("Р—Р°РіСЂСѓР·С‡РёРє Р›РёР·РµСЂРёСѓРј", result[0].Products[0].TitleRu);
             Assert.AreEqual(2, result[0].Products[0].DownloadLinks.Count);
-            Assert.AreEqual("С Портала", result[0].Products[0].DownloadLinks[0].NameRu);
-            Assert.AreEqual("Яндекс Диск", result[0].Products[0].DownloadLinks[1].NameRu);
+            Assert.AreEqual("РЎ РџРѕСЂС‚Р°Р»Р°", result[0].Products[0].DownloadLinks[0].NameRu);
+            Assert.AreEqual("РЇРЅРґРµРєСЃ Р”РёСЃРє", result[0].Products[0].DownloadLinks[1].NameRu);
         }
 
         [TestMethod]
@@ -442,7 +442,7 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
             // Arrange
             var service = this.CreateService();
 
-            // Добавим тестовые команды с разными категориями (включая дубли)
+            // Р”РѕР±Р°РІРёРј С‚РµСЃС‚РѕРІС‹Рµ РєРѕРјР°РЅРґС‹ СЃ СЂР°Р·РЅС‹РјРё РєР°С‚РµРіРѕСЂРёСЏРјРё (РІРєР»СЋС‡Р°СЏ РґСѓР±Р»Рё)
             var command1 = new CommandDataResponse
             {
                 Id = 1,
@@ -468,7 +468,7 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
             var command3 = new CommandDataResponse
             {
                 Id = 3,
-                Category = "Category1", // Дубликат категории
+                Category = "Category1", // Р”СѓР±Р»РёРєР°С‚ РєР°С‚РµРіРѕСЂРёРё
                 CommandNames = "Cmd3",
                 ExampleInput = "Input3",
                 Status = 1,
@@ -484,16 +484,16 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
             var result = await service.SearchCommandsAsync("Cmd2", false);
 
             // Assert
-            Assert.IsNotNull(result, "Результат не должен быть null");
-            Assert.AreEqual(1, result.Count, "Должно быть ровно 1 уникальные категории");
+            Assert.IsNotNull(result, "Р РµР·СѓР»СЊС‚Р°С‚ РЅРµ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ null");
+            Assert.AreEqual(1, result.Count, "Р”РѕР»Р¶РЅРѕ Р±С‹С‚СЊ СЂРѕРІРЅРѕ 1 СѓРЅРёРєР°Р»СЊРЅС‹Рµ РєР°С‚РµРіРѕСЂРёРё");
             Assert.IsTrue(result[0].Category == "Category2");
 
             // Act
             var result2 = await service.SearchCommandsAsync("md2", false);
 
             // Assert
-            Assert.IsNotNull(result2, "Результат не должен быть null");
-            Assert.AreEqual(1, result2.Count, "Должно быть ровно 1 уникальные категории");
+            Assert.IsNotNull(result2, "Р РµР·СѓР»СЊС‚Р°С‚ РЅРµ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ null");
+            Assert.AreEqual(1, result2.Count, "Р”РѕР»Р¶РЅРѕ Р±С‹С‚СЊ СЂРѕРІРЅРѕ 1 СѓРЅРёРєР°Р»СЊРЅС‹Рµ РєР°С‚РµРіРѕСЂРёРё");
             Assert.IsTrue(result2[0].Category == "Category2");
         }
 
@@ -503,7 +503,7 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
             // Arrange
             var service = this.CreateService();
 
-            // Добавим тестовые команды с разными категориями (включая дубли)
+            // Р”РѕР±Р°РІРёРј С‚РµСЃС‚РѕРІС‹Рµ РєРѕРјР°РЅРґС‹ СЃ СЂР°Р·РЅС‹РјРё РєР°С‚РµРіРѕСЂРёСЏРјРё (РІРєР»СЋС‡Р°СЏ РґСѓР±Р»Рё)
             var command1 = new CommandDataResponse
             {
                 Id = 1,
@@ -529,7 +529,7 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
             var command3 = new CommandDataResponse
             {
                 Id = 3,
-                Category = "Category1", // Дубликат категории
+                Category = "Category1", // Р”СѓР±Р»РёРєР°С‚ РєР°С‚РµРіРѕСЂРёРё
                 CommandNames = "Cmd3",
                 ExampleInput = "Input3",
                 Status = 1,
@@ -545,10 +545,10 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
             var result = await service.GetAllCommandCategoriesAsync(false);
 
             // Assert
-            Assert.IsNotNull(result, "Результат не должен быть null");
-            Assert.AreEqual(2, result.Count, "Должно быть ровно 2 уникальные категории");
-            Assert.AreEqual(result[0].Key, "Category1", "Должна содержаться категория Category1");
-            Assert.AreEqual(result[1].Key, "Category2", "Должна содержаться категория Category2");
+            Assert.IsNotNull(result, "Р РµР·СѓР»СЊС‚Р°С‚ РЅРµ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ null");
+            Assert.AreEqual(2, result.Count, "Р”РѕР»Р¶РЅРѕ Р±С‹С‚СЊ СЂРѕРІРЅРѕ 2 СѓРЅРёРєР°Р»СЊРЅС‹Рµ РєР°С‚РµРіРѕСЂРёРё");
+            Assert.AreEqual(result[0].Key, "Category1", "Р”РѕР»Р¶РЅР° СЃРѕРґРµСЂР¶Р°С‚СЊСЃСЏ РєР°С‚РµРіРѕСЂРёСЏ Category1");
+            Assert.AreEqual(result[1].Key, "Category2", "Р”РѕР»Р¶РЅР° СЃРѕРґРµСЂР¶Р°С‚СЊСЃСЏ РєР°С‚РµРіРѕСЂРёСЏ Category2");
         }
 
         [TestMethod]
@@ -572,8 +572,8 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
             var result = await service.GetCommandsAsync(category, 1, 6, false);
 
             // Assert
-            Assert.IsNotNull(result, "Результат не должен быть null");
-            Assert.AreEqual(2, result.Count, "Должны быть выбраны только команды указанной категории");
+            Assert.IsNotNull(result, "Р РµР·СѓР»СЊС‚Р°С‚ РЅРµ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ null");
+            Assert.AreEqual(2, result.Count, "Р”РѕР»Р¶РЅС‹ Р±С‹С‚СЊ РІС‹Р±СЂР°РЅС‹ С‚РѕР»СЊРєРѕ РєРѕРјР°РЅРґС‹ СѓРєР°Р·Р°РЅРЅРѕР№ РєР°С‚РµРіРѕСЂРёРё");
 
             var commandNames = result.Select(c => c.CommandNames).ToList();
             CollectionAssert.Contains(commandNames, "Cmd1");
@@ -587,7 +587,7 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
             // Arrange
             var service = this.CreateService();
 
-            // Добавим 12 постов с разным статусом и временем
+            // Р”РѕР±Р°РІРёРј 12 РїРѕСЃС‚РѕРІ СЃ СЂР°Р·РЅС‹Рј СЃС‚Р°С‚СѓСЃРѕРј Рё РІСЂРµРјРµРЅРµРј
             var posts = new List<PostDataResponse>
                 {
                     new PostDataResponse { Id = 1, Status = 0, DateTimeUnix = 100 },
@@ -611,12 +611,12 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
             var result = await service.GetAllPostsAsync();
 
             // Assert
-            Assert.IsNotNull(result, "Результат не должен быть null");
-            Assert.AreEqual(10, result.Count, "Должно вернуться 10 постов со статусом > 0");
+            Assert.IsNotNull(result, "Р РµР·СѓР»СЊС‚Р°С‚ РЅРµ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ null");
+            Assert.AreEqual(10, result.Count, "Р”РѕР»Р¶РЅРѕ РІРµСЂРЅСѓС‚СЊСЃСЏ 10 РїРѕСЃС‚РѕРІ СЃРѕ СЃС‚Р°С‚СѓСЃРѕРј > 0");
 
-            // Проверяем, что вернулись последние 10 (без постов со статусом 0)
+            // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РІРµСЂРЅСѓР»РёСЃСЊ РїРѕСЃР»РµРґРЅРёРµ 10 (Р±РµР· РїРѕСЃС‚РѕРІ СЃРѕ СЃС‚Р°С‚СѓСЃРѕРј 0)
             var expectedIds = new[] { 12, 11, 10, 9, 8, 7, 6, 5, 3, 2 };
-            CollectionAssert.AreEqual(expectedIds, result.Select(p => p.Id).ToList(), "Посты должны быть отсортированы по дате убыванию и только со статусом > 0");
+            CollectionAssert.AreEqual(expectedIds, result.Select(p => p.Id).ToList(), "РџРѕСЃС‚С‹ РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РѕС‚СЃРѕСЂС‚РёСЂРѕРІР°РЅС‹ РїРѕ РґР°С‚Рµ СѓР±С‹РІР°РЅРёСЋ Рё С‚РѕР»СЊРєРѕ СЃРѕ СЃС‚Р°С‚СѓСЃРѕРј > 0");
         }
 
         [TestMethod]
@@ -655,20 +655,20 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
             // Assert
             Assert.IsNotNull(result);
             Assert.IsNotNull(result.Posts);
-            Assert.AreEqual(10, result.Posts.Count, "Должно вернуться 10 последних постов");
+            Assert.AreEqual(10, result.Posts.Count, "Р”РѕР»Р¶РЅРѕ РІРµСЂРЅСѓС‚СЊСЃСЏ 10 РїРѕСЃР»РµРґРЅРёС… РїРѕСЃС‚РѕРІ");
 
             var expectedIds = posts
-              .OrderBy(p => p.Id)              // сначала сортировка по Id (но она сразу же перебивается)
-              .OrderBy(p => p.DateTimeUnix)    // сортировка по дате
-              .Reverse()                       // переворот
+              .OrderBy(p => p.Id)              // СЃРЅР°С‡Р°Р»Р° СЃРѕСЂС‚РёСЂРѕРІРєР° РїРѕ Id (РЅРѕ РѕРЅР° СЃСЂР°Р·Сѓ Р¶Рµ РїРµСЂРµР±РёРІР°РµС‚СЃСЏ)
+              .OrderBy(p => p.DateTimeUnix)    // СЃРѕСЂС‚РёСЂРѕРІРєР° РїРѕ РґР°С‚Рµ
+              .Reverse()                       // РїРµСЂРµРІРѕСЂРѕС‚
               .Take(10)
               .Select(p => p.Id)
               .ToList();
 
             var actualIds = result.Posts.Select(p => p.Id).ToList();
 
-            CollectionAssert.AreEqual(expectedIds, actualIds, "Посты должны быть отсортированы по убыванию даты");
-            Assert.AreEqual(0, result.LastUserId, "LastUserId должен соответствовать переданному параметру");
+            CollectionAssert.AreEqual(expectedIds, actualIds, "РџРѕСЃС‚С‹ РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РѕС‚СЃРѕСЂС‚РёСЂРѕРІР°РЅС‹ РїРѕ СѓР±С‹РІР°РЅРёСЋ РґР°С‚С‹");
+            Assert.AreEqual(0, result.LastUserId, "LastUserId РґРѕР»Р¶РµРЅ СЃРѕРѕС‚РІРµС‚СЃС‚РІРѕРІР°С‚СЊ РїРµСЂРµРґР°РЅРЅРѕРјСѓ РїР°СЂР°РјРµС‚СЂСѓ");
         }
 
         [TestMethod]
@@ -702,9 +702,9 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
 
 
             // Assert
-            Assert.IsNotNull(result, "Результат не должен быть null");
-            Assert.IsNotNull(result.Posts, "Список постов не должен быть null");
-            Assert.AreEqual(lastUserId, result.LastUserId, "LastUserId должен совпадать с переданным значением");
+            Assert.IsNotNull(result, "Р РµР·СѓР»СЊС‚Р°С‚ РЅРµ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ null");
+            Assert.IsNotNull(result.Posts, "РЎРїРёСЃРѕРє РїРѕСЃС‚РѕРІ РЅРµ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ null");
+            Assert.AreEqual(lastUserId, result.LastUserId, "LastUserId РґРѕР»Р¶РµРЅ СЃРѕРІРїР°РґР°С‚СЊ СЃ РїРµСЂРµРґР°РЅРЅС‹Рј Р·РЅР°С‡РµРЅРёРµРј");
 
             var expected = posts
                 .Where(p => p.Id < lastUserId)
@@ -717,7 +717,7 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
 
             var actual = result.Posts.Select(p => p.Id).ToList();
 
-            CollectionAssert.AreEqual(expected, actual, "Список постов должен соответствовать ожидаемому порядку и фильтрации");
+            CollectionAssert.AreEqual(expected, actual, "РЎРїРёСЃРѕРє РїРѕСЃС‚РѕРІ РґРѕР»Р¶РµРЅ СЃРѕРѕС‚РІРµС‚СЃС‚РІРѕРІР°С‚СЊ РѕР¶РёРґР°РµРјРѕРјСѓ РїРѕСЂСЏРґРєСѓ Рё С„РёР»СЊС‚СЂР°С†РёРё");
         }
 
         [TestMethod]
@@ -726,7 +726,7 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
             // Arrange
             var service = this.CreateService();
 
-            // Создаем и добавляем тестовый пост с Id = 1 и статусом 0
+            // РЎРѕР·РґР°РµРј Рё РґРѕР±Р°РІР»СЏРµРј С‚РµСЃС‚РѕРІС‹Р№ РїРѕСЃС‚ СЃ Id = 1 Рё СЃС‚Р°С‚СѓСЃРѕРј 0
             var post = new PostDataResponse
             {
                 Id = 1,
@@ -744,15 +744,15 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
                 newStatus);
 
             // Assert
-            Assert.IsTrue(result, "UpdateStatusPost должен вернуть true при успешном обновлении");
+            Assert.IsTrue(result, "UpdateStatusPost РґРѕР»Р¶РµРЅ РІРµСЂРЅСѓС‚СЊ true РїСЂРё СѓСЃРїРµС€РЅРѕРј РѕР±РЅРѕРІР»РµРЅРёРё");
 
             var updatedPost = await service.Posts.FindAsync((int)lastUserId);
             Assert.IsNotNull(updatedPost);
             Assert.AreEqual(newStatus, updatedPost.Status);
 
-            // Проверка, что метод возвращает false, если пост не найден
+            // РџСЂРѕРІРµСЂРєР°, С‡С‚Рѕ РјРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ false, РµСЃР»Рё РїРѕСЃС‚ РЅРµ РЅР°Р№РґРµРЅ
             var resultNotFound = await service.UpdateStatusPostAsync(9999, newStatus);
-            Assert.IsFalse(resultNotFound, "UpdateStatusPost должен вернуть false, если пост не найден");
+            Assert.IsFalse(resultNotFound, "UpdateStatusPost РґРѕР»Р¶РµРЅ РІРµСЂРЅСѓС‚СЊ false, РµСЃР»Рё РїРѕСЃС‚ РЅРµ РЅР°Р№РґРµРЅ");
         }
 
         [TestMethod]
@@ -780,7 +780,7 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
                 request);
 
             // Assert
-            Assert.IsTrue(result, "Ожидалось, что API-ключ существует в базе");
+            Assert.IsTrue(result, "РћР¶РёРґР°Р»РѕСЃСЊ, С‡С‚Рѕ API-РєР»СЋС‡ СЃСѓС‰РµСЃС‚РІСѓРµС‚ РІ Р±Р°Р·Рµ");
         }
 
         [TestMethod]
@@ -802,8 +802,8 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
             var postInDb = await service.Posts.FirstOrDefaultAsync(p => p.Autor == "TestUser");
 
             // Assert
-            Assert.IsNotNull(postInDb, "Пост должен быть добавлен в базу");
-            Assert.AreEqual(Post.Message, postInDb.Message, "Сообщение должно совпадать");
+            Assert.IsNotNull(postInDb, "РџРѕСЃС‚ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ РґРѕР±Р°РІР»РµРЅ РІ Р±Р°Р·Сѓ");
+            Assert.AreEqual(Post.Message, postInDb.Message, "РЎРѕРѕР±С‰РµРЅРёРµ РґРѕР»Р¶РЅРѕ СЃРѕРІРїР°РґР°С‚СЊ");
             Assert.AreEqual(Post.Status, postInDb.Status);
         }
 
@@ -826,7 +826,7 @@ namespace LizeriumDatabase.Tests.Services.AppDataBaseService.Implements
         {
             // Arrange
             var service = this.CreateService();
-            // Проверяем, что Dispose не выбрасывает исключений
+            // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ Dispose РЅРµ РІС‹Р±СЂР°СЃС‹РІР°РµС‚ РёСЃРєР»СЋС‡РµРЅРёР№
             service.Dispose();
 
             Assert.IsTrue(true);

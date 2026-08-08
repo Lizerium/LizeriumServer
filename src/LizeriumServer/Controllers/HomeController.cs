@@ -1,9 +1,9 @@
-/*
+﻿/*
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 31 июля 2026 16:48:21
- * Version: 1.0.127
+ * Last Updated: 08 августа 2026 07:13:54
+ * Version: 1.0.134
  */
 
 using System.Diagnostics;
@@ -23,7 +23,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace LizeriumServer.Controllers
 {
     /// <summary>
-    /// Центральный контроллер
+    /// Р¦РµРЅС‚СЂР°Р»СЊРЅС‹Р№ РєРѕРЅС‚СЂРѕР»Р»РµСЂ
     /// </summary>
     public class HomeController : Controller
     {
@@ -35,16 +35,16 @@ namespace LizeriumServer.Controllers
         }
 
         /// <summary>
-        /// Главная страница сервера
+        /// Р“Р»Р°РІРЅР°СЏ СЃС‚СЂР°РЅРёС†Р° СЃРµСЂРІРµСЂР°
         /// </summary>
         [HttpGet]
         [Route("/")]
         public async Task<IActionResult> Index()
         {
-            // Проверяем, есть ли кука локали
+            // РџСЂРѕРІРµСЂСЏРµРј, РµСЃС‚СЊ Р»Рё РєСѓРєР° Р»РѕРєР°Р»Рё
             if (!Request.Cookies.ContainsKey(".AspNetCore.Culture"))
             {
-                // Устанавливаем куку по умолчанию на "ru"
+                // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РєСѓРєСѓ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РЅР° "ru"
                 var cultureValue = "c=ru|uic=ru";
                 Response.Cookies.Append(
                     ".AspNetCore.Culture",
@@ -63,7 +63,7 @@ namespace LizeriumServer.Controllers
         }
 
         /// <summary>
-        /// Страница технический работ сервера
+        /// РЎС‚СЂР°РЅРёС†Р° С‚РµС…РЅРёС‡РµСЃРєРёР№ СЂР°Р±РѕС‚ СЃРµСЂРІРµСЂР°
         /// </summary>
         [HttpGet]
         [Route("/maintenance")]
@@ -73,7 +73,7 @@ namespace LizeriumServer.Controllers
         }
 
         /// <summary>
-        /// Главная страница загрузчика
+        /// Р“Р»Р°РІРЅР°СЏ СЃС‚СЂР°РЅРёС†Р° Р·Р°РіСЂСѓР·С‡РёРєР°
         /// </summary>
         public async Task<IActionResult> Launcher(string search = "", string order = "new", string platform = "", string type = "", bool github = false, int page = 1)
         {
@@ -176,7 +176,7 @@ namespace LizeriumServer.Controllers
         }
 
         /// <summary>
-        /// RSS-лента опубликованных новостей Lizerium Steam.
+        /// RSS-Р»РµРЅС‚Р° РѕРїСѓР±Р»РёРєРѕРІР°РЅРЅС‹С… РЅРѕРІРѕСЃС‚РµР№ Lizerium Steam.
         /// </summary>
         [HttpGet]
         [Route("/news/rss.xml")]
@@ -207,10 +207,10 @@ namespace LizeriumServer.Controllers
                 await writer.WriteAttributeStringAsync(null, "version", null, "2.0");
                 await writer.WriteStartElementAsync(null, "channel", null);
 
-                await writer.WriteElementStringAsync(null, "title", null, isRussian ? "Новости Lizerium" : "Lizerium News");
+                await writer.WriteElementStringAsync(null, "title", null, isRussian ? "РќРѕРІРѕСЃС‚Рё Lizerium" : "Lizerium News");
                 await writer.WriteElementStringAsync(null, "link", null, $"{baseUrl}/Home/Launcher");
                 await writer.WriteElementStringAsync(null, "description", null, isRussian
-                    ? "Опубликованные новости Lizerium Steam"
+                    ? "РћРїСѓР±Р»РёРєРѕРІР°РЅРЅС‹Рµ РЅРѕРІРѕСЃС‚Рё Lizerium Steam"
                     : "Published Lizerium Steam news");
                 await writer.WriteElementStringAsync(null, "language", null, isRussian ? "ru" : "en");
 
@@ -289,7 +289,7 @@ namespace LizeriumServer.Controllers
         }
 
         /// <summary>
-        /// Главная страница игры
+        /// Р“Р»Р°РІРЅР°СЏ СЃС‚СЂР°РЅРёС†Р° РёРіСЂС‹
         /// </summary>
         public async Task<IActionResult> Game()
         {
@@ -302,7 +302,7 @@ namespace LizeriumServer.Controllers
         }
 
         /// <summary>
-        /// Страница сообщества Lizerium.
+        /// РЎС‚СЂР°РЅРёС†Р° СЃРѕРѕР±С‰РµСЃС‚РІР° Lizerium.
         /// </summary>
         public async Task<IActionResult> Community()
         {
@@ -310,20 +310,20 @@ namespace LizeriumServer.Controllers
         }
 
         /// <summary>
-        /// Пожелания по игре
+        /// РџРѕР¶РµР»Р°РЅРёСЏ РїРѕ РёРіСЂРµ
         /// </summary>
         public async Task<IActionResult> Wish()
         {
-            //используем базу приложения
+            //РёСЃРїРѕР»СЊР·СѓРµРј Р±Р°Р·Сѓ РїСЂРёР»РѕР¶РµРЅРёСЏ
             var posts = await AppDb.GetAllPostsAsync();
 
             return View(new WishViewModel(posts));
         }
 
         /// <summary>
-        /// Создание пожелания по игре
+        /// РЎРѕР·РґР°РЅРёРµ РїРѕР¶РµР»Р°РЅРёСЏ РїРѕ РёРіСЂРµ
         /// </summary>
-        /// <param name="PostModel">Данные пожелания</param>
+        /// <param name="PostModel">Р”Р°РЅРЅС‹Рµ РїРѕР¶РµР»Р°РЅРёСЏ</param>
         [HttpPost]
         [ValidateReCaptcha]
         [Route("create")]
@@ -337,27 +337,27 @@ namespace LizeriumServer.Controllers
             PostModel.Autor = PostModel.Autor.Trim();
             PostModel.Message = PostModel.Message.Trim();
 
-            //используем базу приложения
+            //РёСЃРїРѕР»СЊР·СѓРµРј Р±Р°Р·Сѓ РїСЂРёР»РѕР¶РµРЅРёСЏ
             PostModel.Status = -1;
             await AppDb.AddPostAsync(PostModel);
             return RedirectToAction(nameof(Wish));
         }
 
         /// <summary>
-        /// Пересоздание базы данных
+        /// РџРµСЂРµСЃРѕР·РґР°РЅРёРµ Р±Р°Р·С‹ РґР°РЅРЅС‹С…
         /// </summary>
-        /// <param name="PostModel">Данные</param>
+        /// <param name="PostModel">Р”Р°РЅРЅС‹Рµ</param>
         [HttpGet]
         [Route("rebuild")]
         public async Task<IActionResult> Rebuild([FromForm] CreatePostViewRequest PostModel)
         {
-            //используем базу приложения
+            //РёСЃРїРѕР»СЊР·СѓРµРј Р±Р°Р·Сѓ РїСЂРёР»РѕР¶РµРЅРёСЏ
             await AppDb.RebuildAsync();
             return RedirectToAction("Index");
         }
 
         /// <summary>
-        /// Страница приватности
+        /// РЎС‚СЂР°РЅРёС†Р° РїСЂРёРІР°С‚РЅРѕСЃС‚Рё
         /// </summary>
         public async Task<IActionResult> Privacy()
         {
@@ -365,7 +365,7 @@ namespace LizeriumServer.Controllers
         }
 
         /// <summary>
-        /// Страница ошибки
+        /// РЎС‚СЂР°РЅРёС†Р° РѕС€РёР±РєРё
         /// </summary>
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> Error()

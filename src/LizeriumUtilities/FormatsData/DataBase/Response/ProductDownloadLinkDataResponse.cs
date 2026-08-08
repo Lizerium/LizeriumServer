@@ -1,9 +1,9 @@
-/*
+﻿/*
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 07 августа 2026 00:00:00
- * Version: 1.0.128
+ * Last Updated: 08 августа 2026 07:13:54
+ * Version: 1.0.134
  */
 
 using System.ComponentModel.DataAnnotations;
@@ -12,7 +12,7 @@ using System.Text.Json.Serialization;
 namespace LizeriumUtilities.FormatsData.DataBase.Response;
 
 /// <summary>
-/// Источник скачивания или внешняя площадка продукта.
+/// РСЃС‚РѕС‡РЅРёРє СЃРєР°С‡РёРІР°РЅРёСЏ РёР»Рё РІРЅРµС€РЅСЏСЏ РїР»РѕС‰Р°РґРєР° РїСЂРѕРґСѓРєС‚Р°.
 /// </summary>
 public class ProductDownloadLinkDataResponse
 {
