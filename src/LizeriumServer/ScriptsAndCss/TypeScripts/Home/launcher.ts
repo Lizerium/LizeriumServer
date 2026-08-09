@@ -45,6 +45,30 @@ export class Launcher {
         this.bindNewsCarousels();
         this.bindNewsLightbox();
         this.bindNewsReader();
+        this.openNewsFromHash();
+
+        window.addEventListener("hashchange", this.openNewsFromHash);
+    }
+
+    private openNewsFromHash() {
+        const match = window.location.hash.match(/^#news-(\d+)$/);
+        console.log("Open news from hash match:", match);
+
+        if (!match) {
+            return;
+        }
+
+        const newsId = match[1];
+
+        console.log("Open news from hash:", newsId);
+
+        const trigger = document.querySelector(
+            `[data-news-reader-open="${newsId}"]`
+        ) as HTMLElement;
+
+        if (trigger) {
+            trigger.click() ;
+        }
     }
 
     /**
@@ -498,9 +522,13 @@ export class Launcher {
 
         reader.querySelectorAll<HTMLElement>("[data-news-reader-share]").forEach((button) => {
             button.addEventListener("click", async () => {
+                console.log("[click share]");
                 const newsId = button.getAttribute("data-news-reader-share") || "";
+                console.log("click share id: " + newsId);
                 const url = `${window.location.origin}${window.location.pathname}#news-${newsId}`;
+                console.log("click share url: " + url);
                 const title = button.closest("[data-news-reader-post]")?.querySelector("h2")?.textContent || document.title;
+                console.log("click share title: " + title);
 
                 if (navigator.share) {
                     try {

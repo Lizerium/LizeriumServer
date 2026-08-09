@@ -17,7 +17,22 @@ export class Launcher {
             this.bindNewsCarousels();
             this.bindNewsLightbox();
             this.bindNewsReader();
+            this.openNewsFromHash();
+            window.addEventListener("hashchange", this.openNewsFromHash);
         });
+    }
+    openNewsFromHash() {
+        const match = window.location.hash.match(/^#news-(\d+)$/);
+        console.log("Open news from hash match:", match);
+        if (!match) {
+            return;
+        }
+        const newsId = match[1];
+        console.log("Open news from hash:", newsId);
+        const trigger = document.querySelector(`[data-news-reader-open="${newsId}"]`);
+        if (trigger) {
+            trigger.click();
+        }
     }
     bindNewsCarousels() {
         const carousels = document.querySelectorAll("[data-news-carousel]");
@@ -373,9 +388,13 @@ export class Launcher {
         reader.querySelectorAll("[data-news-reader-share]").forEach((button) => {
             button.addEventListener("click", () => __awaiter(this, void 0, void 0, function* () {
                 var _a, _b, _c;
+                console.log("[click share]");
                 const newsId = button.getAttribute("data-news-reader-share") || "";
+                console.log("click share id: " + newsId);
                 const url = `${window.location.origin}${window.location.pathname}#news-${newsId}`;
+                console.log("click share url: " + url);
                 const title = ((_b = (_a = button.closest("[data-news-reader-post]")) === null || _a === void 0 ? void 0 : _a.querySelector("h2")) === null || _b === void 0 ? void 0 : _b.textContent) || document.title;
+                console.log("click share title: " + title);
                 if (navigator.share) {
                     try {
                         yield navigator.share({ title, url });
