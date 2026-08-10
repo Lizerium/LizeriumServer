@@ -25,29 +25,29 @@ internal static class MarkdownNewsTestData
 
 ###### Markdown QA H6
 
-РђР±Р·Р°С† СЃ **Р¶РёСЂРЅС‹Рј**, *РєСѓСЂСЃРёРІРѕРј*, ~~Р·Р°С‡РµСЂРєРЅСѓС‚С‹Рј~~ Рё `inline code`.
+Абзац с **жирным**, *курсивом*, ~~зачеркнутым~~ и `inline code`.
 
-[РЎСЃС‹Р»РєР° СЃ title](https://example.com "Example title")
+[Ссылка с title](https://example.com "Example title")
 
-![РўРµСЃС‚РѕРІР°СЏ РєР°СЂС‚РёРЅРєР°](/img/news/markdown-test.webp)
+![Тестовая картинка](/img/news/markdown-test.webp)
 
-> Р¦РёС‚Р°С‚Р° РІРµСЂС…РЅРµРіРѕ СѓСЂРѕРІРЅСЏ.
+> Цитата верхнего уровня.
 >
-> > Р’Р»РѕР¶РµРЅРЅР°СЏ С†РёС‚Р°С‚Р°.
+> > Вложенная цитата.
 
-- РџСѓРЅРєС‚ СЃРїРёСЃРєР°
-- Р’С‚РѕСЂРѕР№ РїСѓРЅРєС‚
-    - Р’Р»РѕР¶РµРЅРЅС‹Р№ РїСѓРЅРєС‚
+- Пункт списка
+- Второй пункт
+    - Вложенный пункт
 
-1. РџРµСЂРІС‹Р№ РїСѓРЅРєС‚
-2. Р’С‚РѕСЂРѕР№ РїСѓРЅРєС‚
-    1. Р’Р»РѕР¶РµРЅРЅС‹Р№ РЅРѕРјРµСЂ
+1. Первый пункт
+2. Второй пункт
+    1. Вложенный номер
 
 ---
 
-| Р’РѕР·РјРѕР¶РЅРѕСЃС‚СЊ | РЎС‚Р°С‚СѓСЃ |
+| Возможность | Статус |
 | --- | ---: |
-| РўР°Р±Р»РёС†С‹ | 100 |
+| Таблицы | 100 |
 | Markdown | 200 |
 
 ```csharp
@@ -115,7 +115,7 @@ https://rutube.ru/video/f7359c52b38dbfd9eab1426349de6571/
     {
         return new LauncherNewsDataResponse
         {
-            TitleRu = "Markdown QA: РїРѕР»РЅС‹Р№ С‚РµСЃС‚ СЂР°Р·РјРµС‚РєРё",
+            TitleRu = "Markdown QA: полный тест разметки",
             TitleEn = "Markdown QA: full markup test",
             MarkdownRu = FullMarkdownRu,
             MarkdownEn = FullMarkdownEn,
@@ -125,7 +125,7 @@ https://rutube.ru/video/f7359c52b38dbfd9eab1426349de6571/
             IconUrl = "/img/logo.png",
             ImageUrl = "/img/news/markdown-cover.webp",
             ImageGalleryJson = "[\"/img/news/markdown-gallery-1.webp\",\"/img/news/markdown-gallery-2.webp\"]",
-            NewsTypeRu = "QA РїСЂРѕРІРµСЂРєР°",
+            NewsTypeRu = "QA проверка",
             NewsTypeEn = "QA check",
             GithubUrl = "https://github.com/dvurechensky",
             GithubProjectName = "Markdown QA",
@@ -140,11 +140,11 @@ https://rutube.ru/video/f7359c52b38dbfd9eab1426349de6571/
     {
         return new LauncherNewsDataResponse
         {
-            TitleRu = "Markdown QA: РІРёРґРµРѕ РІРЅСѓС‚СЂРё С‚РµРєСЃС‚Р°",
+            TitleRu = "Markdown QA: видео внутри текста",
             TitleEn = "Markdown QA: inline video",
-            MarkdownRu = "РўРµРєСЃС‚ РґРѕ РІРёРґРµРѕ.\n\nhttps://vk.com/clip121364353_456239467\n\nРўРµРєСЃС‚ РїРѕСЃР»Рµ РІРёРґРµРѕ.",
+            MarkdownRu = "Текст до видео.\n\nhttps://vk.com/clip121364353_456239467\n\nТекст после видео.",
             MarkdownEn = "Text before video.\n\nhttps://www.youtube.com/shorts/K_HoTF1LGv4\n\nText after video.",
-            NewsTypeRu = "Р’РёРґРµРѕ",
+            NewsTypeRu = "Видео",
             NewsTypeEn = "Video",
             IsPublished = true,
             SortOrder = -90,

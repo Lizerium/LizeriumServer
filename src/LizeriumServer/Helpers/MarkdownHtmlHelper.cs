@@ -14,7 +14,7 @@ using System.Text.RegularExpressions;
 namespace LizeriumServer.Helpers;
 
 /// <summary>
-/// Р‘РµР·РѕРїР°СЃРЅС‹Р№ СЂРµРЅРґРµСЂ Markdown РґР»СЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРёС… СЃС‚СЂР°РЅРёС†.
+/// Безопасный рендер Markdown для пользовательских страниц.
 /// </summary>
 public static class MarkdownHtmlHelper
 {
@@ -25,7 +25,7 @@ public static class MarkdownHtmlHelper
         .Build();
 
     /// <summary>
-    /// РљРѕРЅРІРµСЂС‚РёСЂСѓРµС‚ Markdown РІ РѕС‡РёС‰РµРЅРЅС‹Р№ HTML.
+    /// Конвертирует Markdown в очищенный HTML.
     /// </summary>
     public static string ToSafeHtml(string markdown, bool lazyImages = false)
     {

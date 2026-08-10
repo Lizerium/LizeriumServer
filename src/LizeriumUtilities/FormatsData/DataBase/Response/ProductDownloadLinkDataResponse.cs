@@ -12,7 +12,7 @@ using System.Text.Json.Serialization;
 namespace LizeriumUtilities.FormatsData.DataBase.Response;
 
 /// <summary>
-/// РСЃС‚РѕС‡РЅРёРє СЃРєР°С‡РёРІР°РЅРёСЏ РёР»Рё РІРЅРµС€РЅСЏСЏ РїР»РѕС‰Р°РґРєР° РїСЂРѕРґСѓРєС‚Р°.
+/// Источник скачивания или внешняя площадка продукта.
 /// </summary>
 public class ProductDownloadLinkDataResponse
 {

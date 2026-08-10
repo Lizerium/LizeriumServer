@@ -12,7 +12,7 @@ using System.Text.Json.Serialization;
 namespace LizeriumUtilities.FormatsData.DataBase.Response;
 
 /// <summary>
-/// РљР°С‚РµРіРѕСЂРёСЏ РїСЂРѕРґСѓРєС‚Р° РґР»СЏ РІРёС‚СЂРёРЅС‹ РёРіСЂ Рё Р·Р°РіСЂСѓР·РѕРє.
+/// Категория продукта для витрины игр и загрузок.
 /// </summary>
 public class ProductCategoryDataResponse
 {

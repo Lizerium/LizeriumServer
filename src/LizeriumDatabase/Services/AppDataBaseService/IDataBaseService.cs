@@ -18,169 +18,169 @@ namespace LizeriumDatabase.Services.AppDataBaseService;
 public interface IDataBaseService : IDisposable
 {
     /// <summary>
-    /// Р‘Р°Р·Р° РґР°РЅРЅС‹С…
+    /// База данных
     /// </summary>
     DatabaseFacade Database { get; }
     /// <summary>
-    /// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚Р°Р±Р»РёС†С‹ РїРѕСЃС‚РѕРІ
+    /// Инициализация таблицы постов
     /// </summary>
     DbSet<PostDataResponse> Posts { get; set; }
     /// <summary>
-    /// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚Р°Р±Р»РёС†С‹ РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№
+    /// Инициализация таблицы пользователей
     /// </summary>
     DbSet<UserApiKeyResponse> Users { get; set; }
     /// <summary>
-    /// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚Р°Р±Р»РёС†С‹ РєРѕРјР°РЅРґ
+    /// Инициализация таблицы команд
     /// </summary>
     DbSet<CommandDataResponse> Commands { get; set; }
 
     /// <summary>
-    /// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚Р°Р±Р»РёС†С‹ РЅРѕРІРѕСЃС‚РµР№ Lizerium Steam.
+    /// Инициализация таблицы новостей Lizerium Steam.
     /// </summary>
     DbSet<LauncherNewsDataResponse> LauncherNews { get; set; }
 
     /// <summary>
-    /// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚Р°Р±Р»РёС†С‹ РєР°С‚РµРіРѕСЂРёР№ РїСЂРѕРґСѓРєС‚РѕРІ.
+    /// Инициализация таблицы категорий продуктов.
     /// </summary>
     DbSet<ProductCategoryDataResponse> ProductCategories { get; set; }
 
     /// <summary>
-    /// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚Р°Р±Р»РёС†С‹ РїСЂРѕРґСѓРєС‚РѕРІ.
+    /// Инициализация таблицы продуктов.
     /// </summary>
     DbSet<ProductDataResponse> Products { get; set; }
 
     /// <summary>
-    /// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚Р°Р±Р»РёС†С‹ РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРєР°С‡РёРІР°РЅРёСЏ РїСЂРѕРґСѓРєС‚РѕРІ.
+    /// Инициализация таблицы источников скачивания продуктов.
     /// </summary>
     DbSet<ProductDownloadLinkDataResponse> ProductDownloadLinks { get; set; }
 
 
     /// <summary>
-    /// РЎРѕС…СЂР°РЅРµРЅРёРµ РёР·РјРµРЅРµРЅРёР№ РІ Р±Р°Р·Сѓ РґР°РЅРЅС‹С…
+    /// Сохранение изменений в базу данных
     /// </summary>
-    /// <param name="cancellationToken">РўРѕРєРµРЅ РѕС‚РјРµРЅС‹ РѕРїРµСЂР°С†РёРё</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
     /// <returns></returns>
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     /// <summary>
-    /// РџСЂРѕРІРµСЂРєР° СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёСЏ С‚Р°Р±Р»РёС† Рё РіРµРЅРµСЂР°С†РёСЏ РёС…
+    /// Проверка существования таблиц и генерация их
     /// </summary>
     Task ExistAndCreateCommandsTable();
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ РєРѕР»РёС‡РµСЃС‚РІРѕ РєРѕРјР°РЅРґ РІ РєР°С‚РµРіРѕСЂРёРё
+    /// Получает количество команд в категории
     /// </summary>
-    /// <param name="Category">РљР°С‚РµРіРѕСЂРёСЏ РёРјСЏ</param>
-    /// <param name="checkSecureOperate">РџСЂРѕРІРµСЂСЏС‚СЊ Р»Рё СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ С‚Р°Р±Р»РёС†С‹</param>
+    /// <param name="Category">Категория имя</param>
+    /// <param name="checkSecureOperate">Проверять ли существование таблицы</param>
     /// <returns>int</returns>
     Task<int> GetCommandsCountAsync(string Category, bool checkSecureOperate = true);
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ РІСЃРµ РєРѕРјР°РЅРґС‹ РїРѕ РєР°С‚РµРіРѕСЂРёРё
+    /// Получает все команды по категории
     /// </summary>
-    /// <param name="Category">РљР°С‚РµРіРѕСЂРёСЏ РёРјСЏ</param>
-    /// <param name="Page">РЎС‚СЂР°РЅРёС†Р°</param>
-    /// <param name="Size">РљРѕР»РёС‡РµСЃС‚РІРѕ</param>
-    /// <param name="checkSecureOperate">РџСЂРѕРІРµСЂСЏС‚СЊ Р»Рё СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ С‚Р°Р±Р»РёС†С‹</param>
-    /// <param name="shortSize">РћРіСЂР°РЅРёС‡РµРЅРёСЏ РІРєР»СЋС‡РµРЅС‹ РёР»Рё РІС‹РєР»СЋС‡РµРЅС‹</param>
+    /// <param name="Category">Категория имя</param>
+    /// <param name="Page">Страница</param>
+    /// <param name="Size">Количество</param>
+    /// <param name="checkSecureOperate">Проверять ли существование таблицы</param>
+    /// <param name="shortSize">Ограничения включены или выключены</param>
     /// <returns></returns>
     Task<List<CommandDataResponse>> GetCommandsAsync(string Category, int Page = 1, int Size = 10, bool checkSecureOperate = true,
         bool shortSize = true);
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ СЃРїРёСЃРѕРє РїРµСЂРµРІРѕРґРѕРІ РєРѕРјР°РЅРґ
+    /// Получает список переводов команд
     /// </summary>
     Task<List<AdminCommandWithTranslations>> GetAllAdminCommandTranslatesAsync(bool checkSecureOperate = true);
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ СЃРїРёСЃРѕРє РєРѕРјР°РЅРґ
+    /// Получает список команд
     /// </summary>
     Task<List<CommandDataResponse>> GetAllAdminCommandsAsync(bool checkSecureOperate = true);
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ СЃРїРёСЃРѕРє РїРѕСЃС‚РѕРІ РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№
+    /// Получает список постов пользователей
     /// </summary>
     Task<List<PostDataResponse>> GetAllAdminPostsAsync();
     /// <summary>
-    /// РџРѕРёСЃРє РїРѕ РєРѕРјР°РЅРґР°Рј
+    /// Поиск по командам
     /// </summary>
-    /// <param name="query">Р—Р°РїСЂРѕСЃ</param>
-    /// <returns>РЎРїРёСЃРѕРє РєРѕРјР°РЅРґ</returns>
+    /// <param name="query">Запрос</param>
+    /// <returns>Список команд</returns>
     Task<List<CommandDataResponse>> SearchCommandsAsync(string query, bool checkSecureOperate = true);
     /// <summary>
-    /// РџРѕР»СѓС‡РµРЅРёРµ СЃРїРёСЃРєР° РєРѕРјР°РЅРґ РїРѕ РєР°С‚РµРіРѕСЂРёРё
+    /// Получение списка команд по категории
     /// </summary>
-    /// <param name="checkSecureOperate">РџСЂРѕРІРµСЂСЏС‚СЊ Р»Рё СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ С‚Р°Р±Р»РёС†С‹</param>
+    /// <param name="checkSecureOperate">Проверять ли существование таблицы</param>
     /// <returns>List<string></returns>
     Task<List<CommandCategoryInfoResponse>> GetAllCommandCategoriesAsync(bool checkSecureOperate = true);
     /// <summary>
-    /// РЎРѕС…СЂР°РЅСЏРµС‚ СЃСЂР°Р·Сѓ РїР°С‡РєСѓ РєРѕРјР°РЅРґ РІ Р±Р°Р·Рµ РґР°РЅРЅС‹С…
+    /// Сохраняет сразу пачку команд в базе данных
     /// </summary>
-    /// <param name="jsonData">РЎС‡РёС‚Р°РЅРЅС‹Р№ РЅР°Р±РѕСЂ РєРѕРјР°РЅРґ РѕС‚СЃРѕСЂС‚РёСЂРѕРІР°РЅРЅС‹Р№ РїРѕ РєР°С‚РµРіРѕСЂРёСЏРј</param>
+    /// <param name="jsonData">Считанный набор команд отсортированный по категориям</param>
     Task SaveCommandsFromJsonAsync(CommandsFileRequest jsonData, bool checkSecureOperate = true);
     /// <summary>
-    /// РЎРѕС…СЂР°РЅСЏРµС‚ СЃСЂР°Р·Сѓ РїР°С‡РєСѓ РєР°С‚РµРіРѕСЂРёР№ РєРѕРјР°РЅРґ РІ Р±Р°Р·Рµ РґР°РЅРЅС‹С…
+    /// Сохраняет сразу пачку категорий команд в базе данных
     /// </summary>
-    /// <param name="jsonData">РЎС‡РёС‚Р°РЅРЅС‹Р№ РЅР°Р±РѕСЂ РєР°С‚РµРіРѕСЂРёР№ РєРѕРјР°РЅРґ РѕС‚СЃРѕСЂС‚РёСЂРѕРІР°РЅРЅС‹Р№ РїРѕ РєР°С‚РµРіРѕСЂРёСЏРј</param>
+    /// <param name="jsonData">Считанный набор категорий команд отсортированный по категориям</param>
     Task SaveCategoriesCommandsFromJsonAsync(CommandsFileRequest jsonData, bool checkSecureOperate = true);
     /// <summary>
-    /// РЎРѕС…СЂР°РЅРёС‚СЊ РєРѕРјР°РЅРґСѓ СЃ GIF СЃСЃС‹Р»РєРѕР№ РЅР° С„Р°Р№Р»
+    /// Сохранить команду с GIF ссылкой на файл
     /// </summary>
-    /// <param name="fileName">РРјСЏ GIF С„Р°Р№Р»Р°</param>
-    /// <param name="id">РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєРѕРјР°РЅРґС‹</param>
-    /// <param name="checkSecureOperate">РџСЂРѕРІРµСЂСЏС‚СЊ Р»Рё СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ С‚Р°Р±Р»РёС†С‹</param>
+    /// <param name="fileName">Имя GIF файла</param>
+    /// <param name="id">Идентификатор команды</param>
+    /// <param name="checkSecureOperate">Проверять ли существование таблицы</param>
     /// <returns>bool</returns>
     Task<bool> SaveGifCommandAsync(string fileName, string id, bool checkSecureOperate = true);
     /// <summary>
-    /// РР·РјРµРЅРёС‚СЊ РєРѕРјР°РЅРґСѓ
+    /// Изменить команду
     /// </summary>
     Task<bool> ChangeCommandAsync(CreateCommandViewRequest Command, bool checkSecureOperate = true);
     /// <summary>
-    /// РЎРѕР·РґР°С‚СЊ РєРѕРјР°РЅРґСѓ
+    /// Создать команду
     /// </summary>
     Task<bool> AddCommandAsync(CreateCommandViewRequest Command, bool checkSecureOperate = true);
     /// <summary>
-    /// РЈРґР°Р»РёС‚СЊ РєРѕРјР°РЅРґСѓ Рё РµС‘ РїРµСЂРµРІРѕРґС‹
+    /// Удалить команду и её переводы
     /// </summary>
     Task<bool> DeleteCommandAndTranslationsAsync(CreateCommandViewRequest Command, bool checkSecureOperate = true);
     /// <summary>
-    /// РЎРѕС…СЂР°РЅРµРЅРёРµ РІСЃРµС… РїРµСЂРµРІРѕРґРѕРІ РІ Р‘Р”
+    /// Сохранение всех переводов в БД
     /// </summary>
-    /// <param name="commandTranslations">РЎРїРёСЃРѕРє DTO РїРµСЂРµРІРѕРґРѕРІ</param>
-    /// <returns>РЎС‚Р°С‚СѓСЃ РѕРїРµСЂР°С†РёРё</returns>
+    /// <param name="commandTranslations">Список DTO переводов</param>
+    /// <returns>Статус операции</returns>
     Task<bool> SaveAllCommandsTranslationsAsync(List<CommandTranslationResponse> commandTranslations);
     /// <summary>
-    /// РџРѕР»СѓС‡РёС‚СЊ РєРѕРјР°РЅРґС‹ Р±РµР· РїРµСЂРµРІРѕРґР°.
+    /// Получить команды без перевода.
     /// </summary>
     /// <param name="toLang">en</param>
-    /// <returns>РЎРїРёСЃРѕРє РєРѕРјР°РЅРґ</returns>
+    /// <returns>Список команд</returns>
     Task<List<CommandTranslationResponse>> GetCommandsMissingTranslationAsync(string toLang);
     /// <summary>
-    /// Р”РѕР±Р°РІР»РµРЅРёРµ РєР°С‚РµРіРѕСЂРёРё РєРѕРјР°РЅРґ (РёРЅС„РѕСЂРјР°С†РёРё Рѕ РЅРµР№)
+    /// Добавление категории команд (информации о ней)
     /// </summary>
     Task<bool> AddCategoryAsync(CategoriesCommands category, bool checkSecureOperate = true);
 
     /// <summary>
-    /// РџСЂРѕРІРµСЂСЏРµС‚ СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ С‚Р°Р±Р»РёС†С‹ РЅРѕРІРѕСЃС‚РµР№ Рё СЃРѕР·РґР°РµС‚ РµРµ РїСЂРё РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚Рё.
+    /// Проверяет существование таблицы новостей и создает ее при необходимости.
     /// </summary>
     Task ExistAndCreateLauncherNewsTable();
 
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ РѕРїСѓР±Р»РёРєРѕРІР°РЅРЅС‹Рµ РЅРѕРІРѕСЃС‚Рё Lizerium Steam.
+    /// Получает опубликованные новости Lizerium Steam.
     /// </summary>
     Task<List<LauncherNewsDataResponse>> GetPublishedLauncherNewsAsync(bool checkSecureOperate = true);
 
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ РІСЃРµ РЅРѕРІРѕСЃС‚Рё РґР»СЏ Р°РґРјРёРЅРєРё.
+    /// Получает все новости для админки.
     /// </summary>
     Task<List<LauncherNewsDataResponse>> GetAllAdminLauncherNewsAsync(bool checkSecureOperate = true);
 
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ РЅРѕРІРѕСЃС‚СЊ РґР»СЏ Р°РґРјРёРЅСЃРєРѕРіРѕ РїСЂРµРґРїСЂРѕСЃРјРѕС‚СЂР° Р±РµР· С„РёР»СЊС‚СЂР° РїСѓР±Р»РёРєР°С†РёРё.
+    /// Получает новость для админского предпросмотра без фильтра публикации.
     /// </summary>
     Task<LauncherNewsDataResponse> GetAdminLauncherNewsByIdAsync(int id, bool checkSecureOperate = true);
 
     /// <summary>
-    /// Р”РѕР±Р°РІР»СЏРµС‚ РёР»Рё РѕР±РЅРѕРІР»СЏРµС‚ РЅРѕРІРѕСЃС‚СЊ.
+    /// Добавляет или обновляет новость.
     /// </summary>
     Task<bool> SaveLauncherNewsAsync(LauncherNewsDataResponse news, bool checkSecureOperate = true);
 
     /// <summary>
-    /// РЈРґР°Р»СЏРµС‚ РЅРѕРІРѕСЃС‚СЊ.
+    /// Удаляет новость.
     /// </summary>
     Task<bool> DeleteLauncherNewsAsync(int id, bool checkSecureOperate = true);
 
@@ -190,99 +190,99 @@ public interface IDataBaseService : IDisposable
     Task<int?> IncrementLauncherNewsLikeAsync(int id, bool checkSecureOperate = true);
 
     /// <summary>
-    /// РџСЂРѕРІРµСЂСЏРµС‚ СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ РїСЂРѕРґСѓРєС‚РѕРІС‹С… С‚Р°Р±Р»РёС† Рё СЃРѕР·РґР°РµС‚ РёС… РїСЂРё РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚Рё.
+    /// Проверяет существование продуктовых таблиц и создает их при необходимости.
     /// </summary>
     Task ExistAndCreateProductsTables();
 
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ РѕРїСѓР±Р»РёРєРѕРІР°РЅРЅС‹Р№ РєР°С‚Р°Р»РѕРі РїСЂРѕРґСѓРєС‚РѕРІ РґР»СЏ РїСѓР±Р»РёС‡РЅРѕР№ РІРёС‚СЂРёРЅС‹.
+    /// Получает опубликованный каталог продуктов для публичной витрины.
     /// </summary>
     Task<List<ProductCategoryDataResponse>> GetPublishedProductCatalogAsync(bool checkSecureOperate = true);
 
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ РїРѕР»РЅС‹Р№ РєР°С‚Р°Р»РѕРі РїСЂРѕРґСѓРєС‚РѕРІ РґР»СЏ Р°РґРјРёРЅРєРё.
+    /// Получает полный каталог продуктов для админки.
     /// </summary>
     Task<List<ProductCategoryDataResponse>> GetAllAdminProductCatalogAsync(bool checkSecureOperate = true);
 
     /// <summary>
-    /// Р”РѕР±Р°РІР»СЏРµС‚ РёР»Рё РѕР±РЅРѕРІР»СЏРµС‚ РєР°С‚РµРіРѕСЂРёСЋ РїСЂРѕРґСѓРєС‚РѕРІ.
+    /// Добавляет или обновляет категорию продуктов.
     /// </summary>
     Task<bool> SaveProductCategoryAsync(ProductCategoryDataResponse category, bool checkSecureOperate = true);
 
     /// <summary>
-    /// РЈРґР°Р»СЏРµС‚ РєР°С‚РµРіРѕСЂРёСЋ РїСЂРѕРґСѓРєС‚РѕРІ.
+    /// Удаляет категорию продуктов.
     /// </summary>
     Task<bool> DeleteProductCategoryAsync(int id, bool checkSecureOperate = true);
 
     /// <summary>
-    /// Р”РѕР±Р°РІР»СЏРµС‚ РёР»Рё РѕР±РЅРѕРІР»СЏРµС‚ РїСЂРѕРґСѓРєС‚.
+    /// Добавляет или обновляет продукт.
     /// </summary>
     Task<bool> SaveProductAsync(ProductDataResponse product, bool checkSecureOperate = true);
 
     /// <summary>
-    /// РЈРґР°Р»СЏРµС‚ РїСЂРѕРґСѓРєС‚.
+    /// Удаляет продукт.
     /// </summary>
     Task<bool> DeleteProductAsync(int id, bool checkSecureOperate = true);
 
     /// <summary>
-    /// Р”РѕР±Р°РІР»СЏРµС‚ РёР»Рё РѕР±РЅРѕРІР»СЏРµС‚ РёСЃС‚РѕС‡РЅРёРє СЃРєР°С‡РёРІР°РЅРёСЏ РїСЂРѕРґСѓРєС‚Р°.
+    /// Добавляет или обновляет источник скачивания продукта.
     /// </summary>
     Task<bool> SaveProductDownloadLinkAsync(ProductDownloadLinkDataResponse link, bool checkSecureOperate = true);
 
     /// <summary>
-    /// РЈРґР°Р»СЏРµС‚ РёСЃС‚РѕС‡РЅРёРє СЃРєР°С‡РёРІР°РЅРёСЏ РїСЂРѕРґСѓРєС‚Р°.
+    /// Удаляет источник скачивания продукта.
     /// </summary>
     Task<bool> DeleteProductDownloadLinkAsync(int id, bool checkSecureOperate = true);
     /// <summary>
-    /// Р“РµРЅРµСЂРёСЂРѕРІР°С‚СЊ Р±Р°Р·РѕРІСѓСЋ С‚Р°Р±Р»РёС†Сѓ
+    /// Генерировать базовую таблицу
     /// </summary>
     Task<bool> AddPostAsync(CreatePostViewRequest Post);
     /// <summary>
-    /// РџСЂРѕРІРµСЂСЏРµС‚ СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ РєР»СЋС‡Р° РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
+    /// Проверяет существование ключа пользователя
     /// </summary>
-    /// <param name="Data">РРЅС„РѕСЂРјР°С†РёСЏ Рѕ РїРѕР»СЊР·РѕРІР°С‚РµР»Рµ</param>
+    /// <param name="Data">Информация о пользователе</param>
     Task<bool> IsValidUserApiKeyAsync(UserApiKeyData Data);
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ СЃРїРёСЃРѕРє РїРѕСЃС‚РѕРІ РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№
+    /// Получает список постов пользователей
     /// </summary>
     Task<List<PostDataResponse>> GetAllPostsAsync();
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ СЃРїРёСЃРѕРє РїРѕСЃС‚РѕРІ РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№
+    /// Получает список постов пользователей
     /// </summary>
-    /// <param name="lastUserId">РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєСЂР°Р№РЅРµРіРѕ РїРѕР»СѓС‡РµРЅРЅРѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ</param>
+    /// <param name="lastUserId">Идентификатор крайнего полученного пользователя</param>
     Task<DataPosts> GetAllPostsAsync(long lastUserId);
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ СЃРїРёСЃРѕРє РїРѕСЃС‚РѕРІ РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№
+    /// Получает список постов пользователей
     /// </summary>
-    /// <param name="id">РљСЂР°Р№РЅРёР№ РїРѕСЃС‚</param>
-    /// <param name="status">СЃС‚Р°С‚СѓСЃ</param>
-    /// <param name="scroll">СЃРєСЂРѕР»РёРЅРіРѕРј Р»Рё Р·Р°РіСЂСѓР·РєР° РёР»Рё С„РёР»СЊС‚СЂС‹</param>
+    /// <param name="id">Крайний пост</param>
+    /// <param name="status">статус</param>
+    /// <param name="scroll">скролингом ли загрузка или фильтры</param>
     Task<DataPosts> GetAllPostsAsync(int id, int status, bool scroll = false);
     /// <summary>
-    /// РЎРѕР·РґР°РЅРёРµ Р‘Р”
+    /// Создание БД
     /// </summary>
     Task RebuildAsync();
     /// <summary>
-    /// РћР±РЅРѕРІР»СЏРµС‚ СЃС‚Р°С‚СѓСЃ Р·Р°СЏРІРєРё РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
+    /// Обновляет статус заявки пользователя
     /// </summary>
-    /// <param name="lastUserId">РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РїРѕСЃС‚Р° РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ</param>
-    /// <param name="status">РЎС‚Р°С‚СѓСЃ РѕР±СЂР°Р±РѕС‚РєРё</param>
+    /// <param name="lastUserId">Идентификатор поста пользователя</param>
+    /// <param name="status">Статус обработки</param>
     /// <returns></returns>
     Task<bool> UpdateStatusPostAsync(long lastUserId, int status);
     /// <summary>
-    /// РџСЂРѕРІРµСЂРєР° СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёСЏ С‚Р°Р±Р»РёС†С‹ РїРѕ РёРјРµРЅРё
+    /// Проверка существования таблицы по имени
     /// </summary>
-    /// <param name="tableName">РРјСЏ С‚Р°Р±Р»РёС†С‹</param>
+    /// <param name="tableName">Имя таблицы</param>
     /// <returns>bool</returns>
     Task<bool> TableExistsAsync(string tableName);
 
     /// <summary>
-    /// РЎРѕС…СЂР°РЅРµРЅРёРµ/РѕР±РЅРѕРІР»РµРЅРёРµ РєРѕРјР°РЅРґС‹ РІ Р‘Р”
+    /// Сохранение/обновление команды в БД
     /// </summary>
     Task SaveCommandTranslationsAsync(AdminCommandWithTranslations command);
 
     /// <summary>
-    /// Р Р°Р·СЂСѓС€РёС‚РµР»СЊ СЃРѕРµРґРёРЅРµРЅРёСЏ Postgresql
+    /// Разрушитель соединения Postgresql
     /// </summary>
     void Dispose();
 

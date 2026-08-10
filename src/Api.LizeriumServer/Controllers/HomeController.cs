@@ -32,7 +32,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Api.LizeriumServer.Controllers;
 
 /// <summary>
-/// Р”РµС„РѕР»С‚РЅС‹Р№ РєРѕРЅС‚СЂРѕР»Р»РµСЂ MVC
+/// Дефолтный контроллер MVC
 /// </summary>
 [Route("[action]")]
 public class HomeController : Controller
@@ -50,9 +50,9 @@ public class HomeController : Controller
     }
 
     /// <summary>
-    /// Р“Р»Р°РІРЅР°СЏ СЃС‚СЂР°РЅРёС†Р°
+    /// Главная страница
     /// </summary>
-    /// <returns>Р РµР·СѓР»СЊС‚Р°С‚ РґРµР№СЃС‚РІРёСЏ</returns>
+    /// <returns>Результат действия</returns>
     [HttpGet]
     [Route("/")]
     public async Task<IActionResult> Index()
@@ -60,14 +60,14 @@ public class HomeController : Controller
         if (!AdminAccessGuard.IsAllowed(HttpContext))
             return View("AccessClosed", new MainModel(null, null) { ShowLeftSide = false });
 
-        //РїСЂРѕРІРµСЂСЏРµРј Р±Р»РѕРєРёСЂРѕРІРєСѓ
+        //проверяем блокировку
         var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString();
         if (await securityService.IsBlocked(HttpContext?.Connection?.RemoteIpAddress?.ToString()))
             return StatusCode(403);
 
-        //РїРѕР»СѓС‡Р°РµРј РѕР±СЉРµРєС‚ СЃРµСЃСЃРёРё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°
+        //получаем объект сессии администратора
         var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
-        //РµСЃР»Рё РѕР±СЉРµРєС‚ СЃРµСЃСЃРёРё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР° РЅРµ Р·Р°РґР°РЅ РёР»Рё РЅРµ Р°РІС‚РѕСЂРёР·РѕРІР°РЅ, РѕС‚РґР°РµРј СЃС‚СЂР°РЅРёС†Сѓ Р°РІС‚РѕСЂРёР·Р°С†РёРё
+        //если объект сессии администратора не задан или не авторизован, отдаем страницу авторизации
         if (adminSession is not { IsAuth: true })
             return View(new MainModel(null, null) { ShowLeftSide = false });
 
@@ -75,9 +75,9 @@ public class HomeController : Controller
     }
 
     /// <summary>
-    /// РЎС‚СЂР°РЅРёС†Р° РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ Р°РІС‚РѕСЂРёР·Р°С†РёРё
+    /// Страница подтверждения авторизации
     /// </summary>
-    /// <returns>Р РµР·СѓР»СЊС‚Р°С‚ РґРµР№СЃС‚РІРёСЏ</returns>
+    /// <returns>Результат действия</returns>
     [HttpGet]
     public async Task<IActionResult> Confirmation()
     {
@@ -86,37 +86,37 @@ public class HomeController : Controller
             if (!AdminAccessGuard.IsAllowed(HttpContext))
                 return View("AccessClosed", new MainModel(null, null) { ShowLeftSide = false });
 
-            //РїСЂРѕРІРµСЂСЏРµРј Р±Р»РѕРєРёСЂРѕРІРєСѓ
+            //проверяем блокировку
             var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString();
             if (await securityService.IsBlocked(HttpContext?.Connection?.RemoteIpAddress?.ToString()))
                 return StatusCode(403);
 
-            //РїРѕР»СѓС‡Р°РµРј РѕР±СЉРµРєС‚ СЃРµСЃСЃРёРё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°
+            //получаем объект сессии администратора
             var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
 
-            //РµСЃР»Рё РѕР±СЉРµРєС‚ СЃРµСЃСЃРёРё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР° РЅРµ Р·Р°РґР°РЅ РёР»Рё СЂР°Р·РѕРІС‹Р№ РєРѕРґ РЅРµ РІС‹СЃР»Р°РЅ 
+            //если объект сессии администратора не задан или разовый код не выслан
             if (adminSession is not { SentOnceCode: true })
             {
-                //СЂРµРґРёСЂРµРєС‚РёРј РЅР° РіР»Р°РІРЅСѓСЋ СЃС‚СЂР°РЅРёС†Сѓ
+                //редиректим на главную страницу
                 return Redirect("~/");
             }
 
-            //РµСЃР»Рё СЃРµСЃСЃРёСЏ Р·Р°РґР°РЅР°, РЅРѕ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ РЅРµ Р°РІС‚РѕСЂРёР·РѕРІР°РЅ
+            //если сессия задана, но администратор не авторизован
             if (!adminSession.IsAuth)
             {
-                //РѕС‚РґР°РµРј СЃС‚СЂР°РЅРёС†Сѓ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ Р°РІС‚РѕСЂРёР·Р°С†РёРё СЂР°Р·РѕРІС‹Рј РєРѕРґРѕРј
+                //отдаем страницу подтверждения авторизации разовым кодом
                 return View(new MainModel(null, null) { ShowLeftSide = false });
             }
 
-            //СЂРµРґРёСЂРµРєС‚РёРј РЅР° СЃС‚СЂР°РЅРёС†Сѓ РєР°Р±РёРЅРµС‚Р° Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°
+            //редиректим на страницу кабинета администратора
             return Redirect("~/cabinet");
         }
         catch (Exception exception)
         {
-            //Р»РѕРіРёСЂСѓРµРј РёСЃРєР»СЋС‡РµРЅРёРµ
+            //логируем исключение
             exception.LogException();
 
-            //РѕС‚РґР°РµРј 404 РѕС€РёР±РєСѓ
+            //отдаем 404 ошибку
             return StatusCode(404);
         }
     }
@@ -125,7 +125,7 @@ public class HomeController : Controller
     [Route("/block/{IP}")]
     public async Task<IActionResult> Block(string IP)
     {
-        //РїСЂРѕРІРµСЂСЏРµРј Р±Р»РѕРєРёСЂРѕРІРєСѓ
+        //проверяем блокировку
         var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString();
         if (await securityService.IsBlocked(HttpContext?.Connection?.RemoteIpAddress?.ToString()))
             return StatusCode(403);
@@ -138,7 +138,7 @@ public class HomeController : Controller
     [Route("/unblock/{IP}")]
     public async Task<IActionResult> UnBlock(string IP)
     {
-        //РїСЂРѕРІРµСЂСЏРµРј Р±Р»РѕРєРёСЂРѕРІРєСѓ
+        //проверяем блокировку
         var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString();
         if (await securityService.IsBlocked(HttpContext?.Connection?.RemoteIpAddress?.ToString()))
             return StatusCode(403);
@@ -156,46 +156,46 @@ public class HomeController : Controller
             if (!AdminAccessGuard.IsAllowed(HttpContext))
                 return View("AccessClosed", new MainModel(null, null) { ShowLeftSide = false });
 
-            //РїСЂРѕРІРµСЂСЏРµРј Р±Р»РѕРєРёСЂРѕРІРєСѓ
+            //проверяем блокировку
             var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString();
             if (await securityService.IsBlocked(HttpContext?.Connection?.RemoteIpAddress?.ToString()))
                 return StatusCode(403);
 
-            //РїРѕР»СѓС‡Р°РµРј РѕР±СЉРµРєС‚ СЃРµСЃСЃРёРё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°
+            //получаем объект сессии администратора
             var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
 
-            //РµСЃР»Рё СЃРµСЃСЃРёРё РЅРµС‚ РёР»Рё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ РЅРµ Р°РІС‚РѕСЂРёР·РѕРІР°РЅ СЂРµРґРёСЂРµРєС‚РёРј РЅР° РіР»Р°РІРЅСѓСЋ СЃС‚СЂР°РЅРёС†Сѓ
+            //если сессии нет или администратор не авторизован редиректим на главную страницу
             if (adminSession is not { IsAuth: true }) return Redirect("~/");
 
             List<MonitorData> MonitorD = new List<MonitorData>();
             var dataSecretRecords = DatabaseExtensions.Configuration.GetValue<string>("private_path");
             try
             {
-                // РЎС‚СЂРѕРєР°  СЃРѕРµРґРёРЅРµРЅРёСЏ  СЃ  Р±Р°Р·РѕР№  РґР°РЅРЅС‹С…  SQLite
+                // Строка  соединения  с  базой  данных  SQLite
                 string connectionString = $"Data Source={dataSecretRecords}";
-                // РЎРѕР·РґР°С‚СЊ  СЃРѕРµРґРёРЅРµРЅРёРµ
+                // Создать  соединение
                 using (SQLiteConnection connection = new SQLiteConnection(connectionString))
                 {
-                    // РћС‚РєСЂС‹С‚СЊ  СЃРѕРµРґРёРЅРµРЅРёРµ
+                    // Открыть  соединение
                     connection.Open();
 
-                    // РЎРѕР·РґР°С‚СЊ  Р·Р°РїСЂРѕСЃ
+                    // Создать  запрос
                     SQLiteCommand command = new SQLiteCommand("SELECT Id, MAX(DateT) AS LatestDate, IP, LANG, AGENT, PATH, COUNT(*) FROM monitor WHERE DateT >= @Yesterday AND IP == @ip GROUP BY PATH ORDER BY LatestDate DESC LIMIT 1000", connection);
-                    // РўРµРєСѓС‰РµРµ РІСЂРµРјСЏ
+                    // Текущее время
                     DateTime now = DateTime.Now;
-                    // Р’СЂРµРјСЏ 24 С‡Р°СЃР° РЅР°Р·Р°Рґ
+                    // Время 24 часа назад
                     DateTime yesterday = now.AddHours(-24);
-                    // Р”РѕР±Р°РІРёС‚СЊ РїР°СЂР°РјРµС‚СЂ РґР»СЏ РІСЂРµРјРµРЅРё 24 С‡Р°СЃР° РЅР°Р·Р°Рґ
+                    // Добавить параметр для времени 24 часа назад
                     command.Parameters.AddWithValue("@Yesterday", yesterday.ToString("MM/dd/yyyy HH:mm:ss"));
                     command.Parameters.AddWithValue("@ip", IP);
 
-                    // Р’С‹РїРѕР»РЅРёС‚СЊ  Р·Р°РїСЂРѕСЃ
+                    // Выполнить  запрос
                     using (SQLiteDataReader reader = command.ExecuteReader())
                     {
-                        // РџСЂРѕС‡РёС‚Р°С‚СЊ  РґР°РЅРЅС‹Рµ  РїРѕ  СЃС‚СЂРѕРєР°Рј
+                        // Прочитать  данные  по  строкам
                         while (reader.Read())
                         {
-                            // РР·РІР»РµС‡СЊ  Р·РЅР°С‡РµРЅРёСЏ  РёР·  СЃС‚СЂРѕРєРё
+                            // Извлечь  значения  из  строки
                             int id = reader.GetInt32(0);
                             string date = reader.GetString(1);
                             string IPU = reader.GetString(2);
@@ -204,7 +204,7 @@ public class HomeController : Controller
                             string Path = reader.GetString(5);
                             int Count = reader.GetInt32(6);
 
-                            // РЎРѕР·РґР°С‚СЊ  РѕР±СЉРµРєС‚  MonitorData  Рё  РґРѕР±Р°РІРёС‚СЊ  РµРіРѕ  РІ  СЃРїРёСЃРѕРє
+                            // Создать  объект  MonitorData  и  добавить  его  в  список
                             MonitorD.Add(new MonitorData
                             {
                                 Id = id,
@@ -224,7 +224,7 @@ public class HomeController : Controller
             {
             }
 
-            //РѕС‚РґР°РµРј СЃС‚СЂР°РЅРёС†Сѓ РїР°РЅРµР»Рё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°
+            //отдаем страницу панели администратора
             return View(new MainModel(null, null)
             {
                 ShowLeftSide = true,
@@ -233,16 +233,16 @@ public class HomeController : Controller
         }
         catch (Exception exception)
         {
-            //Р»РѕРіРёСЂСѓРµРј РёСЃРєР»СЋС‡РµРЅРёРµ
+            //логируем исключение
             exception.LogException();
 
-            //РѕС‚РґР°РµРј 404 РѕС€РёР±РєСѓ
+            //отдаем 404 ошибку
             return StatusCode(404);
         }
     }
 
     /// <summary>
-    /// РЎС‚СЂР°РЅРёС†Р° РєР°Р±РёРЅРµС‚Р° Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°
+    /// Страница кабинета администратора
     /// </summary>
     [HttpGet]
     public async Task<IActionResult> Cabinet(int page = 1)
@@ -252,17 +252,17 @@ public class HomeController : Controller
             if (!AdminAccessGuard.IsAllowed(HttpContext))
                 return View("AccessClosed", new MainModel(null, null) { ShowLeftSide = false });
 
-            // IP С‚РµРєСѓС‰РµРіРѕ РєР»РёРµРЅС‚Р°
+            // IP текущего клиента
             var currentIp = HttpContext?.Connection?.RemoteIpAddress?.ToString();
 
-            // РџСЂРѕРІРµСЂСЏРµРј Р±Р»РѕРєРёСЂРѕРІРєСѓ IP
+            // Проверяем блокировку IP
             if (!string.IsNullOrWhiteSpace(currentIp) && await securityService.IsBlocked(currentIp))
                 return StatusCode(403);
 
-            // РџРѕР»СѓС‡Р°РµРј РѕР±СЉРµРєС‚ СЃРµСЃСЃРёРё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°
+            // Получаем объект сессии администратора
             var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
 
-            // Р•СЃР»Рё СЃРµСЃСЃРёРё РЅРµС‚ РёР»Рё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ РЅРµ Р°РІС‚РѕСЂРёР·РѕРІР°РЅ вЂ” СЂРµРґРёСЂРµРєС‚ РЅР° РіР»Р°РІРЅСѓСЋ
+            // Если сессии нет или администратор не авторизован — редирект на главную
             if (adminSession is not { IsAuth: true })
                 return Redirect("~/");
 
@@ -280,7 +280,7 @@ public class HomeController : Controller
 
             if (string.IsNullOrWhiteSpace(databasePath) || !System.IO.File.Exists(databasePath))
             {
-                $"Р¤Р°Р№Р» Р±Р°Р·С‹ РґР°РЅРЅС‹С… РЅРµ РЅР°Р№РґРµРЅ РёР»Рё РїСѓС‚СЊ РїСѓСЃС‚РѕР№. private_path: {databasePath}".LogMessage();
+                $"Файл базы данных не найден или путь пустой. private_path: {databasePath}".LogMessage();
 
                 return View(new MainModel(null, null)
                 {
@@ -486,7 +486,7 @@ public class HomeController : Controller
 
             var totalPages = Math.Max(1, (int)Math.Ceiling(totalMonitorRows / (double)DashboardRowsLimit));
 
-            // РћС‚РґР°С‘Рј СЃС‚СЂР°РЅРёС†Сѓ РїР°РЅРµР»Рё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°
+            // Отдаём страницу панели администратора
             return View(new MainModel(null, null)
             {
                 ShowLeftSide = true,
@@ -505,13 +505,13 @@ public class HomeController : Controller
         }
         catch (Exception ex)
         {
-            ex.LogException("РћС€РёР±РєР° РїСЂРё Р·Р°РіСЂСѓР·РєРµ РєР°Р±РёРЅРµС‚Р° Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°");
+            ex.LogException("Ошибка при загрузке кабинета администратора");
             return StatusCode(500);
         }
     }
 
     /// <summary>
-    /// РЎС‚СЂР°РЅРёС†Р° СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏРјРё
+    /// Страница управления пользователями
     /// </summary>
     [HttpGet]
     public async Task<IActionResult> Posts()
@@ -521,21 +521,21 @@ public class HomeController : Controller
             if (!AdminAccessGuard.IsAllowed(HttpContext))
                 return View("AccessClosed", new MainModel(null, null) { ShowLeftSide = false });
 
-            //РїСЂРѕРІРµСЂСЏРµРј Р±Р»РѕРєРёСЂРѕРІРєСѓ
+            //проверяем блокировку
             var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString();
             if (await securityService.IsBlocked(HttpContext?.Connection?.RemoteIpAddress?.ToString()))
                 return StatusCode(403);
 
-            //РїРѕР»СѓС‡Р°РµРј РѕР±СЉРµРєС‚ СЃРµСЃСЃРёРё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°
+            //получаем объект сессии администратора
             var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
 
-            //РµСЃР»Рё СЃРµСЃСЃРёРё РЅРµС‚ РёР»Рё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ РЅРµ Р°РІС‚РѕСЂРёР·РѕРІР°РЅ СЂРµРґРёСЂРµРєС‚РёРј РЅР° РіР»Р°РІРЅСѓСЋ СЃС‚СЂР°РЅРёС†Сѓ
+            //если сессии нет или администратор не авторизован редиректим на главную страницу
             if (adminSession is not { IsAuth: true }) return Redirect("~/");
 
-            //РёСЃРїРѕР»СЊР·СѓРµРј Р±Р°Р·Сѓ РїСЂРёР»РѕР¶РµРЅРёСЏ
+            //используем базу приложения
             var posts = await appDb.GetAllAdminPostsAsync();
 
-            //РѕС‚РґР°РµРј СЃС‚СЂР°РЅРёС†Сѓ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏРјРё
+            //отдаем страницу управления пользователями
             return View(new MainModel(posts, null)
             {
                 ShowLeftSide = true
@@ -543,16 +543,16 @@ public class HomeController : Controller
         }
         catch (Exception exception)
         {
-            //Р»РѕРіРёСЂСѓРµРј РёСЃРєР»СЋС‡РµРЅРёРµ
+            //логируем исключение
             exception.LogException();
 
-            //РѕС‚РґР°РµРј 404 РѕС€РёР±РєСѓ
+            //отдаем 404 ошибку
             return StatusCode(404);
         }
     }
 
     /// <summary>
-    /// РЎС‚СЂР°РЅРёС†Р° СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏРјРё
+    /// Страница управления пользователями
     /// </summary>
     [HttpGet]
     public async Task<IActionResult> Commands(int status = 1, string category = "all")
@@ -562,15 +562,15 @@ public class HomeController : Controller
             if (!AdminAccessGuard.IsAllowed(HttpContext))
                 return View("AccessClosed", new MainModel(null, null) { ShowLeftSide = false });
 
-            //РїСЂРѕРІРµСЂСЏРµРј Р±Р»РѕРєРёСЂРѕРІРєСѓ
+            //проверяем блокировку
             var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString();
             if (await securityService.IsBlocked(HttpContext?.Connection?.RemoteIpAddress?.ToString()))
                 return StatusCode(403);
 
-            //РїРѕР»СѓС‡Р°РµРј РѕР±СЉРµРєС‚ СЃРµСЃСЃРёРё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°
+            //получаем объект сессии администратора
             var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
 
-            //РµСЃР»Рё СЃРµСЃСЃРёРё РЅРµС‚ РёР»Рё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ РЅРµ Р°РІС‚РѕСЂРёР·РѕРІР°РЅ СЂРµРґРёСЂРµРєС‚РёРј РЅР° РіР»Р°РІРЅСѓСЋ СЃС‚СЂР°РЅРёС†Сѓ
+            //если сессии нет или администратор не авторизован редиректим на главную страницу
             if (adminSession is not { IsAuth: true }) return Redirect("~/");
 
             var commands = await appDb.GetAllAdminCommandsAsync() ?? new();
@@ -587,7 +587,7 @@ public class HomeController : Controller
             if (!string.IsNullOrWhiteSpace(category) && !string.Equals(category, "all", StringComparison.OrdinalIgnoreCase))
                 commands = commands.Where(command => command.Category == category).ToList();
 
-            //РѕС‚РґР°РµРј СЃС‚СЂР°РЅРёС†Сѓ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏРјРё
+            //отдаем страницу управления пользователями
             return View(new MainModel(null, commands)
             {
                 ShowLeftSide = true,
@@ -598,16 +598,16 @@ public class HomeController : Controller
         }
         catch (Exception exception)
         {
-            //Р»РѕРіРёСЂСѓРµРј РёСЃРєР»СЋС‡РµРЅРёРµ
+            //логируем исключение
             exception.LogException();
 
-            //РѕС‚РґР°РµРј 404 РѕС€РёР±РєСѓ
+            //отдаем 404 ошибку
             return StatusCode(404);
         }
     }
 
     /// <summary>
-    /// РЎС‚СЂР°РЅРёС†Р° СѓРїСЂР°РІР»РµРЅРёСЏ РЅРѕРІРѕСЃС‚СЏРјРё Lizerium Steam.
+    /// Страница управления новостями Lizerium Steam.
     /// </summary>
     [HttpGet]
     [Route("/news")]
@@ -942,7 +942,7 @@ public class HomeController : Controller
     }
 
     /// <summary>
-    /// РЎРѕС…СЂР°РЅСЏРµС‚ РЅРѕРІРѕСЃС‚СЊ Lizerium Steam.
+    /// Сохраняет новость Lizerium Steam.
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -1049,7 +1049,7 @@ public class HomeController : Controller
     }
 
     /// <summary>
-    /// РЈРґР°Р»СЏРµС‚ РЅРѕРІРѕСЃС‚СЊ Lizerium Steam.
+    /// Удаляет новость Lizerium Steam.
     /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -1105,7 +1105,7 @@ public class HomeController : Controller
     }
 
     /// <summary>
-    /// РћС‚РґР°РµС‚ Р»РѕРєР°Р»СЊРЅРѕРµ РїСЂРµРІСЊСЋ РѕР±Р»РѕР¶РєРё РЅРѕРІРѕСЃС‚Рё РґР»СЏ Р°РґРјРёРЅРєРё.
+    /// Отдает локальное превью обложки новости для админки.
     /// </summary>
     [HttpGet]
     [Route("/news/image/{fileName}")]
@@ -1514,7 +1514,7 @@ public class HomeController : Controller
     }
 
     /// <summary>
-    /// РЎС‚СЂР°РЅРёС†Р° СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏРјРё
+    /// Страница управления пользователями
     /// </summary>
     [HttpGet]
     [Route("/command-translates")]
@@ -1525,21 +1525,21 @@ public class HomeController : Controller
             if (!AdminAccessGuard.IsAllowed(HttpContext))
                 return View("AccessClosed", new MainModel(null, null) { ShowLeftSide = false });
 
-            //РїСЂРѕРІРµСЂСЏРµРј Р±Р»РѕРєРёСЂРѕРІРєСѓ
+            //проверяем блокировку
             var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString();
             if (await securityService.IsBlocked(HttpContext?.Connection?.RemoteIpAddress?.ToString()))
                 return StatusCode(403);
 
-            //РїРѕР»СѓС‡Р°РµРј РѕР±СЉРµРєС‚ СЃРµСЃСЃРёРё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°
+            //получаем объект сессии администратора
             var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
 
-            //РµСЃР»Рё СЃРµСЃСЃРёРё РЅРµС‚ РёР»Рё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ РЅРµ Р°РІС‚РѕСЂРёР·РѕРІР°РЅ СЂРµРґРёСЂРµРєС‚РёРј РЅР° РіР»Р°РІРЅСѓСЋ СЃС‚СЂР°РЅРёС†Сѓ
+            //если сессии нет или администратор не авторизован редиректим на главную страницу
             if (adminSession is not { IsAuth: true }) return Redirect("~/");
 
-            //РёСЃРїРѕР»СЊР·СѓРµРј Р±Р°Р·Сѓ РїСЂРёР»РѕР¶РµРЅРёСЏ
+            //используем базу приложения
             var translations = await appDb.GetAllAdminCommandTranslatesAsync();
 
-            //РѕС‚РґР°РµРј СЃС‚СЂР°РЅРёС†Сѓ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏРјРё
+            //отдаем страницу управления пользователями
             return View(new MainModel(null, null, translations)
             {
                 ShowLeftSide = true
@@ -1547,10 +1547,10 @@ public class HomeController : Controller
         }
         catch (Exception exception)
         {
-            //Р»РѕРіРёСЂСѓРµРј РёСЃРєР»СЋС‡РµРЅРёРµ
+            //логируем исключение
             exception.LogException();
 
-            //РѕС‚РґР°РµРј 404 РѕС€РёР±РєСѓ
+            //отдаем 404 ошибку
             return StatusCode(404);
         }
     }
@@ -1558,7 +1558,7 @@ public class HomeController : Controller
     [HttpPost]
     public async Task<IActionResult> SaveCommandTranslation(int commandId, List<CommandTranslation> Translations)
     {
-        //РїСЂРѕРІРµСЂСЏРµРј Р±Р»РѕРєРёСЂРѕРІРєСѓ
+        //проверяем блокировку
         var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString();
         if (await securityService.IsBlocked(ip))
             return StatusCode(403);
@@ -1579,37 +1579,37 @@ public class HomeController : Controller
 
 
     /// <summary>
-    /// РњРµС‚РѕРґ РІС‹С…РѕРґР° РёР· СЃРёСЃС‚РµРјС‹
+    /// Метод выхода из системы
     /// </summary>
-    /// <returns>Р РµР·СѓР»СЊС‚Р°С‚ РґРµР№СЃС‚РІРёСЏ</returns>
+    /// <returns>Результат действия</returns>
     [HttpGet]
     public async Task<IActionResult> Logout()
     {
         try
         {
-            //РїСЂРѕРІРµСЂСЏРµРј Р±Р»РѕРєРёСЂРѕРІРєСѓ
+            //проверяем блокировку
             var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString();
             if (await securityService.IsBlocked(HttpContext?.Connection?.RemoteIpAddress?.ToString()))
                 return StatusCode(403);
 
-            //РїРѕР»СѓС‡Р°РµРј РѕР±СЉРµРєС‚ СЃРµСЃСЃРёРё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°
+            //получаем объект сессии администратора
             var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
 
-            //РµСЃР»Рё СЃРµСЃСЃРёРё РЅРµС‚ РёР»Рё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ РЅРµ Р°РІС‚РѕСЂРёР·РѕРІР°РЅ СЂРµРґРёСЂРµРєС‚РёРј РЅР° РіР»Р°РІРЅСѓСЋ СЃС‚СЂР°РЅРёС†Сѓ
+            //если сессии нет или администратор не авторизован редиректим на главную страницу
             if (adminSession is not { IsAuth: true }) return Redirect("~/");
 
-            //СЂР°Р·СЂСѓС€Р°РµРј СЃРµСЃСЃРёСЋ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
+            //разрушаем сессию пользователя
             HttpContext.DestroyUserSession();
 
-            //СЂРµРґРёСЂРµРєС‚РёРј РЅР° РіР»Р°РІРЅСѓСЋ
+            //редиректим на главную
             return Redirect("~/");
         }
         catch (Exception exception)
         {
-            //Р»РѕРіРёСЂСѓРµРј РёСЃРєР»СЋС‡РµРЅРёРµ
+            //логируем исключение
             exception.LogException();
 
-            //РѕС‚РґР°РµРј 404 РѕС€РёР±РєСѓ
+            //отдаем 404 ошибку
             return StatusCode(404);
         }
     }
@@ -1622,21 +1622,21 @@ public class HomeController : Controller
     {
         try
         {
-            //РїСЂРѕРІРµСЂСЏРµРј Р±Р»РѕРєРёСЂРѕРІРєСѓ
+            //проверяем блокировку
             var ip = HttpContext?.Connection?.RemoteIpAddress?.ToString();
             if (await securityService.IsBlocked(HttpContext?.Connection?.RemoteIpAddress?.ToString()))
                 return StatusCode(403);
 
-            //РѕС‚РґР°РµРј СЃС‚СЂР°РЅРёС†Сѓ РѕС€РёР±РєРё
+            //отдаем страницу ошибки
             return View(new MainModel(null, null)
             { ShowLeftSide = false });
         }
         catch (Exception exception)
         {
-            //Р»РѕРіРёСЂСѓРµРј РёСЃРєР»СЋС‡РµРЅРёРµ
+            //логируем исключение
             exception.LogException();
 
-            //РѕС‚РґР°РµРј 404 РѕС€РёР±РєСѓ
+            //отдаем 404 ошибку
             return StatusCode(404);
         }
     }

@@ -13,14 +13,14 @@ using LizeriumUtilities.FormatsData.DataBase.Response;
 namespace Api.LizeriumServer.Models;
 
 /// <summary>
-/// РћР±СЉРµРєС‚ РјРѕРґРµР»Рё РґР»СЏ РїРµСЂРµРґР°С‡Рё РІРѕ View
+/// Объект модели для передачи во View
 /// </summary>
 public class MainModel
 {
     /// <summary>
-    /// РўРѕС‡РєР° РІС…РѕРґР°
+    /// Точка входа
     /// </summary>
-    /// <param name="posts">РЎРїРёСЃРѕРє РїРѕСЃС‚РѕРІ</param>
+    /// <param name="posts">Список постов</param>
     public MainModel(List<PostDataResponse> posts, List<CommandDataResponse> commands,
         List<AdminCommandWithTranslations> translationsCommand = null)
     {
@@ -45,32 +45,32 @@ public class MainModel
     }
 
     /// <summary>
-    /// Р¤Р»Р°Рі РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ LeftSide
+    /// Флаг отображения LeftSide
     /// </summary>
     public bool ShowLeftSide { get; init; }
 
     /// <summary>
-    /// РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
+    /// Идентификатор пользователя
     /// </summary>
     public long IdUser { get; init; }
 
     /// <summary>
-    /// Р”Р°РЅРЅС‹Рµ СЃС‚Р°С‚РёСЃС‚РёРєРё
+    /// Данные статистики
     /// </summary>
     public List<MonitorData> MonitorData { get; set; }
 
     /// <summary>
-    /// РџРѕС‡Р°СЃРѕРІР°СЏ СЃС‚Р°С‚РёСЃС‚РёРєР° РјРѕРЅРёС‚РѕСЂРёРЅРіР° Р·Р° СЃСѓС‚РєРё
+    /// Почасовая статистика мониторинга за сутки
     /// </summary>
     public List<MonitorHourlyData> MonitorHourlyData { get; set; } = new();
 
     /// <summary>
-    /// Р”Р°РЅРЅС‹Рµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
+    /// Данные пользователя
     /// </summary>
     public List<MonitorData> UserDataStats { get; set; }
 
     /// <summary>
-    /// РљРѕР»РёС‡РµСЃС‚РІРѕ РїРѕСЃРµС‰РµРЅРёР№ Р·Р° РґРµРЅСЊ
+    /// Количество посещений за день
     /// </summary>
     public int AllUsersPerDay { get; set; }
 
@@ -97,7 +97,7 @@ public class MainModel
     public List<string> CommandCategories { get; set; } = new();
 
     /// <summary>
-    /// РќРѕРІРѕСЃС‚Рё Lizerium Steam.
+    /// Новости Lizerium Steam.
     /// </summary>
     public List<LauncherNewsDataResponse> LauncherNews { get; set; } = new();
 
@@ -120,17 +120,17 @@ public class MainModel
     public List<ProductCategoryDataResponse> ProductCatalog { get; set; } = new();
 
     /// <summary>
-    /// РћР±СЉРµРєС‚ РґР°РЅРЅС‹С… Рѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏС…
+    /// Объект данных о пользователях
     /// </summary>
     public DataPosts Posts { get; init; }
 
     /// <summary>
-    /// РћР±СЉРµРєС‚ РґР°РЅРЅС‹С…
+    /// Объект данных
     /// </summary>
     public DataCommands Commands { get; init; }
 
     /// <summary>
-    /// Р’РµСЂСЃРёСЏ API
+    /// Версия API
     /// </summary>
     public string Version { get; init; }
 }

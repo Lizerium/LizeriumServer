@@ -27,76 +27,76 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 namespace LizeriumDatabase.Services.AppDataBaseService.Implements;
 
 /// <summary>
-/// РљРѕРЅС‚РµРєСЃС‚ СЂР°Р±РѕС‚С‹ СЃ Р‘Р”
+/// Контекст работы с БД
 /// </summary>
 public partial class DataBaseService : DbContext, IDataBaseService
 {
     private readonly DbContextOptions _context;
 
     /// <summary>
-    /// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ
+    /// Конструктор
     /// </summary>
     /// <param name="options"></param>
     public DataBaseService(DbContextOptions<DataBaseService> options) : base(options) { _context = options; }
 
     /// <summary>
-    /// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚Р°Р±Р»РёС†С‹ РїРѕСЃС‚РѕРІ
+    /// Инициализация таблицы постов
     /// </summary>
     public DbSet<PostDataResponse> Posts { get; set; }
 
     /// <summary>
-    /// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚Р°Р±Р»РёС†С‹ РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№
+    /// Инициализация таблицы пользователей
     /// </summary>
     public DbSet<UserApiKeyResponse> Users { get; set; }
 
     /// <summary>
-    /// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚Р°Р±Р»РёС†С‹ РєРѕРјР°РЅРґ
+    /// Инициализация таблицы команд
     /// </summary>
     public DbSet<CommandDataResponse> Commands { get; set; }
 
     /// <summary>
-    /// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚Р°Р±Р»РёС†С‹ РїРѕРґСЂРѕР±РЅРѕР№ РёРЅС„РѕСЂРјР°С†РёРё Рѕ РєРѕРјР°РЅРґР°С…
+    /// Инициализация таблицы подробной информации о командах
     /// </summary>
     public DbSet<CommandCategoryInfoResponse> CommandCategories { get; set; }
 
     /// <summary>
-    /// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚Р°Р±Р»РёС†С‹ РїРѕРґСЂРѕР±РЅРѕР№ РёРЅС„РѕСЂРјР°С†РёРё Рѕ РїРµСЂРµРІРѕРґР°С… РІСЃРµС… РєРѕРјРјР°РЅРґ
+    /// Инициализация таблицы подробной информации о переводах всех комманд
     /// </summary>
     public DbSet<CommandTranslation> CommandsTranslations { get; set; }
 
     /// <summary>
-    /// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚Р°Р±Р»РёС†С‹ РЅРѕРІРѕСЃС‚РµР№ Lizerium Steam
+    /// Инициализация таблицы новостей Lizerium Steam
     /// </summary>
     public DbSet<LauncherNewsDataResponse> LauncherNews { get; set; }
 
     /// <summary>
-    /// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚Р°Р±Р»РёС†С‹ РєР°С‚РµРіРѕСЂРёР№ РїСЂРѕРґСѓРєС‚РѕРІ
+    /// Инициализация таблицы категорий продуктов
     /// </summary>
     public DbSet<ProductCategoryDataResponse> ProductCategories { get; set; }
 
     /// <summary>
-    /// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚Р°Р±Р»РёС†С‹ РїСЂРѕРґСѓРєС‚РѕРІ
+    /// Инициализация таблицы продуктов
     /// </summary>
     public DbSet<ProductDataResponse> Products { get; set; }
 
     /// <summary>
-    /// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С‚Р°Р±Р»РёС†С‹ РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРєР°С‡РёРІР°РЅРёСЏ РїСЂРѕРґСѓРєС‚РѕРІ
+    /// Инициализация таблицы источников скачивания продуктов
     /// </summary>
     public DbSet<ProductDownloadLinkDataResponse> ProductDownloadLinks { get; set; }
 
     /// <summary>
-    /// РЎРѕР±С‹С‚РёРµ СЃРѕР·РґР°РЅРёСЏ РјРѕРґРµР»Рё
+    /// Событие создания модели
     /// </summary>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<PostDataResponse>().ToTable("posts"); // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РёРјСЏ С‚Р°Р±Р»РёС†С‹ posts
-        modelBuilder.Entity<UserApiKeyResponse>().ToTable("users"); // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РёРјСЏ С‚Р°Р±Р»РёС†С‹ users
-        modelBuilder.Entity<CommandDataResponse>().ToTable("commands"); // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РёРјСЏ С‚Р°Р±Р»РёС†С‹ commands
-        modelBuilder.Entity<CommandCategoryInfoResponse>().ToTable("commandCategories"); // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РёРјСЏ С‚Р°Р±Р»РёС†С‹ commandCategories
-        modelBuilder.Entity<CommandTranslation>().ToTable("command_translations"); // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РёРјСЏ С‚Р°Р±Р»РёС†С‹ command_translations
-        modelBuilder.Entity<LauncherNewsDataResponse>().ToTable("launcher_news"); // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РёРјСЏ С‚Р°Р±Р»РёС†С‹ launcher_news
+        modelBuilder.Entity<PostDataResponse>().ToTable("posts"); // Устанавливаем имя таблицы posts
+        modelBuilder.Entity<UserApiKeyResponse>().ToTable("users"); // Устанавливаем имя таблицы users
+        modelBuilder.Entity<CommandDataResponse>().ToTable("commands"); // Устанавливаем имя таблицы commands
+        modelBuilder.Entity<CommandCategoryInfoResponse>().ToTable("commandCategories"); // Устанавливаем имя таблицы commandCategories
+        modelBuilder.Entity<CommandTranslation>().ToTable("command_translations"); // Устанавливаем имя таблицы command_translations
+        modelBuilder.Entity<LauncherNewsDataResponse>().ToTable("launcher_news"); // Устанавливаем имя таблицы launcher_news
         modelBuilder.Entity<ProductCategoryDataResponse>().ToTable("product_categories");
         modelBuilder.Entity<ProductDataResponse>().ToTable("products");
         modelBuilder.Entity<ProductDownloadLinkDataResponse>().ToTable("product_download_links");
@@ -115,7 +115,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РЎРѕР·РґР°С‚СЊ РєРѕРјР°РЅРґСѓ
+    /// Создать команду
     /// </summary>
     public async Task<bool> AddCommandAsync(CreateCommandViewRequest Command, bool checkSecureOperate = true)
     {
@@ -147,7 +147,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РЈРґР°Р»РёС‚СЊ РєРѕРјР°РЅРґСѓ Рё РµС‘ РїРµСЂРµРІРѕРґС‹
+    /// Удалить команду и её переводы
     /// </summary>
     public async Task<bool> DeleteCommandAndTranslationsAsync(CreateCommandViewRequest Command, bool checkSecureOperate = true)
     {
@@ -157,33 +157,33 @@ public partial class DataBaseService : DbContext, IDataBaseService
 
 
 
-            // РќР°С‡РёРЅР°РµРј С‚СЂР°РЅР·Р°РєС†РёСЋ РґР»СЏ Р±РµР·РѕРїР°СЃРЅРѕСЃС‚Рё
+            // Начинаем транзакцию для безопасности
             await using var transaction = await Database.BeginTransactionAsync();
 
             var translation = await CommandsTranslations.FindAsync(commandId);
             var command = await Commands.FindAsync(commandId);
             if (command != null)
             {
-                // РћС‚РІСЏР·С‹РІР°РµРј РѕС‚ С‚СЂРµРєРёРЅРіР°, РµСЃР»Рё РЅСѓР¶РЅРѕ
+                // Отвязываем от трекинга, если нужно
                 Entry(command).State = EntityState.Detached;
 
                 if (translation != null)
                     Entry(translation).State = EntityState.Detached;
 
-                // РЈРґР°Р»СЏРµРј С‡РµСЂРµР· SQL РёР»Рё РЅР°РїСЂСЏРјСѓСЋ
+                // Удаляем через SQL или напрямую
                 await Database.ExecuteSqlInterpolatedAsync($@"
                     DELETE FROM command_translations WHERE CommandId = {commandId};
                     DELETE FROM commands WHERE Id = {commandId};
                 ");
             }
 
-            // 2пёЏвѓЈ РЈРґР°Р»СЏРµРј РєРѕРјР°РЅРґСѓ
+            // 2️⃣ Удаляем команду
             await Database.ExecuteSqlInterpolatedAsync($@"
                     DELETE FROM commands
                     WHERE Id = {commandId};
                 ");
 
-            // Р¤РёРєСЃРёСЂСѓРµРј РёР·РјРµРЅРµРЅРёСЏ
+            // Фиксируем изменения
             await transaction.CommitAsync();
 
             Console.WriteLine($"Command {commandId} and its translations deleted successfully!");
@@ -197,7 +197,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// Р”РѕР±Р°РІР»РµРЅРёРµ РєР°С‚РµРіРѕСЂРёРё РєРѕРјР°РЅРґ (РёРЅС„РѕСЂРјР°С†РёРё Рѕ РЅРµР№)
+    /// Добавление категории команд (информации о ней)
     /// </summary>
     public async Task<bool> AddCategoryAsync(CategoriesCommands category, bool checkSecureOperate = true)
     {
@@ -206,7 +206,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
             if (checkSecureOperate)
                 await ExistAndCreateCommandsTable();
 
-            // Р‘РµСЂС‘Рј СЂСѓСЃСЃРєРёР№ Рё Р°РЅРіР»РёР№СЃРєРёР№ Р·Р°РіРѕР»РѕРІРѕРє
+            // Берём русский и английский заголовок
             string nameRu = category.Title.FirstOrDefault(t => !string.IsNullOrEmpty(t.Russian))?.Russian ?? category.Name;
             string nameEn = category.Title.FirstOrDefault(t => !string.IsNullOrEmpty(t.English))?.English ?? category.Name;
 
@@ -232,7 +232,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РР·РјРµРЅРёС‚СЊ РєРѕРјР°РЅРґСѓ
+    /// Изменить команду
     /// </summary>
     public async Task<bool> ChangeCommandAsync(CreateCommandViewRequest Command, bool checkSecureOperate = true)
     {
@@ -265,11 +265,11 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РЎРѕС…СЂР°РЅРёС‚СЊ РєРѕРјР°РЅРґСѓ СЃ GIF СЃСЃС‹Р»РєРѕР№ РЅР° С„Р°Р№Р»
+    /// Сохранить команду с GIF ссылкой на файл
     /// </summary>
-    /// <param name="fileName">РРјСЏ GIF С„Р°Р№Р»Р°</param>
-    /// <param name="id">РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєРѕРјР°РЅРґС‹</param>
-    /// <param name="checkSecureOperate">РџСЂРѕРІРµСЂСЏС‚СЊ Р»Рё СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ С‚Р°Р±Р»РёС†С‹</param>
+    /// <param name="fileName">Имя GIF файла</param>
+    /// <param name="id">Идентификатор команды</param>
+    /// <param name="checkSecureOperate">Проверять ли существование таблицы</param>
     /// <returns>bool</returns>
     public async Task<bool> SaveGifCommandAsync(string fileName, string id, bool checkSecureOperate = true)
     {
@@ -286,9 +286,9 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РЎРѕС…СЂР°РЅСЏРµС‚ СЃСЂР°Р·Сѓ РїР°С‡РєСѓ РєРѕРјР°РЅРґ РІ Р±Р°Р·Рµ РґР°РЅРЅС‹С…
+    /// Сохраняет сразу пачку команд в базе данных
     /// </summary>
-    /// <param name="jsonData">РЎС‡РёС‚Р°РЅРЅС‹Р№ РЅР°Р±РѕСЂ РєРѕРјР°РЅРґ РѕС‚СЃРѕСЂС‚РёСЂРѕРІР°РЅРЅС‹Р№ РїРѕ РєР°С‚РµРіРѕСЂРёСЏРј</param>
+    /// <param name="jsonData">Считанный набор команд отсортированный по категориям</param>
     public async Task SaveCommandsFromJsonAsync(CommandsFileRequest jsonData, bool checkSecureOperate = true)
     {
         foreach (var category in jsonData.Data)
@@ -310,9 +310,9 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РЎРѕС…СЂР°РЅСЏРµС‚ СЃСЂР°Р·Сѓ РїР°С‡РєСѓ РєР°С‚РµРіРѕСЂРёР№ РєРѕРјР°РЅРґ РІ Р±Р°Р·Рµ РґР°РЅРЅС‹С…
+    /// Сохраняет сразу пачку категорий команд в базе данных
     /// </summary>
-    /// <param name="jsonData">РЎС‡РёС‚Р°РЅРЅС‹Р№ РЅР°Р±РѕСЂ РєР°С‚РµРіРѕСЂРёР№ РєРѕРјР°РЅРґ РѕС‚СЃРѕСЂС‚РёСЂРѕРІР°РЅРЅС‹Р№ РїРѕ РєР°С‚РµРіРѕСЂРёСЏРј</param>
+    /// <param name="jsonData">Считанный набор категорий команд отсортированный по категориям</param>
     public async Task SaveCategoriesCommandsFromJsonAsync(CommandsFileRequest jsonData, bool checkSecureOperate = true)
     {
         foreach (var category in jsonData.Categories)
@@ -322,7 +322,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ СЃРїРёСЃРѕРє РїРѕСЃС‚РѕРІ РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№
+    /// Получает список постов пользователей
     /// </summary>
     public async Task<List<PostDataResponse>> GetAllAdminPostsAsync()
     {
@@ -339,7 +339,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ СЃРїРёСЃРѕРє РєРѕРјР°РЅРґ
+    /// Получает список команд
     /// </summary>
     public async Task<List<CommandDataResponse>> GetAllAdminCommandsAsync(bool checkSecureOperate = true)
     {
@@ -358,7 +358,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ СЃРїРёСЃРѕРє РїРµСЂРµРІРѕРґРѕРІ РєРѕРјР°РЅРґ
+    /// Получает список переводов команд
     /// </summary>
     public async Task<List<AdminCommandWithTranslations>> GetAllAdminCommandTranslatesAsync(bool checkSecureOperate = true)
     {
@@ -387,10 +387,10 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РџРѕРёСЃРє РїРѕ РєРѕРјР°РЅРґР°Рј
+    /// Поиск по командам
     /// </summary>
-    /// <param name="query">Р—Р°РїСЂРѕСЃ</param>
-    /// <returns>РЎРїРёСЃРѕРє РєРѕРјР°РЅРґ</returns>
+    /// <param name="query">Запрос</param>
+    /// <returns>Список команд</returns>
     public async Task<List<CommandDataResponse>> SearchCommandsAsync(string query, bool checkSecureOperate = true)
     {
         try
@@ -410,7 +410,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
                 select c
             ).Distinct().ToListAsync();
 
-            // РїРѕР»СѓС‡Р°РµРј РІСЃРµ РїРµСЂРµРІРѕРґС‹ РґР»СЏ РєРѕРјР°РЅРґ
+            // получаем все переводы для команд
             foreach (var command in commands)
             {
                 var translations = await GetCommandTranslationsAsync(command.Id);
@@ -422,7 +422,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
                     );
             }
 
-            // РїРѕР»СѓС‡Р°РµРј РІСЃРµ РїРµСЂРµРІРѕРґС‹ РґР»СЏ РєР°С‚РµРіРѕСЂРёР№
+            // получаем все переводы для категорий
             var categoriesInDb = await GetAllCommandCategoriesAsync();
             foreach (var command in commands)
             {
@@ -445,9 +445,9 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РџРѕР»СѓС‡РµРЅРёРµ СЃРїРёСЃРєР° РєРѕРјР°РЅРґ РїРѕ РєР°С‚РµРіРѕСЂРёРё
+    /// Получение списка команд по категории
     /// </summary>
-    /// <param name="checkSecureOperate">РџСЂРѕРІРµСЂСЏС‚СЊ Р»Рё СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ С‚Р°Р±Р»РёС†С‹</param>
+    /// <param name="checkSecureOperate">Проверять ли существование таблицы</param>
     /// <returns>List<string></returns>
     public async Task<List<CommandCategoryInfoResponse>> GetAllCommandCategoriesAsync(bool checkSecureOperate = true)
     {
@@ -456,7 +456,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
             if (checkSecureOperate)
                 await ExistAndCreateCommandsTable();
 
-            // Р‘РµСЂС‘Рј РІСЃРµ РєР°С‚РµРіРѕСЂРёРё РЅР°РїСЂСЏРјСѓСЋ РёР· С‚Р°Р±Р»РёС†С‹
+            // Берём все категории напрямую из таблицы
             var categories = await CommandCategories
                 .ToListAsync();
 
@@ -470,13 +470,13 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ РІСЃРµ РєРѕРјР°РЅРґС‹ РїРѕ РєР°С‚РµРіРѕСЂРёРё
+    /// Получает все команды по категории
     /// </summary>
-    /// <param name="Category">РљР°С‚РµРіРѕСЂРёСЏ РёРјСЏ</param>
-    /// <param name="Page">РЎС‚СЂР°РЅРёС†Р°</param>
-    /// <param name="Size">РљРѕР»РёС‡РµСЃС‚РІРѕ</param>
-    /// <param name="checkSecureOperate">РџСЂРѕРІРµСЂСЏС‚СЊ Р»Рё СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ С‚Р°Р±Р»РёС†С‹</param>
-    /// <param name="shortSize">РћРіСЂР°РЅРёС‡РµРЅРёСЏ РІРєР»СЋС‡РµРЅС‹ РёР»Рё РІС‹РєР»СЋС‡РµРЅС‹</param>
+    /// <param name="Category">Категория имя</param>
+    /// <param name="Page">Страница</param>
+    /// <param name="Size">Количество</param>
+    /// <param name="checkSecureOperate">Проверять ли существование таблицы</param>
+    /// <param name="shortSize">Ограничения включены или выключены</param>
     /// <returns></returns>
     public async Task<List<CommandDataResponse>> GetCommandsAsync(string Category, int Page = 1, int Size = 10, bool checkSecureOperate = true,
         bool shortSize = true)
@@ -488,18 +488,18 @@ public partial class DataBaseService : DbContext, IDataBaseService
 
             IQueryable<CommandDataResponse> query = Commands
                 .Where(c => c.Category == Category)
-                .OrderBy(c => c.Id); // РІРѕР·РІСЂР°С‰Р°РµС‚ IOrderedQueryable, РЅРѕ СЌС‚Рѕ РѕРє РґР»СЏ IQueryable
+                .OrderBy(c => c.Id); // возвращает IOrderedQueryable, но это ок для IQueryable
 
             if (shortSize)
             {
                 if (Page < 1) Page = 1;
                 if (Size < 1) Size = 10;
-                query = query.Skip((Page - 1) * Size).Take(Size); // С‚РёРї IQueryable<CommandDataResponse>
+                query = query.Skip((Page - 1) * Size).Take(Size); // тип IQueryable<CommandDataResponse>
             }
 
             var commands = await query.ToListAsync();
 
-            // РјР°РїРїРёРј РЅР° CommandDataResponse
+            // маппим на CommandDataResponse
             var result = commands.Select(c => new CommandDataResponse
             {
                 Id = c.Id,
@@ -546,10 +546,10 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ РєРѕР»РёС‡РµСЃС‚РІРѕ РєРѕРјР°РЅРґ РІ РєР°С‚РµРіРѕСЂРёРё
+    /// Получает количество команд в категории
     /// </summary>
-    /// <param name="Category">РљР°С‚РµРіРѕСЂРёСЏ РёРјСЏ</param>
-    /// <param name="checkSecureOperate">РџСЂРѕРІРµСЂСЏС‚СЊ Р»Рё СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ С‚Р°Р±Р»РёС†С‹</param>
+    /// <param name="Category">Категория имя</param>
+    /// <param name="checkSecureOperate">Проверять ли существование таблицы</param>
     /// <returns>int</returns>
     public async Task<int> GetCommandsCountAsync(string Category, bool checkSecureOperate = true)
     {
@@ -568,10 +568,10 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РџРѕР»СѓС‡РёС‚СЊ РєРѕРјР°РЅРґС‹ Р±РµР· РїРµСЂРµРІРѕРґР°.
+    /// Получить команды без перевода.
     /// </summary>
     /// <param name="toLang">en</param>
-    /// <returns>РЎРїРёСЃРѕРє РєРѕРјР°РЅРґ</returns>
+    /// <returns>Список команд</returns>
     public async Task<List<CommandTranslationResponse>> GetCommandsMissingTranslationAsync(string toLang)
     {
         var missing = await Commands
@@ -589,7 +589,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РЎРѕС…СЂР°РЅРµРЅРёРµ/РѕР±РЅРѕРІР»РµРЅРёРµ РєРѕРјР°РЅРґС‹ РІ Р‘Р” (SQLite РІРµСЂСЃРёСЏ)
+    /// Сохранение/обновление команды в БД (SQLite версия)
     /// </summary>
     public async Task SaveCommandTranslationsAsync(AdminCommandWithTranslations command)
     {
@@ -597,7 +597,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
         {
             foreach (var translation in command.Translations)
             {
-                // SQLite РїРѕРґРґРµСЂР¶РёРІР°РµС‚ "INSERT OR REPLACE" РґР»СЏ РѕР±РЅРѕРІР»РµРЅРёСЏ РёР»Рё РІСЃС‚Р°РІРєРё
+                // SQLite поддерживает "INSERT OR REPLACE" для обновления или вставки
                 await Database.ExecuteSqlInterpolatedAsync($@"
                 INSERT INTO command_translations (CommandId, LanguageCode, Description)
                 VALUES ({translation.CommandId}, {translation.LanguageCode}, {translation.Description.Trim()})
@@ -624,26 +624,26 @@ public partial class DataBaseService : DbContext, IDataBaseService
 
 
     /// <summary>
-    /// РЎРѕС…СЂР°РЅРµРЅРёРµ РІСЃРµС… РїРµСЂРµРІРѕРґРѕРІ РІ Р‘Р”
+    /// Сохранение всех переводов в БД
     /// </summary>
-    /// <param name="commandTranslations">РЎРїРёСЃРѕРє DTO РїРµСЂРµРІРѕРґРѕРІ</param>
-    /// <returns>РЎС‚Р°С‚СѓСЃ РѕРїРµСЂР°С†РёРё</returns>
+    /// <param name="commandTranslations">Список DTO переводов</param>
+    /// <returns>Статус операции</returns>
     public async Task<bool> SaveAllCommandsTranslationsAsync(List<CommandTranslationResponse> commandTranslations)
     {
         foreach (var dto in commandTranslations)
         {
-            // РџСЂРѕРІРµСЂСЏРµРј, РµСЃС‚СЊ Р»Рё СѓР¶Рµ РїРµСЂРµРІРѕРґ РґР»СЏ СЌС‚РѕР№ РєРѕРјР°РЅРґС‹ Рё СЏР·С‹РєР°
+            // Проверяем, есть ли уже перевод для этой команды и языка
             var existing = await CommandsTranslations
                 .FirstOrDefaultAsync(t => t.CommandId == dto.CommandId && t.LanguageCode == dto.LanguageCode);
 
             if (existing != null)
             {
-                // РћР±РЅРѕРІР»СЏРµРј РѕРїРёСЃР°РЅРёРµ
+                // Обновляем описание
                 existing.Description = dto.Description;
             }
             else
             {
-                // РЎРѕР·РґР°С‘Рј РЅРѕРІСѓСЋ Р·Р°РїРёСЃСЊ
+                // Создаём новую запись
                 CommandsTranslations.Add(new CommandTranslation()
                 {
                     CommandId = dto.CommandId,
@@ -659,7 +659,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РџСЂРѕРІРµСЂСЏРµС‚ СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ С‚Р°Р±Р»РёС†С‹ РЅРѕРІРѕСЃС‚РµР№ Рё СЃРѕР·РґР°РµС‚ РµРµ РїСЂРё РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚Рё.
+    /// Проверяет существование таблицы новостей и создает ее при необходимости.
     /// </summary>
     public async Task ExistAndCreateLauncherNewsTable()
     {
@@ -718,7 +718,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
             {
                 new()
                 {
-                    TitleRu = "РџСЂРµРґСЃС‚РѕСЏС‰РёРµ РѕР±РЅРѕРІР»РµРЅРёСЏ РІ 99.5.1 Freelancer Lizerium",
+                    TitleRu = "Предстоящие обновления в 99.5.1 Freelancer Lizerium",
                     TitleEn = "Upcoming updates in 99.5.1 Freelancer Lizerium",
                     RutubeUrl = "https://rutube.ru/video/166b1de79791472c13f79c24838847c3/",
                     IsPublished = true,
@@ -727,7 +727,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
                 },
                 new()
                 {
-                    TitleRu = "РћС„РёС†РёР°Р»СЊРЅС‹Р№ СЂСѓСЃСЃРєРѕСЏР·С‹С‡РЅС‹Р№ С‚СЂРµР№Р»РµСЂ РёРіСЂС‹ Freelancer Lizerium",
+                    TitleRu = "Официальный русскоязычный трейлер игры Freelancer Lizerium",
                     TitleEn = "Official Russian trailer of Freelancer Lizerium",
                     RutubeUrl = "https://rutube.ru/video/f7359c52b38dbfd9eab1426349de6571/",
                     IsPublished = true,
@@ -736,7 +736,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
                 },
                 new()
                 {
-                    TitleRu = "Р”РµРјРѕРЅСЃС‚СЂР°С†РёСЏ РІС‚РѕСЂРѕР№ РІРµСЂСЃРёРё РїРѕР»РµС‚Р°, СЌС„С„РµРєС‚РѕРІ, Р·РІСѓРєРѕРІ Freelancer Lizerium (Unity ver.)",
+                    TitleRu = "Демонстрация второй версии полета, эффектов, звуков Freelancer Lizerium (Unity ver.)",
                     TitleEn = "Second flight, effects and sound demo for Freelancer Lizerium (Unity ver.)",
                     RutubeUrl = "https://rutube.ru/video/da9bd6b780314bb96ca23b10110dcfd9/",
                     IsPublished = true,
@@ -745,7 +745,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
                 },
                 new()
                 {
-                    TitleRu = "РџРµСЂРІРѕРµ РёСЃРїС‹С‚Р°РЅРёРµ С‚СЂРµР№Р»РѕРІ РІРѕ Freelancer Lizerium (Unity ver.)",
+                    TitleRu = "Первое испытание трейлов во Freelancer Lizerium (Unity ver.)",
                     TitleEn = "First trail test in Freelancer Lizerium (Unity ver.)",
                     RutubeUrl = "https://rutube.ru/video/0f20131048cc69a38337431fafdc4597/",
                     IsPublished = true,
@@ -810,7 +810,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ РѕРїСѓР±Р»РёРєРѕРІР°РЅРЅС‹Рµ РЅРѕРІРѕСЃС‚Рё Lizerium Steam.
+    /// Получает опубликованные новости Lizerium Steam.
     /// </summary>
     public async Task<List<LauncherNewsDataResponse>> GetPublishedLauncherNewsAsync(bool checkSecureOperate = true)
     {
@@ -834,7 +834,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ РІСЃРµ РЅРѕРІРѕСЃС‚Рё РґР»СЏ Р°РґРјРёРЅРєРё.
+    /// Получает все новости для админки.
     /// </summary>
     public async Task<List<LauncherNewsDataResponse>> GetAllAdminLauncherNewsAsync(bool checkSecureOperate = true)
     {
@@ -857,7 +857,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ РѕРґРЅСѓ РЅРѕРІРѕСЃС‚СЊ РґР»СЏ Р·Р°РєСЂС‹С‚РѕРіРѕ Р°РґРјРёРЅСЃРєРѕРіРѕ РїСЂРµРґРїСЂРѕСЃРјРѕС‚СЂР°, РІРєР»СЋС‡Р°СЏ СЃРєСЂС‹С‚С‹Рµ С‡РµСЂРЅРѕРІРёРєРё.
+    /// Получает одну новость для закрытого админского предпросмотра, включая скрытые черновики.
     /// </summary>
     public async Task<LauncherNewsDataResponse> GetAdminLauncherNewsByIdAsync(int id, bool checkSecureOperate = true)
     {
@@ -878,7 +878,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// Р”РѕР±Р°РІР»СЏРµС‚ РёР»Рё РѕР±РЅРѕРІР»СЏРµС‚ РЅРѕРІРѕСЃС‚СЊ.
+    /// Добавляет или обновляет новость.
     /// </summary>
     public async Task<bool> SaveLauncherNewsAsync(LauncherNewsDataResponse news, bool checkSecureOperate = true)
     {
@@ -935,7 +935,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РЈРґР°Р»СЏРµС‚ РЅРѕРІРѕСЃС‚СЊ.
+    /// Удаляет новость.
     /// </summary>
     public async Task<bool> DeleteLauncherNewsAsync(int id, bool checkSecureOperate = true)
     {
@@ -985,7 +985,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ РѕРїСѓР±Р»РёРєРѕРІР°РЅРЅС‹Р№ РєР°С‚Р°Р»РѕРі РїСЂРѕРґСѓРєС‚РѕРІ РґР»СЏ РїСѓР±Р»РёС‡РЅРѕР№ РІРёС‚СЂРёРЅС‹.
+    /// Получает опубликованный каталог продуктов для публичной витрины.
     /// </summary>
     public async Task<List<ProductCategoryDataResponse>> GetPublishedProductCatalogAsync(bool checkSecureOperate = true)
     {
@@ -1034,7 +1034,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ РїРѕР»РЅС‹Р№ РєР°С‚Р°Р»РѕРі РїСЂРѕРґСѓРєС‚РѕРІ РґР»СЏ Р°РґРјРёРЅРєРё.
+    /// Получает полный каталог продуктов для админки.
     /// </summary>
     public async Task<List<ProductCategoryDataResponse>> GetAllAdminProductCatalogAsync(bool checkSecureOperate = true)
     {
@@ -1078,7 +1078,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// Р”РѕР±Р°РІР»СЏРµС‚ РёР»Рё РѕР±РЅРѕРІР»СЏРµС‚ РєР°С‚РµРіРѕСЂРёСЋ РїСЂРѕРґСѓРєС‚РѕРІ.
+    /// Добавляет или обновляет категорию продуктов.
     /// </summary>
     public async Task<bool> SaveProductCategoryAsync(ProductCategoryDataResponse category, bool checkSecureOperate = true)
     {
@@ -1119,7 +1119,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РЈРґР°Р»СЏРµС‚ РєР°С‚РµРіРѕСЂРёСЋ РїСЂРѕРґСѓРєС‚РѕРІ.
+    /// Удаляет категорию продуктов.
     /// </summary>
     public async Task<bool> DeleteProductCategoryAsync(int id, bool checkSecureOperate = true)
     {
@@ -1148,7 +1148,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// Р”РѕР±Р°РІР»СЏРµС‚ РёР»Рё РѕР±РЅРѕРІР»СЏРµС‚ РїСЂРѕРґСѓРєС‚.
+    /// Добавляет или обновляет продукт.
     /// </summary>
     public async Task<bool> SaveProductAsync(ProductDataResponse product, bool checkSecureOperate = true)
     {
@@ -1188,7 +1188,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РЈРґР°Р»СЏРµС‚ РїСЂРѕРґСѓРєС‚.
+    /// Удаляет продукт.
     /// </summary>
     public async Task<bool> DeleteProductAsync(int id, bool checkSecureOperate = true)
     {
@@ -1216,7 +1216,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// Р”РѕР±Р°РІР»СЏРµС‚ РёР»Рё РѕР±РЅРѕРІР»СЏРµС‚ РёСЃС‚РѕС‡РЅРёРє СЃРєР°С‡РёРІР°РЅРёСЏ РїСЂРѕРґСѓРєС‚Р°.
+    /// Добавляет или обновляет источник скачивания продукта.
     /// </summary>
     public async Task<bool> SaveProductDownloadLinkAsync(ProductDownloadLinkDataResponse link, bool checkSecureOperate = true)
     {
@@ -1255,7 +1255,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РЈРґР°Р»СЏРµС‚ РёСЃС‚РѕС‡РЅРёРє СЃРєР°С‡РёРІР°РЅРёСЏ РїСЂРѕРґСѓРєС‚Р°.
+    /// Удаляет источник скачивания продукта.
     /// </summary>
     public async Task<bool> DeleteProductDownloadLinkAsync(int id, bool checkSecureOperate = true)
     {
@@ -1382,7 +1382,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
                 );
                 ");
 
-            // РњРёРіСЂР°С†РёСЏ С‚РµРєСѓС‰РёС… РґР°РЅРЅС‹С… РІ С‚Р°Р±Р»РёС†Сѓ РїРµСЂРµРІРѕРґРѕРІ (СЂСѓСЃСЃРєРёР№ СЏР·С‹Рє)
+            // Миграция текущих данных в таблицу переводов (русский язык)
             await Database.ExecuteSqlRawAsync(@"
                 INSERT INTO command_translations (CommandId, LanguageCode, Description)
                 SELECT Id, 'ru', Description
@@ -1422,7 +1422,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ СЃРїРёСЃРѕРє РїРѕСЃС‚РѕРІ РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№
+    /// Получает список постов пользователей
     /// </summary>
     public async Task<List<PostDataResponse>> GetAllPostsAsync()
     {
@@ -1439,21 +1439,21 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ СЃРїРёСЃРѕРє РїРѕСЃС‚РѕРІ РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№
+    /// Получает список постов пользователей
     /// </summary>
-    /// <param name="id">РљСЂР°Р№РЅРёР№ РїРѕСЃС‚</param>
-    /// <param name="status">СЃС‚Р°С‚СѓСЃ</param>
-    /// <param name="scroll">СЃРєСЂРѕР»РёРЅРіРѕРј Р»Рё Р·Р°РіСЂСѓР·РєР° РёР»Рё С„РёР»СЊС‚СЂС‹</param>
+    /// <param name="id">Крайний пост</param>
+    /// <param name="status">статус</param>
+    /// <param name="scroll">скролингом ли загрузка или фильтры</param>
     public async Task<DataPosts> GetAllPostsAsync(int id, int status, bool scroll = false)
     {
         try
         {
             if (!scroll && id == 0 && status == 0)
             {
-                var postsNullIndex = await Posts.OrderBy(post => post.Id) // РЎРѕСЂС‚РёСЂСѓРµРј РїРѕ РІРѕР·СЂР°СЃС‚Р°РЅРёСЋ Id
+                var postsNullIndex = await Posts.OrderBy(post => post.Id) // Сортируем по возрастанию Id
                                               .OrderBy(post => post.DateTimeUnix)
-                                              .Reverse() // РџРµСЂРµРІРѕСЂР°С‡РёРІР°РµРј РїРѕСЂСЏРґРѕРє
-                                              .Take(10) // РћРіСЂР°РЅРёС‡РёРІР°РµРј РІС‹Р±РѕСЂРєСѓ 10 РїРѕСЃС‚Р°РјРё
+                                              .Reverse() // Переворачиваем порядок
+                                              .Take(10) // Ограничиваем выборку 10 постами
                                               .ToListAsync();
 
                 return new DataPosts()
@@ -1466,8 +1466,8 @@ public partial class DataBaseService : DbContext, IDataBaseService
             {
                 var postsNullIndex = await Posts.Where(post => post.Status == status)
                               .OrderBy(post => post.DateTimeUnix)
-                              .Reverse() // РџРµСЂРµРІРѕСЂР°С‡РёРІР°РµРј РїРѕСЂСЏРґРѕРє
-                              .Take(10) // РћРіСЂР°РЅРёС‡РёРІР°РµРј РІС‹Р±РѕСЂРєСѓ 10 РїРѕСЃС‚Р°РјРё
+                              .Reverse() // Переворачиваем порядок
+                              .Take(10) // Ограничиваем выборку 10 постами
                               .ToListAsync();
                 return new DataPosts()
                 {
@@ -1478,11 +1478,11 @@ public partial class DataBaseService : DbContext, IDataBaseService
 
             if (status == 0)
             {
-                var postsNull = await Posts.Where(post => post.Id < id) // Р¤РёР»СЊС‚СЂСѓРµРј РїРѕСЃС‚С‹, id РєРѕС‚РѕСЂС‹С… Р±РѕР»СЊС€Рµ, С‡РµРј lastUserId
-                                                .OrderBy(post => post.Id) // РЎРѕСЂС‚РёСЂСѓРµРј РїРѕ РІРѕР·СЂР°СЃС‚Р°РЅРёСЋ Id
+                var postsNull = await Posts.Where(post => post.Id < id) // Фильтруем посты, id которых больше, чем lastUserId
+                                                .OrderBy(post => post.Id) // Сортируем по возрастанию Id
                                                 .OrderBy(post => post.DateTimeUnix)
-                                                .Reverse() // РџРµСЂРµРІРѕСЂР°С‡РёРІР°РµРј РїРѕСЂСЏРґРѕРє
-                                                .Take(10) // РћРіСЂР°РЅРёС‡РёРІР°РµРј РІС‹Р±РѕСЂРєСѓ 10 РїРѕСЃС‚Р°РјРё
+                                                .Reverse() // Переворачиваем порядок
+                                                .Take(10) // Ограничиваем выборку 10 постами
                                                 .ToListAsync();
 
                 return new DataPosts()
@@ -1492,12 +1492,12 @@ public partial class DataBaseService : DbContext, IDataBaseService
                 };
             }
 
-            // Р¤РёР»СЊС‚СЂСѓРµРј РїРѕСЃС‚С‹, id РєРѕС‚РѕСЂС‹С… Р±РѕР»СЊС€Рµ, С‡РµРј lastUserId
+            // Фильтруем посты, id которых больше, чем lastUserId
             var posts = await Posts.Where(post => post.Id < id && post.Status == status)
-            .OrderBy(post => post.Id) // РЎРѕСЂС‚РёСЂСѓРµРј РїРѕ РІРѕР·СЂР°СЃС‚Р°РЅРёСЋ Id
+            .OrderBy(post => post.Id) // Сортируем по возрастанию Id
             .OrderBy(post => post.DateTimeUnix)
-            .Reverse() // РџРµСЂРµРІРѕСЂР°С‡РёРІР°РµРј РїРѕСЂСЏРґРѕРє
-            .Take(10) // РћРіСЂР°РЅРёС‡РёРІР°РµРј РІС‹Р±РѕСЂРєСѓ 10 РїРѕСЃС‚Р°РјРё
+            .Reverse() // Переворачиваем порядок
+            .Take(10) // Ограничиваем выборку 10 постами
             .ToListAsync();
 
             return new DataPosts()
@@ -1514,18 +1514,18 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РџРѕР»СѓС‡Р°РµС‚ СЃРїРёСЃРѕРє РїРѕСЃС‚РѕРІ РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№
+    /// Получает список постов пользователей
     /// </summary>
-    /// <param name="lastUserId">РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєСЂР°Р№РЅРµРіРѕ РїРѕР»СѓС‡РµРЅРЅРѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ</param>
+    /// <param name="lastUserId">Идентификатор крайнего полученного пользователя</param>
     public async Task<DataPosts> GetAllPostsAsync(long lastUserId)
     {
         try
         {
-            var posts = await Posts.Where(post => post.Id < lastUserId) // Р¤РёР»СЊС‚СЂСѓРµРј РїРѕСЃС‚С‹, id РєРѕС‚РѕСЂС‹С… Р±РѕР»СЊС€Рµ, С‡РµРј lastUserId
-                        .OrderBy(post => post.Id) // РЎРѕСЂС‚РёСЂСѓРµРј РїРѕ РІРѕР·СЂР°СЃС‚Р°РЅРёСЋ Id
+            var posts = await Posts.Where(post => post.Id < lastUserId) // Фильтруем посты, id которых больше, чем lastUserId
+                        .OrderBy(post => post.Id) // Сортируем по возрастанию Id
                         .OrderBy(post => post.DateTimeUnix)
-                        .Reverse() // РџРµСЂРµРІРѕСЂР°С‡РёРІР°РµРј РїРѕСЂСЏРґРѕРє
-                        .Take(30) // РћРіСЂР°РЅРёС‡РёРІР°РµРј РІС‹Р±РѕСЂРєСѓ 30 РїРѕСЃС‚Р°РјРё
+                        .Reverse() // Переворачиваем порядок
+                        .Take(30) // Ограничиваем выборку 30 постами
                         .ToListAsync();
 
             return new DataPosts()
@@ -1542,10 +1542,10 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РћР±РЅРѕРІР»СЏРµС‚ СЃС‚Р°С‚СѓСЃ Р·Р°СЏРІРєРё РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
+    /// Обновляет статус заявки пользователя
     /// </summary>
-    /// <param name="lastUserId">РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РїРѕСЃС‚Р° РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ</param>
-    /// <param name="status">РЎС‚Р°С‚СѓСЃ РѕР±СЂР°Р±РѕС‚РєРё</param>
+    /// <param name="lastUserId">Идентификатор поста пользователя</param>
+    /// <param name="status">Статус обработки</param>
     /// <returns></returns>
     public async Task<bool> UpdateStatusPostAsync(long lastUserId, int status)
     {
@@ -1566,9 +1566,9 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РџСЂРѕРІРµСЂСЏРµС‚ СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ РєР»СЋС‡Р° РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
+    /// Проверяет существование ключа пользователя
     /// </summary>
-    /// <param name="Data">РРЅС„РѕСЂРјР°С†РёСЏ Рѕ РїРѕР»СЊР·РѕРІР°С‚РµР»Рµ</param>
+    /// <param name="Data">Информация о пользователе</param>
     public async Task<bool> IsValidUserApiKeyAsync(UserApiKeyData Data)
     {
         try
@@ -1584,9 +1584,9 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РџСЂРѕРІРµСЂРєР° СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёСЏ С‚Р°Р±Р»РёС†С‹ РїРѕ РёРјРµРЅРё
+    /// Проверка существования таблицы по имени
     /// </summary>
-    /// <param name="tableName">РРјСЏ С‚Р°Р±Р»РёС†С‹</param>
+    /// <param name="tableName">Имя таблицы</param>
     /// <returns>bool</returns>
     public async Task<bool> TableExistsAsync(string tableName)
     {
@@ -1627,7 +1627,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// Р“РµРЅРµСЂРёСЂРѕРІР°С‚СЊ Р±Р°Р·РѕРІСѓСЋ С‚Р°Р±Р»РёС†Сѓ
+    /// Генерировать базовую таблицу
     /// </summary>
     public async Task<bool> AddPostAsync(CreatePostViewRequest Post)
     {
@@ -1652,20 +1652,20 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РЎРѕР·РґР°РЅРёРµ С„Р°Р№Р»Р° Р‘Р”
+    /// Создание файла БД
     /// </summary>
-    /// <param name="optionsBuilder">РћРїС†РёРё</param>
+    /// <param name="optionsBuilder">Опции</param>
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (optionsBuilder.IsConfigured)
-            return; // РЈР¶Рµ РЅР°СЃС‚СЂРѕРµРЅРѕ, РЅРµ С‚СЂРѕРіР°РµРј
+            return; // Уже настроено, не трогаем
 
         try
         {
             var dataSecretRecords = DatabaseExtensions.Configuration.GetValue<string>("path");
             var dir = Path.GetDirectoryName(Environment.ProcessPath);
             var path = Path.Combine(dir, dataSecretRecords);
-            //Р»РѕРіРёСЂСѓРµРј РёСЃРєР»СЋС‡РµРЅРёРµ
+            //логируем исключение
             ("DatabasePath: " + path).LogMessage();
             optionsBuilder.UseSqlite("Data Source=" + path);
         }
@@ -1676,7 +1676,7 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// РЎРѕР·РґР°РЅРёРµ Р‘Р”
+    /// Создание БД
     /// </summary>
     public async Task RebuildAsync()
     {
@@ -1693,18 +1693,18 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
-    /// Р Р°Р·СЂСѓС€РёС‚РµР»СЊ СЃРѕРµРґРёРЅРµРЅРёСЏ Postgresql
+    /// Разрушитель соединения Postgresql
     /// </summary>
     public void Dispose()
     {
         try
         {
-            //СЂР°Р·СЂСѓС€Р°РµРј СЃРѕРµРґРёРЅРµРЅРёРµ Postgresql
+            //разрушаем соединение Postgresql
             Database.CloseConnection();
         }
         catch (Exception exception)
         {
-            //Р»РѕРіРёСЂСѓРµРј РёСЃРєР»СЋС‡РµРЅРёРµ
+            //логируем исключение
             exception.LogException();
         }
         finally

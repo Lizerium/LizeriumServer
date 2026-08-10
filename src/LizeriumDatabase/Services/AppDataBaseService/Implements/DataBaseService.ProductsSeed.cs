@@ -18,9 +18,9 @@ public partial class DataBaseService
         var launcher = new ProductCategoryDataResponse
         {
             Key = "launcher",
-            NameRu = "Р›Р°СѓРЅС‡РµСЂ",
+            NameRu = "Лаунчер",
             NameEn = "Launcher",
-            DescriptionRu = "РћР±РЅРѕРІР»РµРЅРёСЏ Рё Р·Р°РіСЂСѓР·С‡РёРє РїСЂРѕРµРєС‚РѕРІ Lizerium",
+            DescriptionRu = "Обновления и загрузчик проектов Lizerium",
             DescriptionEn = "Updates and downloader for Lizerium projects",
             IconUrl = "/img/pages/game/cat_launcher.webp",
             BackgroundUrl = "/img/pages/home/ecosystem-launcher-bg.webp",
@@ -30,9 +30,9 @@ public partial class DataBaseService
             {
                 new()
                 {
-                    TitleRu = "Р—Р°РіСЂСѓР·С‡РёРє Р›РёР·РµСЂРёСѓРј (Lizerium Steam)",
+                    TitleRu = "Загрузчик Лизериум (Lizerium Steam)",
                     TitleEn = "Lizerium uploader (Lizerium Steam)",
-                    DescriptionRu = "РџСЂРµРґРЅР°Р·РЅР°С‡РµРЅ РґР»СЏ СЃРєР°С‡РёРІР°РЅРёСЏ РѕР±РЅРѕРІР»РµРЅРёР№ РґР»СЏ РґРѕСЃС‚СѓРїРЅС‹С… РёРіСЂ",
+                    DescriptionRu = "Предназначен для скачивания обновлений для доступных игр",
                     DescriptionEn = "Downloads updates for available games",
                     IconUrl = "/img/Main.webp",
                     SortOrder = 10,
@@ -41,7 +41,7 @@ public partial class DataBaseService
                     {
                         new()
                         {
-                            NameRu = "РЎ РџРѕСЂС‚Р°Р»Р°",
+                            NameRu = "С Портала",
                             NameEn = "Portal",
                             Url = "/uploader/projects/download/steam",
                             IconUrl = "/img/Main.webp",
@@ -50,7 +50,7 @@ public partial class DataBaseService
                         },
                         new()
                         {
-                            NameRu = "РСЃС…РѕРґРЅС‹Р№ РєРѕРґ",
+                            NameRu = "Исходный код",
                             NameEn = "Source code",
                             Url = "https://github.com/Lizerium/LizeriumSteam",
                             IconUrl = "/img/social/github.webp",
@@ -74,9 +74,9 @@ public partial class DataBaseService
         var downloads = new ProductCategoryDataResponse
         {
             Key = "downloads",
-            NameRu = "Р§С‚Рѕ РґРѕСЃС‚СѓРїРЅРѕ РґР»СЏ СЃРєР°С‡РёРІР°РЅРёСЏ",
+            NameRu = "Что доступно для скачивания",
             NameEn = "Available downloads",
-            DescriptionRu = "РРіСЂС‹ Рё СЃР±РѕСЂРєРё, РґРѕСЃС‚СѓРїРЅС‹Рµ С‡РµСЂРµР· РїРѕСЂС‚Р°Р»",
+            DescriptionRu = "Игры и сборки, доступные через портал",
             DescriptionEn = "Games and builds available through the portal",
             IconUrl = "/img/pages/game/cat_games.webp",
             BackgroundUrl = "/img/pages/home/ecosystem-projects-bg.webp",
@@ -86,9 +86,9 @@ public partial class DataBaseService
             {
                 new()
                 {
-                    TitleRu = "РРіСЂР° Lizerium",
+                    TitleRu = "Игра Lizerium",
                     TitleEn = "Lizerium game",
-                    DescriptionRu = "РЎР°РјРѕСЃС‚РѕСЏС‚РµР»СЊРЅР°СЏ РёРіСЂР° РЅР° Р±Р°Р·Рµ Freelancer (2003)",
+                    DescriptionRu = "Самостоятельная игра на базе Freelancer (2003)",
                     DescriptionEn = "Standalone game based on Freelancer (2003)",
                     IconUrl = "/img/pages/game/lizerium-game.webp",
                     SortOrder = 10,
@@ -97,7 +97,7 @@ public partial class DataBaseService
                     {
                         new()
                         {
-                            NameRu = "РЇРЅРґРµРєСЃ Р”РёСЃРє",
+                            NameRu = "Яндекс Диск",
                             NameEn = "Yandex Disk",
                             Url = "/uploader/projects/download/lizerium_game",
                             IconUrl = "/img/social/yandex_disk.webp",
@@ -117,9 +117,9 @@ public partial class DataBaseService
                 },
                 new()
                 {
-                    TitleRu = "РРіСЂР° Freelancer (2003)",
+                    TitleRu = "Игра Freelancer (2003)",
                     TitleEn = "Freelancer (2003)",
-                    DescriptionRu = "РћС„РёС†РёР°Р»СЊРЅР°СЏ РёРіСЂР° РѕС‚ Digital Anvil Рё Microsoft",
+                    DescriptionRu = "Официальная игра от Digital Anvil и Microsoft",
                     DescriptionEn = "Official game by Digital Anvil and Microsoft",
                     IconUrl = "/img/pages/game/freelancer-game.webp",
                     SortOrder = 20,
@@ -128,7 +128,7 @@ public partial class DataBaseService
                     {
                         new()
                         {
-                            NameRu = "РЇРЅРґРµРєСЃ Р”РёСЃРє",
+                            NameRu = "Яндекс Диск",
                             NameEn = "Yandex Disk",
                             Url = "/uploader/projects/download/freelancer_game",
                             IconUrl = "/img/social/yandex_disk.webp",
@@ -152,9 +152,9 @@ public partial class DataBaseService
         var tools = new ProductCategoryDataResponse
         {
             Key = "tools",
-            NameRu = "РРЅСЃС‚СЂСѓРјРµРЅС‚С‹ Рё РІСЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ РїСЂРѕРіСЂР°РјРјС‹",
+            NameRu = "Инструменты и вспомогательные программы",
             NameEn = "Tools and utilities",
-            DescriptionRu = "РЈС‚РёР»РёС‚С‹ РґР»СЏ СЃСЂР°РІРЅРµРЅРёСЏ С„Р°Р№Р»РѕРІ, РїРѕРґРіРѕС‚РѕРІРєРё РѕР±РЅРѕРІР»РµРЅРёР№ Рё СЂР°Р±РѕС‚С‹ СЃ РґР°РЅРЅС‹РјРё Freelancer",
+            DescriptionRu = "Утилиты для сравнения файлов, подготовки обновлений и работы с данными Freelancer",
             DescriptionEn = "Utilities for file comparison, update preparation, and Freelancer data work",
             IconUrl = "/img/pages/game/cat_tools.webp",
             BackgroundUrl = "/img/pages/home/feature-card-info-bg.webp",
@@ -166,7 +166,7 @@ public partial class DataBaseService
                 {
                     TitleRu = "LizeriumFindChanges",
                     TitleEn = "LizeriumFindChanges",
-                    DescriptionRu = "РРЅСЃС‚СЂСѓРјРµРЅС‚ РґР»СЏ СЃСЂР°РІРЅРµРЅРёСЏ РґРІСѓС… РІРµСЂСЃРёР№ С„Р°Р№Р»РѕРІРѕР№ СЃС‚СЂСѓРєС‚СѓСЂС‹ Рё РїРѕРґРіРѕС‚РѕРІРєРё РїР°РїРєРё РѕР±РЅРѕРІР»РµРЅРёСЏ",
+                    DescriptionRu = "Инструмент для сравнения двух версий файловой структуры и подготовки папки обновления",
                     DescriptionEn = "Compares two file-structure versions and prepares an update folder",
                     IconUrl = "/img/Main.webp",
                     SortOrder = 10,
@@ -175,7 +175,7 @@ public partial class DataBaseService
                     {
                         new()
                         {
-                            NameRu = "РћС‚РєСЂС‹С‚СЊ СЂРµР»РёР·С‹",
+                            NameRu = "Открыть релизы",
                             NameEn = "Open releases",
                             Url = "https://github.com/Lizerium/LizeriumFindChanges/releases",
                             IconUrl = "/img/social/github.webp",
@@ -188,7 +188,7 @@ public partial class DataBaseService
                 {
                     TitleRu = "LizeriumDataToolkit",
                     TitleEn = "LizeriumDataToolkit",
-                    DescriptionRu = "Р§С‚РµРЅРёРµ, СЂР°Р·Р±РѕСЂ Рё СЃРµСЂРёР°Р»РёР·Р°С†РёСЏ РґР°РЅРЅС‹С… РёР· РёРіСЂ Freelancer",
+                    DescriptionRu = "Чтение, разбор и сериализация данных из игр Freelancer",
                     DescriptionEn = "Reads, parses, and serializes Freelancer game data",
                     IconUrl = "/img/Main.webp",
                     SortOrder = 20,
@@ -197,7 +197,7 @@ public partial class DataBaseService
                     {
                         new()
                         {
-                            NameRu = "РћС‚РєСЂС‹С‚СЊ СЂРµР»РёР·С‹",
+                            NameRu = "Открыть релизы",
                             NameEn = "Open releases",
                             Url = "https://github.com/Lizerium/LizeriumDataToolkit/releases",
                             IconUrl = "/img/social/github.webp",
@@ -209,7 +209,7 @@ public partial class DataBaseService
                 {
                     TitleRu = "LizeriumVSCodeColorPicker",
                     TitleEn = "LizeriumVSCodeColorPicker",
-                    DescriptionRu = "Р Р°СЃС€РёСЂРµРЅРёРµ РґР»СЏ VS Code, РїРѕР·РІРѕР»СЏСЋС‰РµРµ РѕРїСЂРµРґРµР»СЏС‚СЊ С†РІРµС‚Р° РІ СЃС‚СЂРѕРєР°С… С„Р°Р№Р»Р° СЃ РїРѕРјРѕС‰СЊСЋ РєРѕРЅСЃС‚СЂСѓРєС†РёР№ РІРёРґР° `color = R, G, B` (Р·РЅР°С‡РµРЅРёСЏ РѕС‚ 0 РґРѕ 255)",
+                    DescriptionRu = "Расширение для VS Code, позволяющее определять цвета в строках файла с помощью конструкций вида `color = R, G, B` (значения от 0 до 255)",
                     DescriptionEn = "An extension for VSCode that allows you to define colors in file lines with the `color = R, G, B` (0-255) constructs",
                     IconUrl = "/img/Main.webp",
                     SortOrder = 30,
@@ -218,7 +218,7 @@ public partial class DataBaseService
                     {
                         new()
                         {
-                            NameRu = "РћС‚РєСЂС‹С‚СЊ СЂРµР»РёР·С‹",
+                            NameRu = "Открыть релизы",
                             NameEn = "Open releases",
                             Url = "https://github.com/Lizerium/LizeriumVSCodeColorPicker/releases",
                             IconUrl = "/img/social/github.webp",
@@ -230,7 +230,7 @@ public partial class DataBaseService
                 {
                     TitleRu = "LizeriumAccauntManager",
                     TitleEn = "LizeriumAccauntManager",
-                    DescriptionRu = "РЎРѕРІСЂРµРјРµРЅРЅС‹Р№, РїРµСЂРµСЂР°Р±РѕС‚Р°РЅРЅС‹Р№ РјРµРЅРµРґР¶РµСЂ СѓС‡РµС‚РЅС‹С… Р·Р°РїРёСЃРµР№ РёРіСЂРѕРєРѕРІ РґР»СЏ СЃРµСЂРІРµСЂР° Freelancer, Р°РґР°РїС‚РёСЂРѕРІР°РЅРЅС‹Р№ РґР»СЏ РєСЂСѓРїРЅС‹С… РёРіСЂРѕРІС‹С… СЃР±РѕСЂРѕРє Рё РїРѕРґРґРµСЂР¶РёРІР°СЋС‰РёР№ РєРёСЂРёР»Р»РёС†Сѓ, Р°СЃРёРЅС…СЂРѕРЅРЅСѓСЋ РѕР±СЂР°Р±РѕС‚РєСѓ Рё СЂР°СЃС€РёСЂСЏРµРјСѓСЋ Р°СЂС…РёС‚РµРєС‚СѓСЂСѓ",
+                    DescriptionRu = "Современный, переработанный менеджер учетных записей игроков для сервера Freelancer, адаптированный для крупных игровых сборок и поддерживающий кириллицу, асинхронную обработку и расширяемую архитектуру",
                     DescriptionEn = "A modern, reimagined player account manager for Freelancer Server, redesigned for large game builds, Cyrillic support, asynchronous processing, and an extensible architecture",
                     IconUrl = "/img/Main.webp",
                     SortOrder = 40,
@@ -239,7 +239,7 @@ public partial class DataBaseService
                     {
                         new()
                         {
-                            NameRu = "РћС‚РєСЂС‹С‚СЊ СЂРµР»РёР·С‹",
+                            NameRu = "Открыть релизы",
                             NameEn = "Open releases",
                             Url = "https://github.com/Lizerium/LizeriumAccauntManager/releases",
                             IconUrl = "/img/social/github.webp",
@@ -251,7 +251,7 @@ public partial class DataBaseService
                 {
                     TitleRu = "Lizerium.Restarter.Server",
                     TitleEn = "Lizerium.Restarter.Server",
-                    DescriptionRu = "РђРІС‚РѕРјР°С‚РёС‡РµСЃРєРёР№ РјРѕРЅРёС‚РѕСЂРёРЅРі, РїРµСЂРµР·Р°РїСѓСЃРє Рё СѓРґР°Р»РµРЅРЅРѕРµ СѓРїСЂР°РІР»РµРЅРёРµ С‡РµСЂРµР· API РґР»СЏ РёРіСЂРѕРІС‹С… СЃРµСЂРІРµСЂРѕРІ Freelancer",
+                    DescriptionRu = "Автоматический мониторинг, перезапуск и удаленное управление через API для игровых серверов Freelancer",
                     DescriptionEn = "Automatic monitoring, restart and remote API control for Freelancer game servers",
                     IconUrl = "/img/Main.webp",
                     SortOrder = 50,
@@ -260,7 +260,7 @@ public partial class DataBaseService
                     {
                         new()
                         {
-                            NameRu = "РћС‚РєСЂС‹С‚СЊ СЂРµР»РёР·С‹",
+                            NameRu = "Открыть релизы",
                             NameEn = "Open releases",
                             Url = "https://github.com/Lizerium/Lizerium.Restarter.Server/releases",
                             IconUrl = "/img/social/github.webp",
@@ -272,7 +272,7 @@ public partial class DataBaseService
                 {
                     TitleRu = "Lizerium.RDL.Converter",
                     TitleEn = "Lizerium.RDL.Converter",
-                    DescriptionRu = "Р РµР°Р»РёР·Р°С†РёСЏ frc.exe (Freelancer Resource Compiler) РЅР° СЏР·С‹РєРµ C#. РџСЂРµРѕР±СЂР°Р·СѓРµС‚ RDL (XML) РІ С‚РµРєСЃС‚РѕРІС‹Р№ С„РѕСЂРјР°С‚ FRC, РёСЃРїРѕР»СЊР·СѓРµРјС‹Р№ РІРѕ РІСЂРµРјСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ",
+                    DescriptionRu = "Реализация frc.exe (Freelancer Resource Compiler) на языке C#. Преобразует RDL (XML) в текстовый формат FRC, используемый во время выполнения",
                     DescriptionEn = "C# implementation of frc.exe (Freelancer Resource Compiler). Converts RDL (XML) into FRC runtime text format",
                     IconUrl = "/img/Main.webp",
                     SortOrder = 60,
@@ -281,7 +281,7 @@ public partial class DataBaseService
                     {
                         new()
                         {
-                            NameRu = "РћС‚РєСЂС‹С‚СЊ СЂРµР»РёР·С‹",
+                            NameRu = "Открыть релизы",
                             NameEn = "Open releases",
                             Url = "https://github.com/Lizerium/Lizerium.RDL.Converter/releases",
                             IconUrl = "/img/social/github.webp",
@@ -293,7 +293,7 @@ public partial class DataBaseService
                 {
                     TitleRu = "Lizerium.Localization.Toolkit",
                     TitleEn = "Lizerium.Localization.Toolkit",
-                    DescriptionRu = "Lizerium.Localization.Toolkit вЂ” СЌС‚Рѕ РёРЅСЃС‚СЂСѓРјРµРЅС‚ РґР»СЏ РѕСЂРіР°РЅРёР·Р°С†РёРё РїСЂРѕС†РµСЃСЃР° Р»РѕРєР°Р»РёР·Р°С†РёРё РІ .NET-РїСЂРѕРµРєС‚Р°С…, РіРґРµ РїРµСЂРµРІРѕРґС‹ С…СЂР°РЅСЏС‚СЃСЏ РІ С„Р°Р№Р»Р°С… .resx. РћРЅ РѕР±СЉРµРґРёРЅСЏРµС‚ РІ СЃРµР±Рµ Р·Р°РіСЂСѓР·РєСѓ СЂРµСЃСѓСЂСЃРѕРІ РІРѕ РІСЂРµРјСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ, РіРµРЅРµСЂР°С‚РѕСЂ РєРѕРґР° РЅР° Р±Р°Р·Рµ Roslyn, РґРёР°РіРЅРѕСЃС‚РёРєСѓ СЃ РїРѕРјРѕС‰СЊСЋ Р°РЅР°Р»РёР·Р°С‚РѕСЂР°, СЃСЂРµРґСЃС‚РІР° Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ РёСЃРїСЂР°РІР»РµРЅРёСЏ РєРѕРґР° РІ Visual Studio Рё РѕС‚РґРµР»СЊРЅС‹Р№ СЂРµРґР°РєС‚РѕСЂ РЅР° Р±Р°Р·Рµ WPF",
+                    DescriptionRu = "Lizerium.Localization.Toolkit — это инструмент для организации процесса локализации в .NET-проектах, где переводы хранятся в файлах .resx. Он объединяет в себе загрузку ресурсов во время выполнения, генератор кода на базе Roslyn, диагностику с помощью анализатора, средства автоматического исправления кода в Visual Studio и отдельный редактор на базе WPF",
                     DescriptionEn = "Lizerium.Localization.Toolkit is a .NET localization workflow for projects that store translations in .resx files. It combines runtime loading, a Roslyn source generator, analyzer diagnostics, Visual Studio code fixes, and a standalone WPF editor",
                     IconUrl = "/img/Main.webp",
                     SortOrder = 70,
@@ -302,7 +302,7 @@ public partial class DataBaseService
                     {
                         new()
                         {
-                            NameRu = "РћС‚РєСЂС‹С‚СЊ СЂРµР»РёР·С‹",
+                            NameRu = "Открыть релизы",
                             NameEn = "Open releases",
                             Url = "https://github.com/Lizerium/Lizerium.Localization.Toolkit/releases",
                             IconUrl = "/img/social/github.webp",
@@ -314,7 +314,7 @@ public partial class DataBaseService
                 {
                     TitleRu = "Lizerium.BINI.Converter",
                     TitleEn = "Lizerium.BINI.Converter",
-                    DescriptionRu = "Р РµР°Р»РёР·Р°С†РёСЏ РЅР° C# Рё JavaScript РґР»СЏ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ Р±РёРЅР°СЂРЅС‹С… INI-С„Р°Р№Р»РѕРІ С„РѕСЂРјР°С‚Р° BINI (РёР· РёРіСЂС‹ Freelancer) РІ СЂРµРґР°РєС‚РёСЂСѓРµРјС‹Рµ С‚РµРєСЃС‚РѕРІС‹Рµ INI-С„Р°Р№Р»С‹ Рё РѕР±СЂР°С‚РЅРѕ",
+                    DescriptionRu = "Реализация на C# и JavaScript для преобразования бинарных INI-файлов формата BINI (из игры Freelancer) в редактируемые текстовые INI-файлы и обратно",
                     DescriptionEn = "C#, JavaScript implementation for converting Freelancer BINI binary INI files into editable text INI files and back",
                     IconUrl = "/img/Main.webp",
                     SortOrder = 80,
@@ -323,7 +323,7 @@ public partial class DataBaseService
                     {
                         new()
                         {
-                            NameRu = "Р”РµРјРѕРЅСЃС‚СЂР°С†РёСЏ",
+                            NameRu = "Демонстрация",
                             NameEn = "Demo",
                             Url = "https://lizerium.github.io/Lizerium.BINI.Converter/",
                             IconUrl = "/img/Main.webp",
@@ -332,7 +332,7 @@ public partial class DataBaseService
                         },
                         new()
                         {
-                            NameRu = "РћС‚РєСЂС‹С‚СЊ СЂРµР»РёР·С‹",
+                            NameRu = "Открыть релизы",
                             NameEn = "Open releases",
                             Url = "https://github.com/Lizerium/Lizerium.BINI.Converter/releases",
                             IconUrl = "/img/social/github.webp",
@@ -344,7 +344,7 @@ public partial class DataBaseService
                 {
                     TitleRu = "CompilerInfocardsUI",
                     TitleEn = "CompilerInfocardsUI",
-                    DescriptionRu = "Freelancer (2003): РџР°РЅРµР»СЊ СѓРїСЂР°РІР»РµРЅРёСЏ РёРЅС„РѕСЂРјР°С†РёРѕРЅРЅС‹РјРё РєР°СЂС‚РѕС‡РєР°РјРё РґР»СЏ Lizerium (СѓРЅРёРІРµСЂСЃР°Р»СЊРЅР°СЏ)",
+                    DescriptionRu = "Freelancer (2003): Панель управления информационными карточками для Lizerium (универсальная)",
                     DescriptionEn = "Freelancer (2003) Information Card Control Panel for Lizerium (Universal)",
                     IconUrl = "/img/Main.webp",
                     SortOrder = 90,
@@ -353,7 +353,7 @@ public partial class DataBaseService
                     {
                         new()
                         {
-                            NameRu = "РћС‚РєСЂС‹С‚СЊ СЂРµР»РёР·С‹",
+                            NameRu = "Открыть релизы",
                             NameEn = "Open releases",
                             Url = "https://github.com/Lizerium/CompilerInfocardsUI/releases",
                             IconUrl = "/img/social/github.webp",
@@ -365,7 +365,7 @@ public partial class DataBaseService
                 {
                     TitleRu = "LizeriumFLHook",
                     TitleEn = "LizeriumFLHook",
-                    DescriptionRu = "FLHook Рё РЅР°Р±РѕСЂ РїР»Р°РіРёРЅРѕРІ РґР»СЏ СЃРµСЂРІРµСЂР° Freelancer (2003 Рі.)",
+                    DescriptionRu = "FLHook и набор плагинов для сервера Freelancer (2003 г.)",
                     DescriptionEn = "FLHook and a collection of plugins for the Freelancer 2003 Server",
                     IconUrl = "/img/Main.webp",
                     SortOrder = 100,
@@ -374,7 +374,7 @@ public partial class DataBaseService
                     {
                         new()
                         {
-                            NameRu = "РћС‚РєСЂС‹С‚СЊ СЂРµР»РёР·С‹",
+                            NameRu = "Открыть релизы",
                             NameEn = "Open releases",
                             Url = "https://github.com/Lizerium/LizeriumFLHook/releases",
                             IconUrl = "/img/social/github.webp",
@@ -386,7 +386,7 @@ public partial class DataBaseService
                 {
                     TitleRu = "LizeriumUTFtoXML",
                     TitleEn = "LizeriumUTFtoXML",
-                    DescriptionRu = "РљРѕРЅРІРµСЂС‚РµСЂ UTF РІ XML РґР»СЏ С„Р°Р№Р»РѕРІ РёРіСЂС‹ Freelancer (2003)",
+                    DescriptionRu = "Конвертер UTF в XML для файлов игры Freelancer (2003)",
                     DescriptionEn = "UTF to XML Converter for Freelancer (2003) game data",
                     IconUrl = "/img/Main.webp",
                     SortOrder = 110,
@@ -395,7 +395,7 @@ public partial class DataBaseService
                     {
                         new()
                         {
-                            NameRu = "РћС‚РєСЂС‹С‚СЊ СЂРµР»РёР·С‹",
+                            NameRu = "Открыть релизы",
                             NameEn = "Open releases",
                             Url = "https://github.com/Lizerium/LizeriumUTFtoXML/releases",
                             IconUrl = "/img/social/github.webp",
@@ -407,7 +407,7 @@ public partial class DataBaseService
                 {
                     TitleRu = "Lizerium.UTF.Editor",
                     TitleEn = "Lizerium.UTF.Editor",
-                    DescriptionRu = "Р РµРґР°РєС‚РѕСЂ Рё РёРЅСЃС‚СЂСѓРјРµРЅС‚ Р°РЅР°Р»РёР·Р° РіРµРѕРјРµС‚СЂРёРё Рё СЂРµСЃСѓСЂСЃРѕРІ (UTF / CMP / 3DB) РґР»СЏ Freelancer",
+                    DescriptionRu = "Редактор и инструмент анализа геометрии и ресурсов (UTF / CMP / 3DB) для Freelancer",
                     DescriptionEn = "Editor and analysis tool for geometry and resources (UTF / CMP / 3DB) for Freelancer",
                     IconUrl = "/img/Main.webp",
                     SortOrder = 120,
@@ -416,7 +416,7 @@ public partial class DataBaseService
                     {
                         new()
                         {
-                            NameRu = "РћС‚РєСЂС‹С‚СЊ СЂРµР»РёР·С‹",
+                            NameRu = "Открыть релизы",
                             NameEn = "Open releases",
                             Url = "https://github.com/Lizerium/Lizerium.UTF.Editor/releases",
                             IconUrl = "/img/social/github.webp",
@@ -428,7 +428,7 @@ public partial class DataBaseService
                 {
                     TitleRu = "Freelancer.Reverse.Runtime",
                     TitleEn = "Freelancer.Reverse.Runtime",
-                    DescriptionRu = "РЇ СЂР°Р·СЂР°Р±Р°С‚С‹РІР°СЋ СЃР»РѕР№ РІСЂРµРјРµРЅРё РІС‹РїРѕР»РЅРµРЅРёСЏ (runtime layer) РїРѕРІРµСЂС… РёРіСЂС‹ Freelancer (2003 РіРѕРґР°), РїРµСЂРµСЃРѕР±РёСЂР°СЏ Рё РїРѕРґРјРµРЅСЏСЏ СЃРёСЃС‚РµРјРЅС‹Рµ DLL, С‡С‚РѕР±С‹ Р±РµР·РѕРїР°СЃРЅРѕ РёСЃСЃР»РµРґРѕРІР°С‚СЊ, СЂР°СЃС€РёСЂСЏС‚СЊ Рё РґРѕРєСѓРјРµРЅС‚РёСЂРѕРІР°С‚СЊ РїРѕРІРµРґРµРЅРёРµ РѕСЂРёРіРёРЅР°Р»СЊРЅРѕРіРѕ РґРІРёР¶РєР°",
+                    DescriptionRu = "Я разрабатываю слой времени выполнения (runtime layer) поверх игры Freelancer (2003 года), пересобирая и подменяя системные DLL, чтобы безопасно исследовать, расширять и документировать поведение оригинального движка",
                     DescriptionEn = "I'm building a runtime layer on top of Freelancer (2003), rebuilding and overriding system DLLs to safely explore, extend, and document the behavior of the original engine",
                     IconUrl = "/img/social/binnexus.webp",
                     SortOrder = 130,
@@ -437,7 +437,7 @@ public partial class DataBaseService
                     {
                         new()
                         {
-                            NameRu = "Р”РµРјРѕРЅСЃС‚СЂР°С†РёСЏ",
+                            NameRu = "Демонстрация",
                             NameEn = "Demo",
                             Url = "https://dvurechensky.github.io/Freelancer.Reverse.Runtime/",
                             IconUrl = "/img/social/binnexus.webp",
