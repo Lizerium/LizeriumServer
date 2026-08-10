@@ -24,6 +24,9 @@
 
 ### Api Lizerium Server
 
+- Fixed broken news image previews on the production API admin domain by serving local `/img/news/...` files through protected `/news/assets/preview` and `/news/image/{fileName}` routes.
+- Added a protected news image gallery in the admin news editor: search uploaded files, insert an image into Markdown, add it to `ImageGalleryJson`, set it as the cover image, or delete the physical file.
+- Added detach controls for already attached gallery images so an image can be removed from a news record without deleting the uploaded file.
 - Added a closed admin-only news preview route at `/news/preview/{id}` protected by `AdminAccessGuard`, IP block checks and an authorized `AdminSession`.
 - The preview can open hidden/unpublished news, so drafts can be saved without publishing and reviewed before appearing on the public site.
 - Split the admin news preview into two states: the public news-list card and the full article reader view.
@@ -31,6 +34,9 @@
 - Fixed the admin news preview layout so article centering no longer leaks into the preview, image URLs can fall back to the public `lizerium.com` domain, and video-news cards show a YouTube/Rutube poster when no dedicated cover image exists.
 - Added a `Preview` button to each saved news item in the admin news list; it opens the closed preview page in a new tab.
 - Added a note to the create-news form explaining that preview becomes available after the first save and drafts should be kept unpublished.
+- Added server-side pagination and debounced search to the admin news image gallery so large upload folders no longer freeze the browser when the picker opens.
+- Fixed admin news image rendering on the API preview page by routing cover, icon, gallery and Markdown images through the protected news asset preview endpoint with safer production path resolution.
+- Fixed inline Markdown images in the API news preview so `![image](...)` renders even when it appears inside a text paragraph.
 
 ### Database and Tests
 

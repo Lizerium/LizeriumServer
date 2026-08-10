@@ -1,12 +1,4 @@
-﻿declare class NewsAdmin {
-    startNews(): void;
-}
-
-declare class ProductsAdmin {
-    startProducts(): void;
-}
-
-(() => {
+﻿(() => {
     //по загрузке окна
     window.addEventListener("DOMContentLoaded", async () => {
 

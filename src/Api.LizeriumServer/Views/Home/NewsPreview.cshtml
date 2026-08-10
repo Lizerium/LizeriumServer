@@ -52,8 +52,7 @@
         if (!imageUrl.StartsWith("/img/news/", StringComparison.OrdinalIgnoreCase))
             return imageUrl;
 
-        var fileName = System.IO.Path.GetFileName(imageUrl);
-        return string.IsNullOrWhiteSpace(fileName) ? imageUrl : $"/news/image/{fileName}";
+        return $"/news/assets/preview?url={Uri.EscapeDataString(imageUrl)}";
     }
 
     private static string GetPublicImageFallbackUrl(string imageUrl)
@@ -300,12 +299,11 @@
         if (imageMatch.Success)
         {
             var rawImageUrl = imageMatch.Groups["url"].Value.Trim();
-            var imageUrl = HtmlEncoder.Default.Encode(GetNewsPreviewUrl(rawImageUrl));
-            var fallbackUrl = HtmlEncoder.Default.Encode(GetPublicImageFallbackUrl(rawImageUrl));
-            return $"<figure><img src=\"{imageUrl}\" data-fallback-src=\"{fallbackUrl}\" alt=\"\" loading=\"lazy\" onerror=\"var fallback=this.dataset.fallbackSrc;if(fallback&&this.src.indexOf(fallback)<0){{this.src=fallback;}}else{{this.remove();}}\" /></figure>";
+            return $"<figure>{BuildPreviewImageHtml(rawImageUrl, string.Empty, string.Empty)}</figure>";
         }
 
         var safe = HtmlEncoder.Default.Encode(trimmed);
+        safe = ReplaceInlineMarkdownImages(safe);
         safe = Regex.Replace(safe, @"^###\s+(.+)$", "<h3>$1</h3>", RegexOptions.Multiline);
         safe = Regex.Replace(safe, @"^##\s+(.+)$", "<h2>$1</h2>", RegexOptions.Multiline);
         safe = Regex.Replace(safe, @"^#\s+(.+)$", "<h1>$1</h1>", RegexOptions.Multiline);
@@ -316,6 +314,31 @@
         return safe.StartsWith("<h", StringComparison.OrdinalIgnoreCase)
             ? safe
             : $"<p>{safe.Replace("\n", "<br />")}</p>";
+    }
+
+    private static string ReplaceInlineMarkdownImages(string htmlEncodedText)
+    {
+        return Regex.Replace(
+            htmlEncodedText,
+            @"!\[(?<alt>[^\]]*)\]\((?<url>[^)]+)\)",
+            match =>
+            {
+                var rawImageUrl = System.Net.WebUtility.HtmlDecode(match.Groups["url"].Value.Trim());
+                var altText = System.Net.WebUtility.HtmlDecode(match.Groups["alt"].Value.Trim());
+                return BuildPreviewImageHtml(rawImageUrl, altText, "news-preview-inline-image");
+            });
+    }
+
+    private static string BuildPreviewImageHtml(string rawImageUrl, string altText, string className)
+    {
+        var imageUrl = HtmlEncoder.Default.Encode(GetNewsPreviewUrl(rawImageUrl));
+        var fallbackUrl = HtmlEncoder.Default.Encode(GetPublicImageFallbackUrl(rawImageUrl));
+        var encodedAlt = HtmlEncoder.Default.Encode(altText ?? string.Empty);
+        var encodedClass = string.IsNullOrWhiteSpace(className)
+            ? string.Empty
+            : $" class=\"{HtmlEncoder.Default.Encode(className)}\"";
+
+        return $"<span{encodedClass}><img src=\"{imageUrl}\" data-fallback-src=\"{fallbackUrl}\" alt=\"{encodedAlt}\" loading=\"lazy\" onerror=\"var fallback=this.dataset.fallbackSrc;if(fallback&&this.src.indexOf(fallback)<0){{this.src=fallback;}}else{{this.closest('.news-preview-inline-image')?.remove();this.remove();}}\" /></span>";
     }
 
     private static string ExtractVideoEmbed(string text)
@@ -738,7 +761,13 @@
         margin: 24px 0;
     }
 
+    .news-preview-inline-image {
+        display: block;
+        margin: 18px 0;
+    }
+
     .news-preview-markdown figure img,
+    .news-preview-inline-image img,
     .news-preview-gallery img {
         max-width: 100%;
         border-radius: 10px;

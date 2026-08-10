@@ -15,8 +15,7 @@
         if (!imageUrl.StartsWith("/img/news/", StringComparison.OrdinalIgnoreCase))
             return imageUrl;
 
-        var fileName = System.IO.Path.GetFileName(imageUrl);
-        return string.IsNullOrWhiteSpace(fileName) ? imageUrl : $"/news/image/{fileName}";
+        return $"/news/assets/preview?url={Uri.EscapeDataString(imageUrl)}";
     }
 
     private static string GetNewsDateInputValue(long publishedAtUnix)

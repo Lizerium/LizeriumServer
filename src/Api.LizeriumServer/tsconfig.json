@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2016",
+    "module": "none",
+    "jsx": "preserve",
+    "noImplicitAny": false,
+    "removeComments": true,
+    "rootDir": "ScriptsAndCss/TypeScripts",
+    "outDir": "ScriptsAndCss/JsScripts",
+    "declaration": false,
+    "noEmitOnError": true,
+    "sourceMap": false
+  },
+  "include": [
+    "ScriptsAndCss/TypeScripts/**/*.ts"
+  ]
+}

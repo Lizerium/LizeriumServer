@@ -1108,8 +1108,8 @@ public class HomeController : Controller
     /// Отдает локальное превью обложки новости для админки.
     /// </summary>
     [HttpGet]
-    [Route("/news/image/{fileName}")]
-    public IActionResult NewsImage(string fileName)
+    [Route("/news/image/{*relativePath}")]
+    public IActionResult NewsImage(string relativePath)
     {
         try
         {
@@ -1120,10 +1120,14 @@ public class HomeController : Controller
             if (adminSession is not { IsAuth: true })
                 return NotFound();
 
-            if (string.IsNullOrWhiteSpace(fileName) || fileName != Path.GetFileName(fileName))
+            if (string.IsNullOrWhiteSpace(relativePath))
                 return NotFound();
 
-            var extension = Path.GetExtension(fileName)?.ToLowerInvariant();
+            var fullPath = ResolveNewsImagePath($"/img/news/{relativePath}");
+            if (string.IsNullOrWhiteSpace(fullPath) || !System.IO.File.Exists(fullPath))
+                return NotFound();
+
+            var extension = Path.GetExtension(fullPath)?.ToLowerInvariant();
             var contentType = extension switch
             {
                 ".jpg" or ".jpeg" => "image/jpeg",
@@ -1134,10 +1138,6 @@ public class HomeController : Controller
             };
 
             if (string.IsNullOrWhiteSpace(contentType))
-                return NotFound();
-
-            var fullPath = Path.Combine(GetNewsImagesPath(), fileName);
-            if (!System.IO.File.Exists(fullPath))
                 return NotFound();
 
             return PhysicalFile(fullPath, contentType);
@@ -1176,6 +1176,112 @@ public class HomeController : Controller
                 imageUrl = uploadedImageUrl,
                 previewImageUrl = GetNewsPreviewUrl(uploadedImageUrl)
             });
+        }
+        catch (Exception exception)
+        {
+            exception.LogException();
+            return BadRequest(new { ok = false, message = exception.Message });
+        }
+    }
+
+    [HttpGet]
+    [Route("/news/assets")]
+    public async Task<IActionResult> GetNewsAssets([FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string query = "")
+    {
+        if (!await CanEditAdminDataAsync())
+            return Unauthorized(new { ok = false, message = "need authorization" });
+
+        var imagesPath = GetNewsImagesPath();
+        if (!Directory.Exists(imagesPath))
+            return Json(new { ok = true, assets = Array.Empty<object>(), page = 1, pageSize = 20, total = 0, pageCount = 0 });
+
+        page = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 10, 60);
+        var search = (query ?? string.Empty).Trim();
+        var allowedExtensions = GetNewsImageExtensions();
+        var assets = Directory
+            .EnumerateFiles(imagesPath, "*.*", SearchOption.AllDirectories)
+            .Where(file => allowedExtensions.Contains(Path.GetExtension(file)))
+            .Select(file =>
+            {
+                var relativePath = Path.GetRelativePath(imagesPath, file)
+                    .Replace(Path.DirectorySeparatorChar, '/')
+                    .Replace(Path.AltDirectorySeparatorChar, '/');
+
+                var group = Path.GetDirectoryName(relativePath)?
+                    .Replace(Path.DirectorySeparatorChar, '/')
+                    .Replace(Path.AltDirectorySeparatorChar, '/') ?? string.Empty;
+
+                var url = $"/img/news/{relativePath}";
+                return new
+                {
+                    url,
+                    previewUrl = $"/news/assets/preview?url={Uri.EscapeDataString(url)}",
+                    name = Path.GetFileName(file),
+                    group,
+                    modifiedAtUnix = new DateTimeOffset(System.IO.File.GetLastWriteTimeUtc(file)).ToUnixTimeSeconds()
+                };
+            });
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            assets = assets.Where(asset =>
+                asset.name.Contains(search, StringComparison.OrdinalIgnoreCase)
+                || asset.group.Contains(search, StringComparison.OrdinalIgnoreCase)
+                || asset.url.Contains(search, StringComparison.OrdinalIgnoreCase));
+        }
+
+        var sortedAssets = assets
+            .OrderByDescending(asset => asset.modifiedAtUnix)
+            .ThenBy(asset => asset.name)
+            .ToList();
+        var total = sortedAssets.Count;
+        var pageCount = total == 0 ? 0 : (int)Math.Ceiling(total / (double)pageSize);
+        if (pageCount > 0)
+            page = Math.Min(page, pageCount);
+
+        var pageAssets = sortedAssets
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        return Json(new { ok = true, assets = pageAssets, page, pageSize, total, pageCount });
+    }
+
+    [HttpGet]
+    [Route("/news/assets/preview")]
+    public async Task<IActionResult> PreviewNewsAsset([FromQuery] string url)
+    {
+        if (!await CanEditAdminDataAsync())
+            return Unauthorized();
+
+        var fullPath = ResolveNewsImagePath(url);
+        if (string.IsNullOrWhiteSpace(fullPath) || !System.IO.File.Exists(fullPath))
+            return NotFound();
+
+        var extension = Path.GetExtension(fullPath);
+        if (!GetNewsImageExtensions().Contains(extension))
+            return BadRequest();
+
+        return PhysicalFile(fullPath, GetNewsImageContentType(extension));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Route("/news/assets/delete")]
+    public async Task<IActionResult> DeleteNewsAsset([FromForm] string url)
+    {
+        if (!await CanEditAdminDataAsync())
+            return Unauthorized(new { ok = false, message = "need authorization" });
+
+        var fullPath = ResolveNewsImagePath(url);
+        if (string.IsNullOrWhiteSpace(fullPath) || !System.IO.File.Exists(fullPath))
+            return NotFound(new { ok = false, message = "file not found" });
+
+        try
+        {
+            System.IO.File.Delete(fullPath);
+            return Json(new { ok = true, url });
         }
         catch (Exception exception)
         {
@@ -1228,8 +1334,7 @@ public class HomeController : Controller
         if (!imageUrl.StartsWith("/img/news/", StringComparison.OrdinalIgnoreCase))
             return imageUrl;
 
-        var fileName = Path.GetFileName(imageUrl);
-        return string.IsNullOrWhiteSpace(fileName) ? imageUrl : $"/news/image/{fileName}";
+        return $"/news/assets/preview?url={Uri.EscapeDataString(imageUrl)}";
     }
 
     private static long ParseNewsPublishedAt(string publishedAtLocal)
@@ -1377,14 +1482,7 @@ public class HomeController : Controller
             throw new InvalidOperationException("News image is too large.");
 
         var extension = Path.GetExtension(imageFile.FileName)?.ToLowerInvariant();
-        var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ".jpg",
-            ".jpeg",
-            ".png",
-            ".webp",
-            ".gif"
-        };
+        var allowedExtensions = GetNewsImageExtensions();
 
         if (string.IsNullOrWhiteSpace(extension) || !allowedExtensions.Contains(extension))
             throw new InvalidOperationException("Unsupported news image type.");
@@ -1405,6 +1503,57 @@ public class HomeController : Controller
         }
 
         return $"/img/news/{fileName}";
+    }
+
+    private static HashSet<string> GetNewsImageExtensions()
+    {
+        return new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".webp",
+            ".gif"
+        };
+    }
+
+    private static string GetNewsImageContentType(string extension)
+    {
+        return extension?.ToLowerInvariant() switch
+        {
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".png" => "image/png",
+            ".webp" => "image/webp",
+            ".gif" => "image/gif",
+            _ => "application/octet-stream"
+        };
+    }
+
+    private static string ResolveNewsImagePath(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url) || !url.StartsWith("/img/news/", StringComparison.OrdinalIgnoreCase))
+            return string.Empty;
+
+        var relativePath = url.Substring("/img/news/".Length)
+            .Replace('/', Path.DirectorySeparatorChar)
+            .Replace('\\', Path.DirectorySeparatorChar);
+
+        if (relativePath.Contains("..", StringComparison.Ordinal))
+            return string.Empty;
+
+        foreach (var imagesPath in GetNewsImageRootCandidates())
+        {
+            var fullPath = Path.GetFullPath(Path.Combine(imagesPath, relativePath));
+            var rootPath = Path.GetFullPath(imagesPath);
+            var normalizedRootPath = rootPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                + Path.DirectorySeparatorChar;
+
+            if (fullPath.StartsWith(normalizedRootPath, StringComparison.OrdinalIgnoreCase)
+                && System.IO.File.Exists(fullPath))
+                return fullPath;
+        }
+
+        return string.Empty;
     }
 
     private static async Task<List<string>> SaveNewsImagesAsync(IEnumerable<IFormFile> imageFiles)
@@ -1477,6 +1626,41 @@ public class HomeController : Controller
         }
 
         return FindDevelopmentNewsImagesPath();
+    }
+
+    private static IReadOnlyList<string> GetNewsImageRootCandidates()
+    {
+        var candidates = new List<string>();
+
+        void AddCandidate(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return;
+
+            var fullPath = Path.GetFullPath(path);
+            if (!candidates.Any(candidate => string.Equals(candidate, fullPath, StringComparison.OrdinalIgnoreCase)))
+                candidates.Add(fullPath);
+        }
+
+        var configuredPath = Program.Configuration["appSettings:newsImagesPath"];
+        if (!string.IsNullOrWhiteSpace(configuredPath))
+        {
+            AddCandidate(Path.IsPathRooted(configuredPath)
+                ? configuredPath
+                : Path.Combine(Directory.GetCurrentDirectory(), configuredPath));
+        }
+
+        var currentDirectory = Directory.GetCurrentDirectory();
+        var currentParent = Directory.GetParent(currentDirectory)?.FullName ?? currentDirectory;
+
+        AddCandidate(Path.Combine(currentParent, "uploader", "wwwroot", "img", "news"));
+        AddCandidate(Path.Combine(currentDirectory, "wwwroot", "img", "news"));
+        AddCandidate(Path.Combine(AppContext.BaseDirectory, "wwwroot", "img", "news"));
+        AddCandidate(Path.Combine(currentDirectory, "..", "LizeriumServer", "wwwroot", "img", "news"));
+        AddCandidate(Path.Combine(currentDirectory, "..", "wwwroot", "img", "news"));
+        AddCandidate(FindDevelopmentNewsImagesPath());
+
+        return candidates;
     }
 
     private static string FindDevelopmentNewsImagesPath()

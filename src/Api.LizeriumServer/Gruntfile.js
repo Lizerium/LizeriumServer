@@ -2,6 +2,11 @@
 module.exports = function (grunt) {
   grunt.initConfig({
     clean: ["wwwroot/css/*", "wwwroot/js/app.min.js", "ScriptsAndCss/Combined/*"], //очистка файлов какие папки/файлы очищать
+    ts: {
+      api: {
+        tsconfig: "./tsconfig.json"
+      }
+    },
     concat: {
       js: { //объединение JS
         src: [
@@ -27,7 +32,7 @@ module.exports = function (grunt) {
       }
     },
     watch: { //наблюдение за изменениями
-      files: ["ScriptsAndCss/JsScripts/**/*.js", "ScriptsAndCss/CssFiles/*.css"], //за изменением каких файлов наблюдаем
+      files: ["ScriptsAndCss/TypeScripts/**/*.ts", "ScriptsAndCss/JsScripts/**/*.js", "ScriptsAndCss/CssFiles/*.css"], //за изменением каких файлов наблюдаем
       tasks: ["all"] //какую задачу запускаем
     }
   });
@@ -36,6 +41,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks("grunt-contrib-concat"); //для объединения JS и CSS
   grunt.loadNpmTasks("grunt-contrib-uglify"); //для сжатия JS
   grunt.loadNpmTasks("grunt-contrib-cssmin"); //для сжатия CSS
-  grunt.registerTask("all", ["clean", "concat", "uglify", "cssmin"]); //общая задача
+  grunt.loadNpmTasks("grunt-ts"); //для компиляции TypeScript
+  grunt.registerTask("all", ["clean", "ts", "concat", "uglify", "cssmin"]); //общая задача
   grunt.loadNpmTasks("grunt-contrib-watch"); //для наблюдения за изменениями в файлах
 };

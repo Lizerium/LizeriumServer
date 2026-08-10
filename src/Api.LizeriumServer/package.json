@@ -8,6 +8,8 @@
     "grunt-contrib-concat": "2.0.0",
     "grunt-contrib-uglify": "5.0.1",
     "grunt-contrib-watch": "1.1.0",
-    "grunt-contrib-cssmin": "4.0.0"
+    "grunt-contrib-cssmin": "4.0.0",
+    "grunt-ts": "6.0.0-beta.22",
+    "typescript": "5.8.3"
   }
 }
