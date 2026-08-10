@@ -45,6 +45,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
                     news.startNews();
                 }
                 break;
+            case "products":
+                {
+                    const products = new ProductsAdmin();
+                    products.startProducts();
+                }
+                break;
             default:
                 break;
         }

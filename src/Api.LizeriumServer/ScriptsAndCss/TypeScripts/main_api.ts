@@ -2,6 +2,10 @@
     startNews(): void;
 }
 
+declare class ProductsAdmin {
+    startProducts(): void;
+}
+
 (() => {
     //по загрузке окна
     window.addEventListener("DOMContentLoaded", async () => {
@@ -63,6 +67,12 @@
                 {
                     const news = new NewsAdmin();
                     news.startNews();
+                }
+                break;
+            case "products":
+                {
+                    const products = new ProductsAdmin();
+                    products.startProducts();
                 }
                 break;
             default:
