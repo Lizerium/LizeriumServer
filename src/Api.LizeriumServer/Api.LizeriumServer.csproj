@@ -12,6 +12,8 @@
 
   <ItemGroup>
     <Content Remove="Views\Home\Confirmation.cshtml" />
+    <Content Remove="wwwroot\css\app.min.css" />
+    <Content Remove="wwwroot\js\app.min.js" />
   </ItemGroup>
 
   <ItemGroup>

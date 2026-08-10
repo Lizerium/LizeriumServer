@@ -14,7 +14,7 @@
         : "без даты";
     var coverUrl = GetNewsPreviewUrl(news?.ImageUrl);
     var iconUrl = GetNewsPreviewUrl(news?.IconUrl);
-    var galleryUrls = GetGalleryPreviewUrls(news?.ImageGalleryJson);
+    var rawGalleryUrls = GetGalleryImageUrls(news?.ImageGalleryJson);
     var videoPlatforms = GetVideoPlatforms(news, isRussian);
     var videoPosterUrl = videoPlatforms.FirstOrDefault(platform => !string.IsNullOrWhiteSpace(platform.PosterUrl))?.PosterUrl ?? string.Empty;
     var firstGalleryImageUrl = GetFirstGalleryImageUrl(news?.ImageGalleryJson);
@@ -61,7 +61,7 @@
             return string.Empty;
 
         return imageUrl.StartsWith("/img/news/", StringComparison.OrdinalIgnoreCase)
-            ? $"https://lizerium.com{imageUrl}"
+            ? $"https://lizup.ru{imageUrl}"
             : string.Empty;
     }
 
@@ -84,6 +84,28 @@
                 .Select(url => url.Trim())
                 .Where(url => !string.IsNullOrWhiteSpace(url))
                 .Select(GetNewsPreviewUrl)
+                .ToList();
+        }
+    }
+
+    private static IReadOnlyList<string> GetGalleryImageUrls(string imageGalleryJson)
+    {
+        if (string.IsNullOrWhiteSpace(imageGalleryJson))
+            return Array.Empty<string>();
+
+        try
+        {
+            return JsonSerializer.Deserialize<List<string>>(imageGalleryJson)?
+                .Where(url => !string.IsNullOrWhiteSpace(url))
+                .Select(url => url.Trim())
+                .ToList() ?? new List<string>();
+        }
+        catch
+        {
+            return imageGalleryJson
+                .Split(new[] { "\r\n", "\n", ";", "," }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(url => url.Trim())
+                .Where(url => !string.IsNullOrWhiteSpace(url))
                 .ToList();
         }
     }
@@ -448,12 +470,14 @@
                     @Html.Raw(RenderMarkdownPreview(markdown))
                 </div>
 
-                @if (galleryUrls.Count > 0)
+                @if (rawGalleryUrls.Count > 0)
                 {
                     <div class="news-preview-gallery">
-                        @foreach (var imageUrl in galleryUrls)
+                        @foreach (var imageUrl in rawGalleryUrls)
                         {
-                            <img src="@imageUrl" data-news-preview-lightbox="@imageUrl" alt="" loading="lazy" onerror="this.remove();" />
+                            var previewUrl = GetNewsPreviewUrl(imageUrl);
+                            var fallbackUrl = GetPublicImageFallbackUrl(imageUrl);
+                            <img src="@previewUrl" data-news-preview-lightbox="@previewUrl" data-fallback-src="@fallbackUrl" alt="" loading="lazy" onerror="var fallback=this.dataset.fallbackSrc;if(fallback&&this.src.indexOf(fallback)<0){this.src=fallback;this.dataset.newsPreviewLightbox=fallback;}else{this.remove();}" />
                         }
                     </div>
                 }

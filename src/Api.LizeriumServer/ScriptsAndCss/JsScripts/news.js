@@ -327,9 +327,10 @@ class NewsAdmin {
         const image = preview.querySelector("img");
         if (image) {
             image.src = this.toNewsPreviewUrl(previewImageUrl);
+            this.bindNewsImageFallback(image, previewImageUrl);
             if (image.dataset.newsLightboxBound !== "true") {
                 image.dataset.newsLightboxBound = "true";
-                image.addEventListener("click", () => this.openImageLightbox(image.src, image.alt || ""));
+                image.addEventListener("click", () => this.openImageLightbox(image.currentSrc || image.src, image.alt || ""));
             }
         }
         preview.classList.remove("broken");
@@ -351,9 +352,10 @@ class NewsAdmin {
         const image = preview.querySelector("img");
         if (image) {
             image.src = this.toNewsPreviewUrl(previewImageUrl);
+            this.bindNewsImageFallback(image, previewImageUrl);
             if (image.dataset.newsLightboxBound !== "true") {
                 image.dataset.newsLightboxBound = "true";
-                image.addEventListener("click", () => this.openImageLightbox(image.src, image.alt || ""));
+                image.addEventListener("click", () => this.openImageLightbox(image.currentSrc || image.src, image.alt || ""));
             }
         }
         preview.classList.remove("broken");
@@ -384,7 +386,8 @@ class NewsAdmin {
         image.src = this.toNewsPreviewUrl(imageUrl);
         image.alt = "";
         image.loading = "lazy";
-        image.addEventListener("click", () => this.openImageLightbox(image.src, image.alt || ""));
+        this.bindNewsImageFallback(image, imageUrl);
+        image.addEventListener("click", () => this.openImageLightbox(image.currentSrc || image.src, image.alt || ""));
         inlineItem.appendChild(image);
         const removeButton = document.createElement("button");
         removeButton.type = "button";
@@ -437,9 +440,11 @@ class NewsAdmin {
             const item = document.createElement("span");
             item.className = "news-gallery-item";
             item.innerHTML = `
-                <img src="${this.escapeAttribute(this.toNewsPreviewUrl(url))}" alt="" loading="lazy" />
+                <img src="${this.escapeAttribute(this.toNewsPreviewUrl(url))}" data-fallback-src="${this.escapeAttribute(this.toPublicNewsImageUrl(url))}" alt="" loading="lazy" />
                 <button type="button" class="news-gallery-remove" title="Detach image">Detach</button>`;
-            item.querySelector("img").addEventListener("click", () => this.openImageLightbox(this.toNewsPreviewUrl(url), ""));
+            const image = item.querySelector("img");
+            this.bindNewsImageFallback(image, url);
+            image.addEventListener("click", () => this.openImageLightbox(image.currentSrc || image.src, ""));
             item.querySelector("button").addEventListener("click", () => this.detachGalleryImage(form, url));
             list.appendChild(item);
         });
@@ -744,6 +749,30 @@ class NewsAdmin {
         if (url.indexOf("/img/news/") === 0)
             return `/news/assets/preview?url=${encodeURIComponent(url)}`;
         return url;
+    }
+    toPublicNewsImageUrl(url) {
+        if (!url || url.indexOf("/img/news/") !== 0)
+            return "";
+        return `https://lizup.ru${url}`;
+    }
+    bindNewsImageFallback(image, rawUrl) {
+        if (!image)
+            return;
+        const fallbackUrl = this.toPublicNewsImageUrl(rawUrl || image.getAttribute("src") || "");
+        if (fallbackUrl)
+            image.dataset.fallbackSrc = fallbackUrl;
+        if (image.dataset.newsFallbackBound === "true")
+            return;
+        image.dataset.newsFallbackBound = "true";
+        image.addEventListener("error", () => {
+            var _a;
+            const fallback = image.dataset.fallbackSrc || "";
+            if (fallback && image.src.indexOf(fallback) < 0) {
+                image.src = fallback;
+                return;
+            }
+            (_a = image.closest(".news-icon-preview, .news-image-preview")) === null || _a === void 0 ? void 0 : _a.classList.add("broken");
+        });
     }
     escapeHtml(value) {
         return String(value)

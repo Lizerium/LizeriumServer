@@ -18,6 +18,38 @@
         return $"/news/assets/preview?url={Uri.EscapeDataString(imageUrl)}";
     }
 
+    private static string GetPublicNewsImageFallbackUrl(string imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl) || Uri.TryCreate(imageUrl, UriKind.Absolute, out _))
+            return string.Empty;
+
+        return imageUrl.StartsWith("/img/news/", StringComparison.OrdinalIgnoreCase)
+            ? $"https://lizup.ru{imageUrl}"
+            : string.Empty;
+    }
+
+    private static IReadOnlyList<string> GetGalleryImageUrls(string imageGalleryJson)
+    {
+        if (string.IsNullOrWhiteSpace(imageGalleryJson))
+            return Array.Empty<string>();
+
+        try
+        {
+            return System.Text.Json.JsonSerializer.Deserialize<List<string>>(imageGalleryJson)?
+                .Where(url => !string.IsNullOrWhiteSpace(url))
+                .Select(url => url.Trim())
+                .ToList() ?? new List<string>();
+        }
+        catch
+        {
+            return imageGalleryJson
+                .Split(new[] { "\r\n", "\n", ";", "," }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(url => url.Trim())
+                .Where(url => !string.IsNullOrWhiteSpace(url))
+                .ToList();
+        }
+    }
+
     private static string GetNewsDateInputValue(long publishedAtUnix)
     {
         return publishedAtUnix > 0
@@ -338,27 +370,27 @@
                                 {
                                     <div class="news-icon-preview">
                                         <span>Иконка продукта</span>
-                                        <img src="@GetNewsPreviewUrl(news.IconUrl)" alt="" loading="lazy" onerror="this.closest('.news-icon-preview')?.classList.add('broken');" />
+                                        <img src="@GetNewsPreviewUrl(news.IconUrl)" data-fallback-src="@GetPublicNewsImageFallbackUrl(news.IconUrl)" alt="" loading="lazy" onerror="var fallback=this.dataset.fallbackSrc;if(fallback&&this.src.indexOf(fallback)<0){this.src=fallback;}else{this.closest('.news-icon-preview')?.classList.add('broken');}" />
                                     </div>
                                 }
                                 @if (!string.IsNullOrWhiteSpace(news.ImageUrl))
                                 {
                                     <div class="news-image-preview">
                                         <span>Обложка карточки</span>
-                                        <img src="@GetNewsPreviewUrl(news.ImageUrl)" alt="" loading="lazy" onerror="this.closest('.news-image-preview')?.classList.add('broken');" />
+                                        <img src="@GetNewsPreviewUrl(news.ImageUrl)" data-fallback-src="@GetPublicNewsImageFallbackUrl(news.ImageUrl)" alt="" loading="lazy" onerror="var fallback=this.dataset.fallbackSrc;if(fallback&&this.src.indexOf(fallback)<0){this.src=fallback;}else{this.closest('.news-image-preview')?.classList.add('broken');}" />
                                     </div>
                                 }
                                 @{
-                                    var galleryPreviewUrls = GetGalleryPreviewUrls(news.ImageGalleryJson);
+                                    var galleryImageUrls = GetGalleryImageUrls(news.ImageGalleryJson);
                                 }
-                                @if (galleryPreviewUrls.Count > 0)
+                                @if (galleryImageUrls.Count > 0)
                                 {
                                     <div class="news-gallery-preview">
                                         <span>Галерея</span>
                                         <div>
-                                            @foreach (var imageUrl in galleryPreviewUrls)
+                                            @foreach (var imageUrl in galleryImageUrls)
                                             {
-                                                <img src="@imageUrl" alt="" loading="lazy" />
+                                                <img src="@GetNewsPreviewUrl(imageUrl)" data-fallback-src="@GetPublicNewsImageFallbackUrl(imageUrl)" alt="" loading="lazy" onerror="var fallback=this.dataset.fallbackSrc;if(fallback&&this.src.indexOf(fallback)<0){this.src=fallback;}else{this.remove();}" />
                                             }
                                         </div>
                                     </div>
