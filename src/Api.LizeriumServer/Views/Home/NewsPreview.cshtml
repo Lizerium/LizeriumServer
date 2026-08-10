@@ -49,10 +49,10 @@
         if (Uri.TryCreate(imageUrl, UriKind.Absolute, out _))
             return imageUrl;
 
-        if (!imageUrl.StartsWith("/img/news/", StringComparison.OrdinalIgnoreCase))
-            return imageUrl;
+        if (imageUrl.StartsWith("/img/news/", StringComparison.OrdinalIgnoreCase))
+            return $"https://lizup.ru{imageUrl}";
 
-        return $"/news/assets/preview?url={Uri.EscapeDataString(imageUrl)}";
+        return imageUrl;
     }
 
     private static string GetPublicImageFallbackUrl(string imageUrl)
@@ -326,6 +326,9 @@
 
         var safe = HtmlEncoder.Default.Encode(trimmed);
         safe = ReplaceInlineMarkdownImages(safe);
+        safe = Regex.Replace(safe, @"^######\s+(.+)$", "<h6>$1</h6>", RegexOptions.Multiline);
+        safe = Regex.Replace(safe, @"^#####\s+(.+)$", "<h5>$1</h5>", RegexOptions.Multiline);
+        safe = Regex.Replace(safe, @"^####\s+(.+)$", "<h4>$1</h4>", RegexOptions.Multiline);
         safe = Regex.Replace(safe, @"^###\s+(.+)$", "<h3>$1</h3>", RegexOptions.Multiline);
         safe = Regex.Replace(safe, @"^##\s+(.+)$", "<h2>$1</h2>", RegexOptions.Multiline);
         safe = Regex.Replace(safe, @"^#\s+(.+)$", "<h1>$1</h1>", RegexOptions.Multiline);
@@ -360,7 +363,7 @@
             ? string.Empty
             : $" class=\"{HtmlEncoder.Default.Encode(className)}\"";
 
-        return $"<span{encodedClass}><img src=\"{imageUrl}\" data-news-preview-lightbox=\"{imageUrl}\" data-fallback-src=\"{fallbackUrl}\" alt=\"{encodedAlt}\" loading=\"lazy\" onerror=\"var fallback=this.dataset.fallbackSrc;if(fallback&&this.src.indexOf(fallback)<0){{this.src=fallback;this.dataset.newsPreviewLightbox=fallback;}}else{{this.closest('.news-preview-inline-image')?.remove();this.remove();}}\" /></span>";
+        return $"<span{encodedClass}><img src=\"{imageUrl}\" data-news-preview-lightbox=\"{imageUrl}\" data-fallback-src=\"{fallbackUrl}\" alt=\"{encodedAlt}\" loading=\"lazy\" onerror=\"var fallback=this.dataset.fallbackSrc;if(fallback&&this.src.indexOf(fallback)<0){{this.src=fallback;this.dataset.newsPreviewLightbox=fallback;}}else{{var holder=this.closest('.news-preview-inline-image');if(holder){{holder.remove();}}this.remove();}}\" /></span>";
     }
 
     private static string ExtractVideoEmbed(string text)
@@ -397,7 +400,7 @@
             <article class="news-preview-list-card @(hasCardImage ? "has-image" : "no-image")">
                 @if (hasCardImage)
                 {
-                    <img class="news-preview-list-image" src="@cardImageUrl" data-news-preview-lightbox="@cardImageUrl" data-fallback-src="@cardImageFallbackUrl" alt="" loading="lazy" onerror="var fallback=this.dataset.fallbackSrc;if(fallback&&this.src.indexOf(fallback)<0){this.src=fallback;this.dataset.newsPreviewLightbox=fallback;}else{this.closest('.news-preview-list-card')?.classList.add('no-image');this.remove();}" />
+                    <img class="news-preview-list-image" src="@cardImageUrl" data-news-preview-lightbox="@cardImageUrl" data-fallback-src="@cardImageFallbackUrl" alt="" loading="eager" decoding="async" onerror="var fallback=this.dataset.fallbackSrc;var card=this.closest('.news-preview-list-card');if(fallback&&this.src.indexOf(fallback)<0){this.src=fallback;this.dataset.newsPreviewLightbox=fallback;}else{if(card){card.classList.remove('has-image');card.classList.add('no-image');}this.remove();}" />
                 }
                 <div class="news-preview-list-content">
                     <div class="news-preview-list-meta">
@@ -439,7 +442,7 @@
             <article class="news-preview-card">
                 @if (!string.IsNullOrWhiteSpace(coverUrl))
                 {
-                    <img class="news-preview-cover" src="@coverUrl" data-news-preview-lightbox="@coverUrl" data-fallback-src="@GetPublicImageFallbackUrl(news.ImageUrl)" alt="" loading="lazy" onerror="var fallback=this.dataset.fallbackSrc;if(fallback&&this.src.indexOf(fallback)<0){this.src=fallback;this.dataset.newsPreviewLightbox=fallback;}else{this.remove();}" />
+                    <img class="news-preview-cover" src="@coverUrl" data-news-preview-lightbox="@coverUrl" data-fallback-src="@GetPublicImageFallbackUrl(news.ImageUrl)" alt="" loading="eager" decoding="async" onerror="var fallback=this.dataset.fallbackSrc;if(fallback&&this.src.indexOf(fallback)<0){this.src=fallback;this.dataset.newsPreviewLightbox=fallback;}else{this.remove();}" />
                 }
                 <header class="news-preview-header">
                     @if (!string.IsNullOrWhiteSpace(iconUrl))
@@ -488,11 +491,88 @@
 
 <script>
     (() => {
+        const publicNewsHost = "https://lizup.ru";
+
         const escapeAttribute = (value) => String(value || "")
             .replace(/&/g, "&amp;")
             .replace(/"/g, "&quot;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;");
+
+        const toPublicNewsImageUrl = (value) => {
+            const raw = String(value || "").trim();
+            if (!raw)
+                return "";
+
+            if (raw.toLowerCase().startsWith("/img/news/"))
+                return `${publicNewsHost}${raw}`;
+
+            try {
+                const parsed = new URL(raw, window.location.origin);
+                return parsed.pathname.toLowerCase().startsWith("/img/news/")
+                    ? `${publicNewsHost}${parsed.pathname}${parsed.search}`
+                    : raw;
+            } catch {
+                return raw;
+            }
+        };
+
+        const normalizePreviewImages = () => {
+            document.querySelectorAll("img").forEach((image) => {
+                const rawSource = image.dataset.rawNewsUrl
+                    || image.getAttribute("src")
+                    || image.dataset.newsPreviewLightbox
+                    || image.dataset.fallbackSrc
+                    || "";
+                const publicSource = toPublicNewsImageUrl(rawSource);
+
+                if (!publicSource || publicSource === image.getAttribute("src"))
+                    return;
+
+                image.dataset.rawNewsUrl = rawSource;
+                image.dataset.fallbackSrc = publicSource;
+                image.src = publicSource;
+
+                if (image.dataset.newsPreviewLightbox)
+                    image.dataset.newsPreviewLightbox = publicSource;
+            });
+        };
+
+        const collapseBrokenPreviewImage = (image) => {
+            const card = image.closest(".news-preview-list-card");
+
+            if (card) {
+                card.classList.remove("has-image");
+                card.classList.add("no-image");
+            }
+
+            const inlineHolder = image.closest(".news-preview-inline-image");
+            if (inlineHolder) {
+                inlineHolder.remove();
+                return;
+            }
+
+            image.remove();
+        };
+
+        document.querySelectorAll("img").forEach((image) => {
+            image.addEventListener("error", () => {
+                const fallback = image.dataset.fallbackSrc || "";
+
+                if (fallback && image.src.indexOf(fallback) < 0) {
+                    image.src = fallback;
+
+                    if (image.dataset.newsPreviewLightbox)
+                        image.dataset.newsPreviewLightbox = fallback;
+
+                    return;
+                }
+
+                collapseBrokenPreviewImage(image);
+            });
+        });
+
+        normalizePreviewImages();
 
         const openLightbox = (imageUrl, altText) => {
             if (!imageUrl)

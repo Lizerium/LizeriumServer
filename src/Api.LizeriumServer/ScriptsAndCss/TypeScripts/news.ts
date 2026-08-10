@@ -20,20 +20,45 @@ class NewsAdmin {
     startNews() {
         const forms = document.querySelectorAll(".news-editor-card form");
 
+        this.repairNewsImageSources(document);
+
         forms.forEach((form) => {
             form.addEventListener("submit", (event) => {
                 event.preventDefault();
                 this.submitForm(form, event.submitter);
             });
-
-            this.refreshGalleryPreview(form);
-            this.bindExistingImagePreviews(form);
         });
 
         this.bindMarkdownPasteUploads();
         this.enhanceNewsAssetFields(forms);
+        forms.forEach((form) => {
+            this.hydrateImagePreviews(form);
+            this.bindExistingImagePreviews(form);
+        });
         this.ensureNewsAssetModal();
         this.ensureImageLightbox();
+    }
+
+    repairNewsImageSources(root) {
+        const scope = root || document;
+        scope.querySelectorAll("img").forEach((image) => {
+            const rawSource = image.dataset.rawNewsUrl
+                || image.getAttribute("src")
+                || image.dataset.newsPreviewLightbox
+                || image.dataset.fallbackSrc
+                || "";
+            const publicSource = this.toPublicNewsImageUrl(rawSource);
+
+            if (!publicSource)
+                return;
+
+            image.dataset.rawNewsUrl = rawSource;
+            image.dataset.fallbackSrc = publicSource;
+            image.src = publicSource;
+
+            if (image.dataset.newsPreviewLightbox)
+                image.dataset.newsPreviewLightbox = publicSource;
+        });
     }
 
     bindMarkdownPasteUploads() {
@@ -111,12 +136,29 @@ class NewsAdmin {
 
     bindExistingImagePreviews(form) {
         form.querySelectorAll(".news-icon-preview img, .news-image-preview img, .news-gallery-preview img, .news-inline-upload-preview img").forEach((image) => {
+            this.bindNewsImageFallback(image, image.dataset.rawNewsUrl || image.getAttribute("src") || "");
             if (image.dataset.newsLightboxBound === "true")
                 return;
 
             image.dataset.newsLightboxBound = "true";
-            image.addEventListener("click", () => this.openImageLightbox(image.src, image.alt || ""));
+            image.addEventListener("click", () => this.openImageLightbox(image.currentSrc || image.src, image.alt || ""));
         });
+    }
+
+    hydrateImagePreviews(form) {
+        if (!form)
+            return;
+
+        const iconInput = form.querySelector("input[name='IconUrl']");
+        const imageInput = form.querySelector("input[name='ImageUrl']");
+
+        if (iconInput && iconInput.value.trim().length > 0)
+            this.updateIconPreview(form, iconInput.value.trim(), iconInput.value.trim());
+
+        if (imageInput && imageInput.value.trim().length > 0)
+            this.updateImagePreview(form, imageInput.value.trim(), imageInput.value.trim());
+
+        this.refreshGalleryPreview(form);
     }
 
     async uploadMarkdownImage(textarea, image) {
@@ -302,7 +344,7 @@ class NewsAdmin {
         }
 
         if (result.previewImageUrl) {
-            this.updateImagePreview(form, result.previewImageUrl);
+            this.updateImagePreview(form, result.previewImageUrl, imageInput ? imageInput.value : result.imageUrl);
         }
         else if (imageInput && imageInput.value.trim().length === 0) {
             const preview = form.querySelector(".news-image-preview");
@@ -355,7 +397,7 @@ class NewsAdmin {
         }
     }
 
-    updateIconPreview(form, previewImageUrl) {
+    updateIconPreview(form, previewImageUrl, rawImageUrl) {
         let preview = form.querySelector(".news-icon-preview");
 
         if (!preview) {
@@ -374,8 +416,9 @@ class NewsAdmin {
 
         const image = preview.querySelector("img");
         if (image) {
-            image.src = this.toNewsPreviewUrl(previewImageUrl);
-            this.bindNewsImageFallback(image, previewImageUrl);
+            image.dataset.rawNewsUrl = rawImageUrl || previewImageUrl || "";
+            this.bindNewsImageFallback(image, rawImageUrl || previewImageUrl);
+            image.src = this.toNewsDisplayUrl(rawImageUrl || previewImageUrl);
             if (image.dataset.newsLightboxBound !== "true") {
                 image.dataset.newsLightboxBound = "true";
                 image.addEventListener("click", () => this.openImageLightbox(image.currentSrc || image.src, image.alt || ""));
@@ -385,7 +428,7 @@ class NewsAdmin {
         preview.classList.remove("broken");
     }
 
-    updateImagePreview(form, previewImageUrl) {
+    updateImagePreview(form, previewImageUrl, rawImageUrl) {
         let preview = form.querySelector(".news-image-preview");
 
         if (!preview) {
@@ -404,8 +447,9 @@ class NewsAdmin {
 
         const image = preview.querySelector("img");
         if (image) {
-            image.src = this.toNewsPreviewUrl(previewImageUrl);
-            this.bindNewsImageFallback(image, previewImageUrl);
+            image.dataset.rawNewsUrl = rawImageUrl || previewImageUrl || "";
+            this.bindNewsImageFallback(image, rawImageUrl || previewImageUrl);
+            image.src = this.toNewsDisplayUrl(rawImageUrl || previewImageUrl);
             if (image.dataset.newsLightboxBound !== "true") {
                 image.dataset.newsLightboxBound = "true";
                 image.addEventListener("click", () => this.openImageLightbox(image.currentSrc || image.src, image.alt || ""));
@@ -444,7 +488,7 @@ class NewsAdmin {
         inlineItem.className = "news-inline-item";
 
         const image = document.createElement("img");
-        image.src = this.toNewsPreviewUrl(imageUrl);
+        image.src = this.toNewsDisplayUrl(imageUrl);
         image.alt = "";
         image.loading = "lazy";
         this.bindNewsImageFallback(image, imageUrl);
@@ -510,7 +554,7 @@ class NewsAdmin {
             const item = document.createElement("span");
             item.className = "news-gallery-item";
             item.innerHTML = `
-                <img src="${this.escapeAttribute(this.toNewsPreviewUrl(url))}" data-fallback-src="${this.escapeAttribute(this.toPublicNewsImageUrl(url))}" alt="" loading="lazy" />
+                <img src="${this.escapeAttribute(this.toNewsDisplayUrl(url))}" data-fallback-src="${this.escapeAttribute(this.toPublicNewsImageUrl(url))}" alt="" loading="lazy" />
                 <button type="button" class="news-gallery-remove" title="Detach image">Detach</button>`;
             const image = item.querySelector("img");
             this.bindNewsImageFallback(image, url);
@@ -655,10 +699,15 @@ class NewsAdmin {
 
         this.newsAssetGrid.innerHTML = "";
         assets.forEach((asset) => {
+            const previewUrl = this.toNewsDisplayUrl(asset.previewUrl || asset.url)
+                || this.toNewsPreviewUrl(asset.url)
+                || asset.url
+                || "";
+            const fallbackUrl = this.toPublicNewsImageUrl(asset.url || asset.previewUrl || "");
             const card = document.createElement("div");
             card.className = "news-asset-card";
             card.innerHTML = `
-                <span class="news-asset-thumb"><img src="${this.escapeAttribute(asset.previewUrl || this.toNewsPreviewUrl(asset.url))}" alt="" loading="lazy" /></span>
+                <span class="news-asset-thumb"><img src="${this.escapeAttribute(previewUrl)}" data-raw-news-url="${this.escapeAttribute(asset.url || "")}" data-fallback-src="${this.escapeAttribute(fallbackUrl)}" alt="" loading="lazy" /></span>
                 <span class="news-asset-meta">
                     <strong>${this.escapeHtml(asset.name || asset.url)}</strong>
                     <small>${this.escapeHtml(asset.group || "/img/news")}</small>
@@ -674,9 +723,9 @@ class NewsAdmin {
             card.querySelector("[data-action='gallery']").addEventListener("click", () => this.useNewsAsset(asset, "gallery"));
             card.querySelector("[data-action='cover']").addEventListener("click", () => this.useNewsAsset(asset, "cover"));
             card.querySelector("[data-action='delete']").addEventListener("click", () => this.deleteNewsAsset(asset));
-            card.querySelector(".news-asset-thumb img").addEventListener("click", () => {
-                this.openImageLightbox(asset.previewUrl || this.toNewsPreviewUrl(asset.url), asset.name || "");
-            });
+            const image = card.querySelector(".news-asset-thumb img");
+            this.bindNewsImageFallback(image, asset.url || asset.previewUrl || "");
+            image.addEventListener("click", () => this.openImageLightbox(image.currentSrc || image.src, asset.name || ""));
             this.newsAssetGrid.appendChild(card);
         });
         this.renderNewsAssetPagination();
@@ -862,11 +911,35 @@ class NewsAdmin {
         return url;
     }
 
-    toPublicNewsImageUrl(url) {
-        if (!url || url.indexOf("/img/news/") !== 0)
+    toNewsDisplayUrl(url) {
+        if (!url)
             return "";
 
-        return `https://lizup.ru${url}`;
+        const publicUrl = this.toPublicNewsImageUrl(url);
+        return publicUrl || url;
+    }
+
+    toPublicNewsImageUrl(url) {
+        if (!url)
+            return "";
+
+        const raw = String(url).trim();
+        if (!raw)
+            return "";
+
+        if (raw.toLowerCase().indexOf("/img/news/") === 0)
+            return `https://lizup.ru${raw}`;
+
+        try {
+            const parsed = new URL(raw, window.location.origin);
+            if (parsed.pathname.toLowerCase().indexOf("/img/news/") === 0)
+                return `https://lizup.ru${parsed.pathname}${parsed.search || ""}`;
+        }
+        catch {
+            return "";
+        }
+
+        return "";
     }
 
     bindNewsImageFallback(image, rawUrl) {

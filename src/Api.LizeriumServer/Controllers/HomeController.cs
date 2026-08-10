@@ -1216,7 +1216,7 @@ public class HomeController : Controller
                 return new
                 {
                     url,
-                    previewUrl = $"/news/assets/preview?url={Uri.EscapeDataString(url)}",
+                    previewUrl = GetNewsPreviewUrl(url),
                     name = Path.GetFileName(file),
                     group,
                     modifiedAtUnix = new DateTimeOffset(System.IO.File.GetLastWriteTimeUtc(file)).ToUnixTimeSeconds()
@@ -1331,10 +1331,10 @@ public class HomeController : Controller
         if (Uri.TryCreate(imageUrl, UriKind.Absolute, out _))
             return imageUrl;
 
-        if (!imageUrl.StartsWith("/img/news/", StringComparison.OrdinalIgnoreCase))
-            return imageUrl;
+        if (imageUrl.StartsWith("/img/news/", StringComparison.OrdinalIgnoreCase))
+            return $"https://lizup.ru{imageUrl}";
 
-        return $"/news/assets/preview?url={Uri.EscapeDataString(imageUrl)}";
+        return imageUrl;
     }
 
     private static long ParseNewsPublishedAt(string publishedAtLocal)
