@@ -42,6 +42,8 @@ public static class MarkdownHtmlHelper
         if (lazyImages)
             MakeImagesLazy(document);
 
+        EnhanceNewsImages(document);
+
         return RestoreNewsVideos(document.DocumentNode.InnerHtml, newsVideos);
     }
 
@@ -220,5 +222,160 @@ public static class MarkdownHtmlHelper
             image.SetAttributeValue("decoding", "async");
             image.Attributes.Remove("src");
         }
+    }
+
+    private static void EnhanceNewsImages(HtmlDocument document)
+    {
+        var images = document.DocumentNode.Descendants("img").ToList();
+        foreach (var image in images)
+        {
+            var imageUrl = image.GetAttributeValue("data-news-reader-image-src", string.Empty);
+            if (string.IsNullOrWhiteSpace(imageUrl))
+                imageUrl = image.GetAttributeValue("src", string.Empty);
+
+            if (string.IsNullOrWhiteSpace(imageUrl))
+                continue;
+
+            image.SetAttributeValue("data-news-lightbox-image", imageUrl);
+            AddCssClass(image, "launcher-news-reader-markdown-image");
+        }
+
+        GroupAdjacentImageParagraphs(document);
+        GroupInlineImageRuns(document);
+    }
+
+    private static void GroupAdjacentImageParagraphs(HtmlDocument document)
+    {
+        foreach (var paragraph in document.DocumentNode.Descendants("p").ToList())
+        {
+            if (!IsImageOnlyParagraph(paragraph) || paragraph.Elements("img").Count() < 2)
+                continue;
+
+            ReplaceParagraphsWithImageGrid(paragraph.ParentNode, new List<HtmlNode> { paragraph });
+        }
+
+        foreach (var parent in document.DocumentNode.Descendants().ToList())
+        {
+            var children = parent.ChildNodes.ToList();
+            var index = 0;
+
+            while (index < children.Count)
+            {
+                if (!IsImageOnlyParagraph(children[index]))
+                {
+                    index++;
+                    continue;
+                }
+
+                var group = new List<HtmlNode>();
+                while (index < children.Count && IsImageOnlyParagraph(children[index]))
+                {
+                    group.Add(children[index]);
+                    index++;
+                }
+
+                if (group.Count < 2)
+                    continue;
+
+                ReplaceParagraphsWithImageGrid(parent, group);
+            }
+        }
+    }
+
+    private static void ReplaceParagraphsWithImageGrid(HtmlNode parent, IReadOnlyList<HtmlNode> paragraphs)
+    {
+        if (parent == null || paragraphs.Count == 0)
+            return;
+
+        var firstParagraph = paragraphs[0];
+        var grid = HtmlNode.CreateNode("<div class=\"launcher-news-reader-markdown-image-grid\"></div>");
+        parent.InsertBefore(grid, firstParagraph);
+
+        foreach (var paragraph in paragraphs)
+        {
+            paragraph.Remove();
+            foreach (var image in paragraph.Descendants("img").ToList())
+            {
+                var item = HtmlNode.CreateNode("<button class=\"launcher-news-reader-markdown-image-tile\" type=\"button\"></button>");
+                item.AppendChild(image);
+                grid.AppendChild(item);
+            }
+        }
+    }
+
+    private static void GroupInlineImageRuns(HtmlDocument document)
+    {
+        foreach (var paragraph in document.DocumentNode.Descendants("p").ToList())
+        {
+            var children = paragraph.ChildNodes.ToList();
+            var index = 0;
+
+            while (index < children.Count)
+            {
+                var run = new List<HtmlNode>();
+                var runStart = index;
+
+                while (index < children.Count)
+                {
+                    var child = children[index];
+                    if (child.Name.Equals("img", StringComparison.OrdinalIgnoreCase))
+                    {
+                        run.Add(child);
+                        index++;
+                        continue;
+                    }
+
+                    if (child.NodeType == HtmlNodeType.Text && string.IsNullOrWhiteSpace(child.InnerText))
+                    {
+                        index++;
+                        continue;
+                    }
+
+                    break;
+                }
+
+                if (run.Count < 2)
+                {
+                    index = Math.Max(index + 1, runStart + 1);
+                    continue;
+                }
+
+                var grid = HtmlNode.CreateNode("<span class=\"launcher-news-reader-markdown-image-grid inline\"></span>");
+                paragraph.InsertBefore(grid, run[0]);
+
+                foreach (var image in run)
+                {
+                    image.Remove();
+                    var item = HtmlNode.CreateNode("<button class=\"launcher-news-reader-markdown-image-tile\" type=\"button\"></button>");
+                    item.AppendChild(image);
+                    grid.AppendChild(item);
+                }
+
+                children = paragraph.ChildNodes.ToList();
+                index = children.IndexOf(grid) + 1;
+            }
+        }
+    }
+
+    private static bool IsImageOnlyParagraph(HtmlNode node)
+    {
+        if (!node.Name.Equals("p", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        if (!node.Elements("img").Any())
+            return false;
+
+        return node.ChildNodes.All(child =>
+            child.Name.Equals("img", StringComparison.OrdinalIgnoreCase)
+            || child.NodeType == HtmlNodeType.Text && string.IsNullOrWhiteSpace(child.InnerText));
+    }
+
+    private static void AddCssClass(HtmlNode node, string className)
+    {
+        var current = node.GetAttributeValue("class", string.Empty);
+        if (current.Split(' ', StringSplitOptions.RemoveEmptyEntries).Contains(className))
+            return;
+
+        node.SetAttributeValue("class", string.IsNullOrWhiteSpace(current) ? className : $"{current} {className}");
     }
 }

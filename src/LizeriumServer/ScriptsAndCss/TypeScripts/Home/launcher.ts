@@ -127,6 +127,26 @@ export class Launcher {
         });
     }
 
+    private bindReaderMarkdownImageLightbox(root: ParentNode): void {
+        root.querySelectorAll<HTMLImageElement>("[data-news-lightbox-image]").forEach((image) => {
+            if (image.dataset.newsLightboxBound === "true")
+                return;
+
+            image.dataset.newsLightboxBound = "true";
+            image.addEventListener("click", (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+
+                const imageUrl = image.getAttribute("data-news-reader-image-src") || image.currentSrc || image.src || image.getAttribute("data-news-lightbox-image") || "";
+                if (!imageUrl)
+                    return;
+
+                const title = image.closest("[data-news-reader-post]")?.querySelector("h2")?.textContent || image.alt || "";
+                this.openNewsLightbox(imageUrl, title);
+            });
+        });
+    }
+
     private openNewsLightbox(imageUrl: string, title: string): void {
         const previous = document.querySelector(".launcher-news-lightbox");
         if (previous)
@@ -216,6 +236,7 @@ export class Launcher {
                 if (!image.src)
                     image.src = image.getAttribute("data-news-reader-image-src") || "";
             });
+            this.bindReaderMarkdownImageLightbox(post);
 
             post.querySelectorAll<HTMLElement>("[data-news-video-player]").forEach((player) => {
                 if (resetVideos)

@@ -1,47 +1,63 @@
-/// <binding BeforeBuild='all' ProjectOpened='watch' /> //запускает задачу наблюдения при открытии проекта, все задачи перед билдом (выбирается в меню Task Runner)
+﻿/// <binding BeforeBuild='all' ProjectOpened='watch' /> //Р·Р°РїСѓСЃРєР°РµС‚ Р·Р°РґР°С‡Сѓ РЅР°Р±Р»СЋРґРµРЅРёСЏ РїСЂРё РѕС‚РєСЂС‹С‚РёРё РїСЂРѕРµРєС‚Р°, РІСЃРµ Р·Р°РґР°С‡Рё РїРµСЂРµРґ Р±РёР»РґРѕРј (РІС‹Р±РёСЂР°РµС‚СЃСЏ РІ РјРµРЅСЋ Task Runner)
 module.exports = function (grunt) {
   grunt.initConfig({
-    clean: ["wwwroot/css/*", "wwwroot/js/app.min.js", "ScriptsAndCss/Combined/*"], //очистка файлов какие папки/файлы очищать
+    clean: ["wwwroot/css/*", "wwwroot/js/app.min.js", "ScriptsAndCss/Combined/*"], //РѕС‡РёСЃС‚РєР° С„Р°Р№Р»РѕРІ РєР°РєРёРµ РїР°РїРєРё/С„Р°Р№Р»С‹ РѕС‡РёС‰Р°С‚СЊ
+    sass: {
+      css: {
+        options: {
+          implementation: require("sass"),
+          sourceMap: false
+        },
+        files: [{
+          expand: true,
+          cwd: "ScriptsAndCss/CssFiles",
+          src: ["**/*.scss"],
+          dest: "ScriptsAndCss/Combined/scss",
+          ext: ".css"
+        }]
+      }
+    },
     ts: {
       api: {
         tsconfig: "./tsconfig.json"
       }
     },
     concat: {
-      js: { //объединение JS
+      js: { //РѕР±СЉРµРґРёРЅРµРЅРёРµ JS
         src: [
           "ScriptsAndCss/JsScripts/**/*.js"
-        ], //сюда можно писать файлы для объединения через запятую
-        dest: "ScriptsAndCss/Combined/combined.js" //расположение объединенного файла
+        ], //СЃСЋРґР° РјРѕР¶РЅРѕ РїРёСЃР°С‚СЊ С„Р°Р№Р»С‹ РґР»СЏ РѕР±СЉРµРґРёРЅРµРЅРёСЏ С‡РµСЂРµР· Р·Р°РїСЏС‚СѓСЋ
+        dest: "ScriptsAndCss/Combined/combined.js" //СЂР°СЃРїРѕР»РѕР¶РµРЅРёРµ РѕР±СЉРµРґРёРЅРµРЅРЅРѕРіРѕ С„Р°Р№Р»Р°
       },
-      css: { //объединение CSS
-        src: ["ScriptsAndCss/CssFiles/*"], //сюда можно писать файлы для объединения через запятую
-        dest: "ScriptsAndCss/Combined/combined.css" //расположение объединенного файла
+      css: { //РѕР±СЉРµРґРёРЅРµРЅРёРµ CSS
+        src: ["ScriptsAndCss/CssFiles/**/*.css", "ScriptsAndCss/Combined/scss/**/*.css"], //СЃСЋРґР° РјРѕР¶РЅРѕ РїРёСЃР°С‚СЊ С„Р°Р№Р»С‹ РґР»СЏ РѕР±СЉРµРґРёРЅРµРЅРёСЏ С‡РµСЂРµР· Р·Р°РїСЏС‚СѓСЋ
+        dest: "ScriptsAndCss/Combined/combined.css" //СЂР°СЃРїРѕР»РѕР¶РµРЅРёРµ РѕР±СЉРµРґРёРЅРµРЅРЅРѕРіРѕ С„Р°Р№Р»Р°
       }
     },
-    uglify: { //сжатие JS
+    uglify: { //СЃР¶Р°С‚РёРµ JS
       js: {
-        src: ["ScriptsAndCss/Combined/combined.js"], //какой файл сжимать
-        dest: "wwwroot/js/app.min.js" //сжатый выходной файл
+        src: ["ScriptsAndCss/Combined/combined.js"], //РєР°РєРѕР№ С„Р°Р№Р» СЃР¶РёРјР°С‚СЊ
+        dest: "wwwroot/js/app.min.js" //СЃР¶Р°С‚С‹Р№ РІС‹С…РѕРґРЅРѕР№ С„Р°Р№Р»
       }
     },
-    cssmin: { //сжатие CSS
+    cssmin: { //СЃР¶Р°С‚РёРµ CSS
       css: {
-        src: ["ScriptsAndCss/Combined/combined.css"], //какой файл сжимать
-        dest: "wwwroot/css/app.min.css" //сжатый выходной файл
+        src: ["ScriptsAndCss/Combined/combined.css"], //РєР°РєРѕР№ С„Р°Р№Р» СЃР¶РёРјР°С‚СЊ
+        dest: "wwwroot/css/app.min.css" //СЃР¶Р°С‚С‹Р№ РІС‹С…РѕРґРЅРѕР№ С„Р°Р№Р»
       }
     },
-    watch: { //наблюдение за изменениями
-      files: ["ScriptsAndCss/TypeScripts/**/*.ts", "ScriptsAndCss/JsScripts/**/*.js", "ScriptsAndCss/CssFiles/*.css"], //за изменением каких файлов наблюдаем
-      tasks: ["all"] //какую задачу запускаем
+    watch: { //РЅР°Р±Р»СЋРґРµРЅРёРµ Р·Р° РёР·РјРµРЅРµРЅРёСЏРјРё
+      files: ["ScriptsAndCss/TypeScripts/**/*.ts", "ScriptsAndCss/JsScripts/**/*.js", "ScriptsAndCss/CssFiles/**/*.css", "ScriptsAndCss/CssFiles/**/*.scss"], //Р·Р° РёР·РјРµРЅРµРЅРёРµРј РєР°РєРёС… С„Р°Р№Р»РѕРІ РЅР°Р±Р»СЋРґР°РµРј
+      tasks: ["all"] //РєР°РєСѓСЋ Р·Р°РґР°С‡Сѓ Р·Р°РїСѓСЃРєР°РµРј
     }
   });
 
-  grunt.loadNpmTasks("grunt-contrib-clean"); //для очистки файлов
-  grunt.loadNpmTasks("grunt-contrib-concat"); //для объединения JS и CSS
-  grunt.loadNpmTasks("grunt-contrib-uglify"); //для сжатия JS
-  grunt.loadNpmTasks("grunt-contrib-cssmin"); //для сжатия CSS
-  grunt.loadNpmTasks("grunt-ts"); //для компиляции TypeScript
-  grunt.registerTask("all", ["clean", "ts", "concat", "uglify", "cssmin"]); //общая задача
-  grunt.loadNpmTasks("grunt-contrib-watch"); //для наблюдения за изменениями в файлах
+  grunt.loadNpmTasks("grunt-contrib-clean"); //РґР»СЏ РѕС‡РёСЃС‚РєРё С„Р°Р№Р»РѕРІ
+  grunt.loadNpmTasks("grunt-sass");
+  grunt.loadNpmTasks("grunt-contrib-concat"); //РґР»СЏ РѕР±СЉРµРґРёРЅРµРЅРёСЏ JS Рё CSS
+  grunt.loadNpmTasks("grunt-contrib-uglify"); //РґР»СЏ СЃР¶Р°С‚РёСЏ JS
+  grunt.loadNpmTasks("grunt-contrib-cssmin"); //РґР»СЏ СЃР¶Р°С‚РёСЏ CSS
+  grunt.loadNpmTasks("grunt-ts"); //РґР»СЏ РєРѕРјРїРёР»СЏС†РёРё TypeScript
+  grunt.registerTask("all", ["clean", "sass", "ts", "concat", "uglify", "cssmin"]); //РѕР±С‰Р°СЏ Р·Р°РґР°С‡Р°
+  grunt.loadNpmTasks("grunt-contrib-watch"); //РґР»СЏ РЅР°Р±Р»СЋРґРµРЅРёСЏ Р·Р° РёР·РјРµРЅРµРЅРёСЏРјРё РІ С„Р°Р№Р»Р°С…
 };

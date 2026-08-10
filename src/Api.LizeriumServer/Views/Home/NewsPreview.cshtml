@@ -1,4 +1,4 @@
-@model MainModel
+﻿@model MainModel
 @using System.Text.Encodings.Web
 @using System.Text.Json
 @using System.Text.RegularExpressions
@@ -338,7 +338,7 @@
             ? string.Empty
             : $" class=\"{HtmlEncoder.Default.Encode(className)}\"";
 
-        return $"<span{encodedClass}><img src=\"{imageUrl}\" data-fallback-src=\"{fallbackUrl}\" alt=\"{encodedAlt}\" loading=\"lazy\" onerror=\"var fallback=this.dataset.fallbackSrc;if(fallback&&this.src.indexOf(fallback)<0){{this.src=fallback;}}else{{this.closest('.news-preview-inline-image')?.remove();this.remove();}}\" /></span>";
+        return $"<span{encodedClass}><img src=\"{imageUrl}\" data-news-preview-lightbox=\"{imageUrl}\" data-fallback-src=\"{fallbackUrl}\" alt=\"{encodedAlt}\" loading=\"lazy\" onerror=\"var fallback=this.dataset.fallbackSrc;if(fallback&&this.src.indexOf(fallback)<0){{this.src=fallback;this.dataset.newsPreviewLightbox=fallback;}}else{{this.closest('.news-preview-inline-image')?.remove();this.remove();}}\" /></span>";
     }
 
     private static string ExtractVideoEmbed(string text)
@@ -375,7 +375,7 @@
             <article class="news-preview-list-card @(hasCardImage ? "has-image" : "no-image")">
                 @if (hasCardImage)
                 {
-                    <img class="news-preview-list-image" src="@cardImageUrl" data-fallback-src="@cardImageFallbackUrl" alt="" loading="lazy" onerror="var fallback=this.dataset.fallbackSrc;if(fallback&&this.src.indexOf(fallback)<0){this.src=fallback;}else{this.closest('.news-preview-list-card')?.classList.add('no-image');this.remove();}" />
+                    <img class="news-preview-list-image" src="@cardImageUrl" data-news-preview-lightbox="@cardImageUrl" data-fallback-src="@cardImageFallbackUrl" alt="" loading="lazy" onerror="var fallback=this.dataset.fallbackSrc;if(fallback&&this.src.indexOf(fallback)<0){this.src=fallback;this.dataset.newsPreviewLightbox=fallback;}else{this.closest('.news-preview-list-card')?.classList.add('no-image');this.remove();}" />
                 }
                 <div class="news-preview-list-content">
                     <div class="news-preview-list-meta">
@@ -417,7 +417,7 @@
             <article class="news-preview-card">
                 @if (!string.IsNullOrWhiteSpace(coverUrl))
                 {
-                    <img class="news-preview-cover" src="@coverUrl" data-fallback-src="@GetPublicImageFallbackUrl(news.ImageUrl)" alt="" loading="lazy" onerror="var fallback=this.dataset.fallbackSrc;if(fallback&&this.src.indexOf(fallback)<0){this.src=fallback;}else{this.remove();}" />
+                    <img class="news-preview-cover" src="@coverUrl" data-news-preview-lightbox="@coverUrl" data-fallback-src="@GetPublicImageFallbackUrl(news.ImageUrl)" alt="" loading="lazy" onerror="var fallback=this.dataset.fallbackSrc;if(fallback&&this.src.indexOf(fallback)<0){this.src=fallback;this.dataset.newsPreviewLightbox=fallback;}else{this.remove();}" />
                 }
                 <header class="news-preview-header">
                     @if (!string.IsNullOrWhiteSpace(iconUrl))
@@ -453,7 +453,7 @@
                     <div class="news-preview-gallery">
                         @foreach (var imageUrl in galleryUrls)
                         {
-                            <img src="@imageUrl" alt="" loading="lazy" onerror="this.remove();" />
+                            <img src="@imageUrl" data-news-preview-lightbox="@imageUrl" alt="" loading="lazy" onerror="this.remove();" />
                         }
                     </div>
                 }
@@ -462,350 +462,55 @@
     </section>
 </div>
 
-<style>
-    .news-preview-workspace {
-        max-width: 1180px;
-        text-align: left;
-    }
+<script>
+    (() => {
+        const escapeAttribute = (value) => String(value || "")
+            .replace(/&/g, "&amp;")
+            .replace(/"/g, "&quot;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
 
-    .news-preview-workspace h1,
-    .news-preview-workspace h2,
-    .news-preview-workspace h3,
-    .news-preview-workspace p,
-    .news-preview-workspace time,
-    .news-preview-workspace span,
-    .news-preview-workspace small,
-    .news-preview-workspace div {
-        text-align: left;
-    }
+        const openLightbox = (imageUrl, altText) => {
+            if (!imageUrl)
+                return;
 
-    .news-preview-toolbar {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
-        margin-bottom: 18px;
-    }
+            document.querySelector(".news-preview-lightbox")?.remove();
+            const lightbox = document.createElement("div");
+            lightbox.className = "news-preview-lightbox";
+            lightbox.innerHTML = `
+                <button type="button" aria-label="Закрыть">&times;</button>
+                <img src="${escapeAttribute(imageUrl)}" alt="${escapeAttribute(altText)}" />
+            `;
 
-    .news-preview-state {
-        margin-left: auto;
-        padding: 8px 12px;
-        border: 1px solid #2b3b55;
-        border-radius: 8px;
-        color: #b8c7dd;
-        font-weight: 700;
-    }
+            const close = () => {
+                lightbox.remove();
+                document.body.classList.remove("news-preview-lightbox-open");
+            };
 
-    .news-preview-state.published {
-        color: #7af0b2;
-        border-color: rgba(122, 240, 178, 0.35);
-    }
+            lightbox.addEventListener("click", (event) => {
+                if (event.target === lightbox)
+                    close();
+            });
+            lightbox.querySelector("button")?.addEventListener("click", close);
+            document.body.classList.add("news-preview-lightbox-open");
+            document.body.appendChild(lightbox);
+        };
 
-    .news-preview-state.hidden {
-        color: #ffc17a;
-        border-color: rgba(255, 193, 122, 0.35);
-    }
+        document.addEventListener("click", (event) => {
+            const image = event.target instanceof HTMLImageElement ? event.target : null;
+            if (!image || !image.dataset.newsPreviewLightbox)
+                return;
 
-    .news-preview-section-title {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 18px;
-        margin: 28px 0 12px;
-    }
+            event.preventDefault();
+            openLightbox(image.dataset.newsPreviewLightbox || image.currentSrc || image.src, image.alt || "");
+        });
 
-    .news-preview-section-title span {
-        color: #ffffff;
-        font-size: 22px;
-        font-weight: 800;
-    }
+        document.addEventListener("keydown", (event) => {
+            if (event.key !== "Escape")
+                return;
 
-    .news-preview-section-title small {
-        color: #8fa0ba;
-        font-weight: 700;
-        text-align: right;
-    }
-
-    .news-preview-list-card {
-        display: grid;
-        grid-template-columns: minmax(280px, 44%) minmax(0, 1fr);
-        overflow: hidden;
-        border: 1px solid #24344f;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #0b1220 0%, #100b2a 100%);
-        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
-    }
-
-    .news-preview-list-card.no-image {
-        grid-template-columns: minmax(0, 1fr);
-    }
-
-    .news-preview-list-image {
-        display: block;
-        width: 100%;
-        height: 100%;
-        min-height: 320px;
-        object-fit: cover;
-        background: #050914;
-    }
-
-    .news-preview-list-content {
-        display: flex;
-        flex-direction: column;
-        gap: 18px;
-        justify-content: flex-start;
-        min-width: 0;
-        min-height: 0;
-        padding: 32px;
-    }
-
-    .news-preview-list-meta {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 10px 14px;
-        border: 1px solid rgba(116, 231, 255, 0.2);
-        border-radius: 8px;
-        background: rgba(5, 12, 24, 0.62);
-    }
-
-    .news-preview-list-meta time {
-        color: #86e8ff;
-        font-weight: 800;
-    }
-
-    .news-preview-list-card h2 {
-        margin: 0;
-        color: #ffffff;
-        font-family: Montserrat, "Segoe UI", Arial, sans-serif;
-        font-size: 28px;
-        line-height: 1.15;
-    }
-
-    .news-preview-list-card p,
-    .news-preview-card-markdown {
-        display: -webkit-box;
-        overflow: hidden;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 4;
-        margin: 0;
-        color: #b7c2d4;
-        font-size: 17px;
-        line-height: 1.55;
-    }
-
-    .news-preview-card-markdown a {
-        color: #66e6ff;
-        font-weight: 800;
-        text-decoration: none;
-    }
-
-    .news-preview-card-markdown strong {
-        color: #ffffff;
-    }
-
-    .news-preview-card-markdown code {
-        padding: 2px 6px;
-        border-radius: 6px;
-        background: rgba(255, 79, 190, 0.1);
-        color: #ff5fbe;
-    }
-
-    .news-preview-video-links.card-links {
-        padding: 0;
-    }
-
-    .news-preview-video-links.card-links a.active {
-        background: rgba(97, 231, 255, 0.14);
-        color: #b6f6ff;
-        box-shadow: 0 0 18px rgba(97, 231, 255, 0.18);
-    }
-
-    .news-preview-list-actions {
-        display: flex;
-        gap: 12px;
-        margin-top: 2px;
-    }
-
-    .news-preview-list-actions span {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 44px;
-        padding: 0 18px;
-        border: 1px solid rgba(130, 90, 255, 0.52);
-        border-radius: 8px;
-        color: #ffffff;
-        font-weight: 800;
-    }
-
-    .news-preview-card {
-        overflow: hidden;
-        border: 1px solid #24344f;
-        border-radius: 12px;
-        background: #0d1421;
-        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
-    }
-
-    .news-preview-cover {
-        display: block;
-        width: 100%;
-        max-height: 420px;
-        object-fit: cover;
-        background: #050914;
-    }
-
-    .news-preview-header {
-        display: flex;
-        gap: 18px;
-        align-items: center;
-        padding: 28px;
-        border-bottom: 1px solid #24344f;
-    }
-
-    .news-preview-icon {
-        width: 74px;
-        height: 74px;
-        object-fit: cover;
-        border-radius: 16px;
-        background: #080d18;
-    }
-
-    .news-preview-type {
-        display: inline-flex;
-        margin-bottom: 10px;
-        color: #74e7ff;
-        font-weight: 800;
-        text-transform: uppercase;
-    }
-
-    .news-preview-header h1 {
-        margin: 0 0 10px;
-        color: #fff;
-        font-family: Montserrat, "Segoe UI", Arial, sans-serif;
-        font-size: 32px;
-        line-height: 1.15;
-    }
-
-    .news-preview-header time {
-        color: #9fb0c8;
-        font-weight: 700;
-    }
-
-    .news-preview-video,
-    .news-preview-inline-video {
-        aspect-ratio: 16 / 9;
-        margin: 28px;
-        overflow: hidden;
-        border: 1px solid #244566;
-        border-radius: 10px;
-        background: #050914;
-    }
-
-    .news-preview-video iframe,
-    .news-preview-inline-video iframe {
-        width: 100%;
-        height: 100%;
-    }
-
-    .news-preview-video-links {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        padding: 0 28px 12px;
-    }
-
-    .news-preview-video-links a {
-        padding: 9px 13px;
-        border: 1px solid rgba(97, 231, 255, 0.3);
-        border-radius: 8px;
-        color: #84ebff;
-        font-weight: 800;
-        text-decoration: none;
-    }
-
-    .news-preview-markdown {
-        padding: 28px;
-        color: #d4deef;
-        font-family: Montserrat, "Segoe UI", Arial, sans-serif;
-        font-size: 17px;
-        line-height: 1.7;
-        text-align: left;
-    }
-
-    .news-preview-markdown h1,
-    .news-preview-markdown h2,
-    .news-preview-markdown h3 {
-        color: #fff;
-        margin: 24px 0 12px;
-    }
-
-    .news-preview-markdown p {
-        margin: 0 0 18px;
-        text-align: left;
-    }
-
-    .news-preview-markdown a {
-        color: #74e7ff;
-    }
-
-    .news-preview-markdown code {
-        padding: 2px 6px;
-        border-radius: 6px;
-        background: #050914;
-        color: #ff79c6;
-    }
-
-    .news-preview-markdown figure {
-        margin: 24px 0;
-    }
-
-    .news-preview-inline-image {
-        display: block;
-        margin: 18px 0;
-    }
-
-    .news-preview-markdown figure img,
-    .news-preview-inline-image img,
-    .news-preview-gallery img {
-        max-width: 100%;
-        border-radius: 10px;
-        border: 1px solid #24344f;
-    }
-
-    .news-preview-gallery {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 14px;
-        padding: 0 28px 28px;
-    }
-
-    .news-preview-empty {
-        color: #8f9db4;
-    }
-
-    @@media (max-width: 900px) {
-        .news-preview-section-title {
-            display: block;
-        }
-
-        .news-preview-section-title small {
-            display: block;
-            margin-top: 6px;
-            text-align: left;
-        }
-
-        .news-preview-list-card {
-            grid-template-columns: 1fr;
-        }
-
-        .news-preview-list-image {
-            min-height: 220px;
-        }
-
-        .news-preview-list-content {
-            padding: 22px;
-        }
-    }
-</style>
+            document.querySelector(".news-preview-lightbox")?.remove();
+            document.body.classList.remove("news-preview-lightbox-open");
+        });
+    })();
+</script>

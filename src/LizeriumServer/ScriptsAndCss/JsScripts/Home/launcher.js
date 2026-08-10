@@ -74,6 +74,23 @@ export class Launcher {
             });
         });
     }
+    bindReaderMarkdownImageLightbox(root) {
+        root.querySelectorAll("[data-news-lightbox-image]").forEach((image) => {
+            if (image.dataset.newsLightboxBound === "true")
+                return;
+            image.dataset.newsLightboxBound = "true";
+            image.addEventListener("click", (event) => {
+                var _a, _b;
+                event.preventDefault();
+                event.stopPropagation();
+                const imageUrl = image.getAttribute("data-news-reader-image-src") || image.currentSrc || image.src || image.getAttribute("data-news-lightbox-image") || "";
+                if (!imageUrl)
+                    return;
+                const title = ((_b = (_a = image.closest("[data-news-reader-post]")) === null || _a === void 0 ? void 0 : _a.querySelector("h2")) === null || _b === void 0 ? void 0 : _b.textContent) || image.alt || "";
+                this.openNewsLightbox(imageUrl, title);
+            });
+        });
+    }
     openNewsLightbox(imageUrl, title) {
         var _a;
         const previous = document.querySelector(".launcher-news-lightbox");
@@ -144,6 +161,7 @@ export class Launcher {
                 if (!image.src)
                     image.src = image.getAttribute("data-news-reader-image-src") || "";
             });
+            this.bindReaderMarkdownImageLightbox(post);
             post.querySelectorAll("[data-news-video-player]").forEach((player) => {
                 if (resetVideos)
                     player.dataset.newsVideoResetDefault = "true";

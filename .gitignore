@@ -237,6 +237,7 @@ project.lock.json
 **/node_modules/*
 **/wwwroot/*
 **/.tscache/*
+src/Api.LizeriumServer/ScriptsAndCss/Combined/scss/
 
 # SpecFlow specific
 *.feature.cs

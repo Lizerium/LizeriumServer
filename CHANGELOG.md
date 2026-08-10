@@ -20,6 +20,7 @@
 - Fixed video-source visual states in news: only the selected platform is highlighted now, instead of all available YouTube/VK/Rutube buttons looking active at once.
 - Fixed video-platform switching on news cards: selecting YouTube/VK/Rutube now updates the active button and passes the selected platform into the full news reader, including cards that use a poster instead of an embedded iframe.
 - News cards now render the first meaningful Markdown block of the article with inline formatting, skipping covers, images, videos and headings that belong to the full reader.
+- Added fullscreen lightbox viewing for Markdown images in the public news reader and grouped consecutive article images into an adaptive grid for narrow/mobile screenshots.
 - Rebuilt `global.min.css` and `app.min.js` to ship the news-card style and behavior fixes.
 
 ### Api Lizerium Server
@@ -37,6 +38,8 @@
 - Added server-side pagination and debounced search to the admin news image gallery so large upload folders no longer freeze the browser when the picker opens.
 - Fixed admin news image rendering on the API preview page by routing cover, icon, gallery and Markdown images through the protected news asset preview endpoint with safer production path resolution.
 - Fixed inline Markdown images in the API news preview so `![image](...)` renders even when it appears inside a text paragraph.
+- Matched the API news preview with the public reader: article images can be opened fullscreen and adjacent inline images can sit side by side.
+- Moved API news preview styles out of Razor into a page-level SCSS file and added SCSS compilation to the API Grunt pipeline.
 
 ### Database and Tests
 
