@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 13 августа 2026 07:11:18
- * Version: 1.0.144
+ * Last Updated: 14 августа 2026 08:37:41
+ * Version: 1.0.145
  */
 
 namespace Api.LizeriumServer.Services.AppAuthService;
