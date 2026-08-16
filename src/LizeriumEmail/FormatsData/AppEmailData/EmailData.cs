@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 15 августа 2026 07:14:28
- * Version: 1.0.146
+ * Last Updated: 16 августа 2026 14:46:38
+ * Version: 1.0.147
  */
 
 using LizeriumEmail.FormatsData.AppEnumsData;
