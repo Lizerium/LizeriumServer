@@ -598,6 +598,10 @@
                     return false;
                 }
 
+                if (trigger.closest('[data-news-reader-open]')) {
+                    return false;
+                }
+
                 if (trigger.closest('.active')) {
                     return false;
                 }

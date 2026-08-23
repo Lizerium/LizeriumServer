@@ -17,6 +17,7 @@ using LizeriumServer.FormatsData.AppSeo;
 using LizeriumServer.FormatsData.AppWikiData;
 using LizeriumServer.Options;
 
+using LizeriumUtilities.Accessories.NewsAccessories;
 using LizeriumUtilities.FormatsData.DataBase.Requests;
 
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -36,6 +37,7 @@ namespace LizeriumServer.Services.Breadcrumb.Implements
         public string Url { get; set; }
         public List<BreadcrumbNode> Children { get; set; } = new List<BreadcrumbNode>();
         public BreadcrumbNode Parent { get; set; }
+        public DateTime? LastModifiedUtc { get; set; }
 
         public string GetName(string culture)
        => culture switch
@@ -79,6 +81,8 @@ namespace LizeriumServer.Services.Breadcrumb.Implements
             using var scope = _serviceProvider.CreateScope();
             var appDb = scope.ServiceProvider.GetRequiredService<IDataBaseService>();
 
+            _siteMap.Clear();
+
             var nameIndexEn = "Lizerium - Main";
             var nameIndexRu = "Lizerium - Главная";
             // Главная
@@ -97,6 +101,7 @@ namespace LizeriumServer.Services.Breadcrumb.Implements
             // Пример страниц
             AddNode("/Home/Error", new Language() { Russian = "Lizerium - Ошибка", English = "Lizerium - Error" }, home);
             AddNode("/Home/Launcher", new Language() { Russian = "Lizerium - Загрузчик", English = "Lizerium Steam" }, home);
+            var launcherNode = _siteMap["/Home/Launcher"];
             AddNode("/Home/Game", new Language() { Russian = "Lizerium Mode - Игры", English = "Lizerium Mode - Games" }, home);
             AddNode("/docs/all", new Language() { Russian = "Lizerium - Информация", English = "Lizerium - Information" }, home);
             AddNode("/docs/install", new Language() { Russian = "Lizerium - Установка", English = "Lizerium - Installation" }, _siteMap["/docs/all"]);
@@ -104,6 +109,26 @@ namespace LizeriumServer.Services.Breadcrumb.Implements
             AddNode("/docs/hook", new Language() { Russian = "Lizerium - Документация", English = "Lizerium - Documentation" }, _siteMap["/docs/all"]);
             foreach (var category in CategoriesHook)
                 AddNode("/docs/hook/" + category.Key, new Language() { Russian = "Lizerium - " + category.NameRu, English = "Lizerium - " + category.NameEn }, _siteMap["/docs/hook"]);
+
+            var launcherNews = await appDb.GetPublishedLauncherNewsAsync();
+            foreach (var news in launcherNews.OrderByDescending(item => item.PublishedAtUnix).ThenBy(item => item.SortOrder))
+            {
+                var titleRu = string.IsNullOrWhiteSpace(news.TitleRu) ? news.TitleEn : news.TitleRu;
+                var titleEn = string.IsNullOrWhiteSpace(news.TitleEn) ? news.TitleRu : news.TitleEn;
+                var lastModifiedUtc = news.PublishedAtUnix > 0
+                    ? DateTimeOffset.FromUnixTimeSeconds(news.PublishedAtUnix).UtcDateTime
+                    : (DateTime?)null;
+
+                AddNode(
+                    news.GetCanonicalNewsPath("ru"),
+                    new Language
+                    {
+                        Russian = $"Lizerium - {titleRu}",
+                        English = $"Lizerium - {titleEn}"
+                    },
+                    launcherNode,
+                    lastModifiedUtc);
+            }
 
             // Узел Wiki
             var wikiNode = new BreadcrumbNode
@@ -170,7 +195,7 @@ namespace LizeriumServer.Services.Breadcrumb.Implements
 
         private void GenerateSitemapXml(IEnumerable<BreadcrumbNode> nodes)
         {
-            var sitemapPath = Path.Combine(_env.WebRootPath, "sitemap.xml");
+            var sitemapPath = Path.Combine(GetWritableWebRootPath(), "sitemap.xml");
             File.WriteAllText(sitemapPath, GetSitemapXml(_seoDomains.GetPrimaryBaseUrl()), Encoding.UTF8);
             GenerateRobotsTxt();
         }
@@ -193,7 +218,7 @@ namespace LizeriumServer.Services.Breadcrumb.Implements
 
                 xmlDoc.Root.Add(new XElement(ns + "url",
                     new XElement(ns + "loc", $"{normalizedBaseUrl}{node.Url}"),
-                    new XElement(ns + "lastmod", DateTime.UtcNow.ToString("yyyy-MM-dd")),
+                    new XElement(ns + "lastmod", (node.LastModifiedUtc ?? DateTime.UtcNow).ToString("yyyy-MM-dd")),
                     new XElement(ns + "changefreq", "weekly"),
                     new XElement(ns + "priority", node.Url == "/" ? "1.0" : "0.8")
                 ));
@@ -210,8 +235,24 @@ namespace LizeriumServer.Services.Breadcrumb.Implements
 
         private void GenerateRobotsTxt()
         {
-            var robotsPath = Path.Combine(_env.WebRootPath, "robots.txt");
+            var robotsPath = Path.Combine(GetWritableWebRootPath(), "robots.txt");
             File.WriteAllText(robotsPath, GetRobotsTxt(_seoDomains.GetPrimaryBaseUrl()), Encoding.UTF8);
+        }
+
+        private string GetWritableWebRootPath()
+        {
+            var webRootPath = _env.WebRootPath;
+            if (string.IsNullOrWhiteSpace(webRootPath))
+            {
+                var contentRootPath = string.IsNullOrWhiteSpace(_env.ContentRootPath)
+                    ? AppContext.BaseDirectory
+                    : _env.ContentRootPath;
+
+                webRootPath = Path.Combine(contentRootPath, "wwwroot");
+            }
+
+            Directory.CreateDirectory(webRootPath);
+            return webRootPath;
         }
 
         public string GetRobotsTxt(string baseUrl)
@@ -228,13 +269,14 @@ namespace LizeriumServer.Services.Breadcrumb.Implements
         }
 
 
-        private void AddNode(string url, Language title, BreadcrumbNode parent)
+        private void AddNode(string url, Language title, BreadcrumbNode parent, DateTime? lastModifiedUtc = null)
         {
             var node = new BreadcrumbNode
             {
                 Url = url,
                 Title = title,
-                Parent = parent
+                Parent = parent,
+                LastModifiedUtc = lastModifiedUtc
             };
             parent.Children.Add(node);
             _siteMap[url] = node;
@@ -263,6 +305,7 @@ namespace LizeriumServer.Services.Breadcrumb.Implements
                 : routeData.Values["controller"]?.ToString() != null
                     ? _linkGenerator.GetPathByAction(routeData.Values["action"]?.ToString(), routeData.Values["controller"]?.ToString(), routeData.Values)
                     : "/";
+            currentPath = string.IsNullOrWhiteSpace(currentPath) ? "/" : currentPath;
 
             if (_siteMap.TryGetValue(currentPath, out var node))
             {

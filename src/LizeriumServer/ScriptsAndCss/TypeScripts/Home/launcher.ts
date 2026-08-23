@@ -45,9 +45,28 @@ export class Launcher {
         this.bindNewsCarousels();
         this.bindNewsLightbox();
         this.bindNewsReader();
+        this.openInitialNewsReader();
         this.openNewsFromHash();
 
         window.addEventListener("hashchange", this.openNewsFromHash);
+    }
+
+    private openInitialNewsReader() {
+        const initialNewsId = document
+            .querySelector<HTMLElement>("[data-news-initial-open]")
+            ?.getAttribute("data-news-initial-open");
+
+        if (!initialNewsId) {
+            return;
+        }
+
+        const trigger = document.querySelector(
+            `[data-news-reader-open="${initialNewsId}"]`
+        ) as HTMLElement;
+
+        if (trigger) {
+            window.setTimeout(() => trigger.click(), 80);
+        }
     }
 
     private openNewsFromHash() {
@@ -546,7 +565,10 @@ export class Launcher {
                 console.log("[click share]");
                 const newsId = button.getAttribute("data-news-reader-share") || "";
                 console.log("click share id: " + newsId);
-                const url = `${window.location.origin}${window.location.pathname}#news-${newsId}`;
+                const sharePath = button.getAttribute("data-news-reader-share-url") || "";
+                const url = sharePath
+                    ? `${window.location.origin}${sharePath}`
+                    : `${window.location.origin}${window.location.pathname}#news-${newsId}`;
                 console.log("click share url: " + url);
                 const title = button.closest("[data-news-reader-post]")?.querySelector("h2")?.textContent || document.title;
                 console.log("click share title: " + title);

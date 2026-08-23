@@ -119,6 +119,12 @@
             <a class="admin-button muted" href="/news">Сбросить</a>
         </form>
 
+        <form class="admin-toolbar news-admin-toolbar" method="post" action="/sitemap/rebuild" data-sitemap-rebuild-form>
+            @Html.AntiForgeryToken()
+            <button class="admin-button muted" type="submit">Rebuild sitemap.xml</button>
+            <span class="news-save-status" data-sitemap-rebuild-status></span>
+        </form>
+
         @if (Context.Request.Query["save"] == "failed")
         {
             <div class="admin-alert danger">Новость не сохранена. Проверьте поля и подключение к базе.</div>
@@ -126,6 +132,15 @@
         @if (Context.Request.Query["delete"] == "failed")
         {
             <div class="admin-alert danger">Новость не удалена. Запись уже могла исчезнуть.</div>
+        }
+
+        @if (Context.Request.Query["sitemap"] == "failed")
+        {
+            <div class="admin-alert danger">sitemap.xml rebuild failed. Check API configuration and public endpoint token.</div>
+        }
+        @if (Context.Request.Query["sitemap"] == "rebuilt")
+        {
+            <div class="admin-alert success">sitemap.xml rebuilt.</div>
         }
 
         <details class="news-editor-card news-create-panel" open>

@@ -39,4 +39,6 @@ public class LauncherViewModel
     public int PageSize { get; set; } = 7;
 
     public int TotalCount { get; set; }
+
+    public int OpenNewsId { get; set; }
 }

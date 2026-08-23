@@ -6,6 +6,7 @@
 @using System.Text.Encodings.Web
 @using System.Text.Json
 @using System.Text.RegularExpressions
+@using LizeriumUtilities.Accessories.NewsAccessories
 @inject IViewLocalizer Localizer
 @{
     ViewData["Title"] = Localizer["Launcher_Title_Site"];
@@ -369,7 +370,8 @@
 <article>
     <section class="news-section launcher-news-page"
              data-news-video-blocked-template="@videoBlockedTemplate"
-             data-news-video-generic-platform="@genericVideoPlatformLabel">
+             data-news-video-generic-platform="@genericVideoPlatformLabel"
+             data-news-initial-open="@(Model.OpenNewsId > 0 ? Model.OpenNewsId.ToString(CultureInfo.InvariantCulture) : null)">
         <div class="container-fluid">
             <header class="launcher-news-hero">
                 <div class="launcher-news-hero-copy">
@@ -483,6 +485,7 @@
                         ? DateTimeOffset.FromUnixTimeSeconds(news.PublishedAtUnix).ToLocalTime().ToString("dd.MM.yyyy")
                         : string.Empty;
                     var newsType = PickNewsType(news, isRussian);
+                    var canonicalNewsPath = news.GetCanonicalNewsPath(culture);
 
                     <article class="launcher-news-card @(hasBody ? "has-body" : "compact") @(hasCardMedia ? "has-media" : "no-media") @(hasInlineMedia ? "has-inline-media" : string.Empty)" id="news-card-@news.Id">
                         @if (videoPlatforms.Count > 0 && cardImages.Count > 0)
@@ -499,8 +502,7 @@
                         else if (videoPlatforms.Count > 0)
                         {
                             <div class="launcher-news-media launcher-news-card-video" data-news-card-video>
-                                <iframe src="@videoUrl"
-                                        loading="lazy"
+                                <iframe loading="lazy"
                                         data-news-card-video-frame
                                         data-news-reader-video-src="@videoUrl"
                                         frameborder="0"
@@ -579,12 +581,12 @@
                                 </button>
                                 @if (canReadFull)
                                 {
-                                    <button class="launcher-news-read-button"
-                                            type="button"
-                                            data-news-reader-open="@news.Id"
-                                            data-news-reader-platform="@(videoPlatforms.FirstOrDefault()?.Key ?? string.Empty)">
+                                    <a class="launcher-news-read-button"
+                                       href="@canonicalNewsPath"
+                                       data-news-reader-open="@news.Id"
+                                       data-news-reader-platform="@(videoPlatforms.FirstOrDefault()?.Key ?? string.Empty)">
                                         @readFullLabel
-                                    </button>
+                                    </a>
                                 }
                             </div>
                         </div>
@@ -612,6 +614,7 @@
                             : string.Empty;
                         var newsType = PickNewsType(news, isRussian);
                         var iconUrl = PickIconUrl(news);
+                        var canonicalNewsPath = news.GetCanonicalNewsPath(culture);
 
                         <article class="launcher-news-reader-post" data-news-reader-post="@news.Id">
                             <header class="launcher-news-reader-header">
@@ -727,6 +730,7 @@
                                     <button class="launcher-news-action-button"
                                             type="button"
                                             data-news-reader-share="@news.Id"
+                                            data-news-reader-share-url="@canonicalNewsPath"
                                             data-share-label="@shareLabel"
                                             data-share-copied-label="@shareCopiedLabel">
                                         @shareLabel

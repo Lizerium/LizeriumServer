@@ -7,6 +7,7 @@
  */
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -17,6 +18,7 @@ using LizeriumDatabase.Services.AppDataBaseService;
 
 using LizeriumServer.Models;
 
+using LizeriumUtilities.Accessories.NewsAccessories;
 using LizeriumUtilities.FormatsData.DataBase.Requests;
 using Microsoft.AspNetCore.Mvc;
 
@@ -75,7 +77,7 @@ namespace LizeriumServer.Controllers
         /// <summary>
         /// Главная страница загрузчика
         /// </summary>
-        public async Task<IActionResult> Launcher(string search = "", string order = "new", string platform = "", string type = "", bool github = false, int page = 1)
+        public async Task<IActionResult> Launcher(string search = "", string order = "new", string platform = "", string type = "", bool github = false, int page = 1, int openNewsId = 0)
         {
             var news = await AppDb.GetPublishedLauncherNewsAsync();
             page = Math.Max(1, page);
@@ -153,7 +155,7 @@ namespace LizeriumServer.Controllers
             page = Math.Min(page, totalPages);
             news = news.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
-            return View(new LauncherViewModel
+            return View("Launcher", new LauncherViewModel
             {
                 News = news,
                 Search = search,
@@ -165,8 +167,40 @@ namespace LizeriumServer.Controllers
                 CurrentPage = page,
                 TotalPages = totalPages,
                 PageSize = pageSize,
-                TotalCount = totalCount
+                TotalCount = totalCount,
+                OpenNewsId = openNewsId
             });
+        }
+
+        /// <summary>
+        /// Canonical public launcher news URL that opens the existing reader modal.
+        /// </summary>
+        [HttpGet]
+        [Route("/news/{id:int}/{slug}.html")]
+        public async Task<IActionResult> NewsArticle(int id, string slug)
+        {
+            var newsItem = await AppDb.GetPublishedLauncherNewsByIdAsync(id);
+            if (newsItem == null)
+                return NotFound();
+
+            var culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+            var canonicalPath = newsItem.GetCanonicalNewsPath(culture);
+            if (!string.Equals($"/news/{id}/{slug}.html", canonicalPath, StringComparison.OrdinalIgnoreCase))
+                return RedirectPermanent(canonicalPath);
+
+            var allNews = await AppDb.GetPublishedLauncherNewsAsync();
+            allNews = allNews
+                .OrderByDescending(item => item.PublishedAtUnix)
+                .ThenBy(item => item.SortOrder)
+                .ToList();
+
+            const int pageSize = 7;
+            var newsIndex = allNews.FindIndex(item => item.Id == id);
+            var page = newsIndex >= 0
+                ? (newsIndex / pageSize) + 1
+                : 1;
+
+            return await Launcher(page: page, openNewsId: id);
         }
 
         private static bool ContainsText(string value, string search)
@@ -219,14 +253,15 @@ namespace LizeriumServer.Controllers
                     var title = PickLocalizedNewsText(item.TitleRu, item.TitleEn, isRussian);
                     var markdown = PickLocalizedNewsText(item.MarkdownRu, item.MarkdownEn, isRussian);
                     var description = BuildRssDescription(markdown, item.ImageUrl, baseUrl);
+                    var canonicalUrl = $"{baseUrl}{item.GetCanonicalNewsPath(isRussian ? "ru" : "en")}";
                     var publishedAt = item.PublishedAtUnix > 0
                         ? DateTimeOffset.FromUnixTimeSeconds(item.PublishedAtUnix)
                         : DateTimeOffset.UtcNow;
 
                     await writer.WriteStartElementAsync(null, "item", null);
                     await writer.WriteElementStringAsync(null, "title", null, title);
-                    await writer.WriteElementStringAsync(null, "link", null, $"{baseUrl}/Home/Launcher");
-                    await writer.WriteElementStringAsync(null, "guid", null, $"{baseUrl}/Home/Launcher#news-{item.Id}");
+                    await writer.WriteElementStringAsync(null, "link", null, canonicalUrl);
+                    await writer.WriteElementStringAsync(null, "guid", null, canonicalUrl);
                     await writer.WriteElementStringAsync(null, "pubDate", null, publishedAt.UtcDateTime.ToString("R"));
                     await writer.WriteElementStringAsync(null, "description", null, description);
                     await writer.WriteEndElementAsync();

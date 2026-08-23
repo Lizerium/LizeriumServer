@@ -30,6 +30,7 @@ class NewsAdmin {
         });
 
         this.bindMarkdownPasteUploads();
+        this.bindSitemapRebuild();
         this.enhanceNewsAssetFields(forms);
         forms.forEach((form) => {
             this.hydrateImagePreviews(form);
@@ -37,6 +38,67 @@ class NewsAdmin {
         });
         this.ensureNewsAssetModal();
         this.ensureImageLightbox();
+    }
+
+    bindSitemapRebuild() {
+        const form = document.querySelector("[data-sitemap-rebuild-form]");
+        if (!form || form.dataset.sitemapRebuildBound === "true")
+            return;
+
+        form.dataset.sitemapRebuildBound = "true";
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const status = form.querySelector("[data-sitemap-rebuild-status]");
+            const button = form.querySelector("button[type='submit']");
+            const buttonText = button ? button.textContent : "";
+
+            if (button) {
+                button.disabled = true;
+                button.textContent = "Rebuilding...";
+            }
+
+            if (status) {
+                status.className = "news-save-status pending";
+                status.textContent = "Rebuilding sitemap.xml...";
+            }
+
+            try {
+                const response = await fetch(form.getAttribute("action") || "/sitemap/rebuild", {
+                    method: "POST",
+                    body: new FormData(form),
+                    credentials: "same-origin",
+                    headers: {
+                        "Accept": "application/json",
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                });
+
+                const result = await response.json().catch(() => null);
+                if (!response.ok || !result || !result.ok) {
+                    const message = result && (result.message || result.sitemapRebuild?.message)
+                        ? (result.message || result.sitemapRebuild.message)
+                        : "sitemap.xml rebuild failed.";
+                    throw new Error(message);
+                }
+
+                if (status) {
+                    status.className = "news-save-status success";
+                    status.textContent = "sitemap.xml rebuilt.";
+                }
+            }
+            catch (error) {
+                if (status) {
+                    status.className = "news-save-status danger";
+                    status.textContent = error && error.message ? error.message : "sitemap.xml rebuild failed.";
+                }
+            }
+            finally {
+                if (button) {
+                    button.disabled = false;
+                    button.textContent = buttonText;
+                }
+            }
+        });
     }
 
     repairNewsImageSources(root) {

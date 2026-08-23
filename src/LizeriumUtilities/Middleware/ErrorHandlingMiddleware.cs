@@ -43,7 +43,9 @@ public class ErrorHandlingMiddleware
 
             //проверяем код ошибки
             if (context.Response.StatusCode == 404 &&
-                !context.Request.Path.Equals("/Home/Error", StringComparison.OrdinalIgnoreCase))
+                !context.Request.Path.Equals("/Home/Error", StringComparison.OrdinalIgnoreCase) &&
+                !context.Request.Path.StartsWithSegments("/news", StringComparison.OrdinalIgnoreCase) &&
+                !context.Request.Path.StartsWithSegments("/internal", StringComparison.OrdinalIgnoreCase))
             {
                 //редиректим на страницу ошибки можно еще код ошибки отправлять get параметром
                 context.Response.Redirect("/Home/Error", false);

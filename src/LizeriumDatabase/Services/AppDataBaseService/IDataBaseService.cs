@@ -165,6 +165,11 @@ public interface IDataBaseService : IDisposable
     Task<List<LauncherNewsDataResponse>> GetPublishedLauncherNewsAsync(bool checkSecureOperate = true);
 
     /// <summary>
+    /// Получает опубликованную новость Lizerium Steam по идентификатору.
+    /// </summary>
+    Task<LauncherNewsDataResponse> GetPublishedLauncherNewsByIdAsync(int id, bool checkSecureOperate = true);
+
+    /// <summary>
     /// Получает все новости для админки.
     /// </summary>
     Task<List<LauncherNewsDataResponse>> GetAllAdminLauncherNewsAsync(bool checkSecureOperate = true);

@@ -39,6 +39,8 @@ public class HomeController : Controller
 {
     private const int DashboardRowsLimit = 100;
     private const int DashboardRecentRowsScanLimit = 5000;
+    private const string SitemapTokenHeader = "X-Lizerium-Sitemap-Token";
+    private static readonly HttpClient SitemapRebuildHttpClient = new();
 
     private IDataBaseService appDb { get; set; }
     private IAppSecurityService securityService { get; set; }
@@ -1014,6 +1016,8 @@ public class HomeController : Controller
                 return Redirect("~/news?save=failed");
             }
 
+            var sitemapRebuild = await RebuildPublicSitemapAsync();
+
             if (WantsJsonResponse())
             {
                 return Json(new
@@ -1032,7 +1036,8 @@ public class HomeController : Controller
                     news.IsPublished,
                     news.PublishedAtUnix,
                     PublishedAtLocal = FormatNewsPublishedAtInput(news.PublishedAtUnix),
-                    Title = string.IsNullOrWhiteSpace(news.TitleRu) ? news.TitleEn : news.TitleRu
+                    Title = string.IsNullOrWhiteSpace(news.TitleRu) ? news.TitleEn : news.TitleRu,
+                    SitemapRebuild = sitemapRebuild
                 });
             }
 
@@ -1089,8 +1094,10 @@ public class HomeController : Controller
                 return Redirect("~/news?delete=failed");
             }
 
+            var sitemapRebuild = await RebuildPublicSitemapAsync();
+
             if (WantsJsonResponse())
-                return Json(new { ok = true, id });
+                return Json(new { ok = true, id, SitemapRebuild = sitemapRebuild });
 
             return Redirect("~/news");
         }
@@ -1102,6 +1109,27 @@ public class HomeController : Controller
 
             return Redirect("~/news?delete=failed");
         }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Route("/sitemap/rebuild")]
+    public async Task<IActionResult> RebuildSitemap()
+    {
+        if (!await CanEditAdminDataAsync())
+            return WantsJsonResponse()
+                ? Unauthorized(new { ok = false, message = "need authorization" })
+                : Unauthorized("need authorization");
+
+        var sitemapRebuild = await RebuildPublicSitemapAsync();
+        if (WantsJsonResponse())
+        {
+            return sitemapRebuild.Ok
+                ? Json(new { ok = true, sitemapRebuild })
+                : BadRequest(new { ok = false, sitemapRebuild, message = sitemapRebuild.Message });
+        }
+
+        return Redirect(sitemapRebuild.Ok ? "~/news?sitemap=rebuilt" : "~/news?sitemap=failed");
     }
 
     /// <summary>
@@ -1304,6 +1332,35 @@ public class HomeController : Controller
             : Redirect("~/products");
     }
 
+    private static async Task<SitemapRebuildResult> RebuildPublicSitemapAsync()
+    {
+        var publicSiteBaseUrl = Program.Configuration["appSettings:publicSiteBaseUrl"];
+        if (string.IsNullOrWhiteSpace(publicSiteBaseUrl))
+            publicSiteBaseUrl = "https://lizup.ru";
+
+        var sitemapToken = Program.Configuration["appSettings:sitemapRebuildToken"];
+        if (string.IsNullOrWhiteSpace(sitemapToken))
+            return new SitemapRebuildResult(false, "appSettings:sitemapRebuildToken is not configured");
+
+        try
+        {
+            var rebuildUrl = $"{publicSiteBaseUrl.TrimEnd('/')}/internal/sitemap/rebuild";
+            using var request = new HttpRequestMessage(HttpMethod.Post, rebuildUrl);
+            request.Headers.TryAddWithoutValidation(SitemapTokenHeader, sitemapToken);
+
+            using var response = await SitemapRebuildHttpClient.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+                return new SitemapRebuildResult(true, "sitemap rebuilt");
+
+            return new SitemapRebuildResult(false, $"sitemap rebuild failed: {(int)response.StatusCode}");
+        }
+        catch (Exception exception)
+        {
+            exception.LogException();
+            return new SitemapRebuildResult(false, exception.Message);
+        }
+    }
+
     private async Task<bool> CanEditAdminDataAsync()
     {
         if (!AdminAccessGuard.IsAllowed(HttpContext))
@@ -1316,6 +1373,8 @@ public class HomeController : Controller
         var adminSession = HttpContext.Session.GetSession<AdminSession>("admin");
         return adminSession is { IsAuth: true };
     }
+
+    private sealed record SitemapRebuildResult(bool Ok, string Message);
 
     private static bool ContainsNewsText(string value, string search)
     {

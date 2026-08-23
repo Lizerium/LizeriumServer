@@ -53,16 +53,18 @@ public class LauncherScriptRegressionTests
             "LizeriumServer",
             "ScriptsAndCss",
             "CssFiles",
-            "base",
-            "_global.scss");
+            "pages",
+            "home",
+            "news.scss");
 
         var script = await File.ReadAllTextAsync(launcherScript);
         var styles = await File.ReadAllTextAsync(launcherStyles);
 
         Assert.Contains("const setRenderedWindow = ", script);
         Assert.Contains("const resetRenderedWindow = ", script);
-        Assert.Contains("appendReaderPost();", script);
-        Assert.Contains("prependReaderPost();", script);
+        Assert.Contains("const ensurePostRendered = ", script);
+        Assert.Contains("resetRenderedWindow(postIndex);", script);
+        Assert.Contains("ensurePostRendered(targetIndex);", script);
         Assert.Contains("item.classList.toggle(\"is-unloaded\", !isRendered);", script);
         Assert.Contains(".launcher-news-reader-post.is-unloaded", styles);
         Assert.Contains("display: none;", styles);
@@ -100,7 +102,7 @@ public class LauncherScriptRegressionTests
     }
 
     [Fact]
-    public async Task LauncherCards_DoNotAutoloadVideoIframes()
+    public async Task LauncherCards_LoadVideoIframesOnlyAfterPlatformClick()
     {
         var repoRoot = GetRepoRoot();
         var launcherScript = Path.Combine(
@@ -123,10 +125,39 @@ public class LauncherScriptRegressionTests
         var view = await File.ReadAllTextAsync(launcherView);
 
         Assert.DoesNotContain("bindLazyNewsCards", script);
-        Assert.DoesNotContain("data-news-card-video-src", script);
-        Assert.DoesNotContain("data-news-card-video-src", view);
-        Assert.Contains("launcher-news-card-play-button", view);
-        Assert.Contains("launcher-news-media video-preview", view);
+        Assert.Contains("data-news-card-video-src", script);
+        Assert.Contains("frame.src = src;", script);
+        Assert.Contains("data-news-card-video-src", view);
+        Assert.DoesNotContain("<iframe src=\"@videoUrl\"", view);
+        Assert.Contains("launcher-news-video-poster", view);
+        Assert.Contains("launcher-news-card-video", view);
+    }
+
+    [Fact]
+    public async Task LauncherCanonicalNewsLinks_StartReaderAndBypassPageTransition()
+    {
+        var repoRoot = GetRepoRoot();
+        var mainScript = Path.Combine(
+            repoRoot,
+            "src",
+            "LizeriumServer",
+            "ScriptsAndCss",
+            "TypeScripts",
+            "main_api.ts");
+        var layout = Path.Combine(
+            repoRoot,
+            "src",
+            "LizeriumServer",
+            "Views",
+            "Shared",
+            "_Layout.cshtml");
+
+        var script = await File.ReadAllTextAsync(mainScript);
+        var layoutHtml = await File.ReadAllTextAsync(layout);
+
+        Assert.Contains("partsPath[1] === \"news\"", script);
+        Assert.Contains("launcher.start();", script);
+        Assert.Contains("trigger.closest('[data-news-reader-open]')", layoutHtml);
     }
 
     private static string GetRepoRoot()

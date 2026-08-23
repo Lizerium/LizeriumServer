@@ -834,6 +834,27 @@ public partial class DataBaseService : DbContext, IDataBaseService
     }
 
     /// <summary>
+    /// Получает опубликованную новость Lizerium Steam по идентификатору.
+    /// </summary>
+    public async Task<LauncherNewsDataResponse> GetPublishedLauncherNewsByIdAsync(int id, bool checkSecureOperate = true)
+    {
+        try
+        {
+            if (checkSecureOperate)
+                await ExistAndCreateLauncherNewsTable();
+
+            return await LauncherNews
+                .AsNoTracking()
+                .FirstOrDefaultAsync(news => news.Id == id && news.IsPublished);
+        }
+        catch (Exception ex)
+        {
+            ex.LogException();
+            return null;
+        }
+    }
+
+    /// <summary>
     /// Получает все новости для админки.
     /// </summary>
     public async Task<List<LauncherNewsDataResponse>> GetAllAdminLauncherNewsAsync(bool checkSecureOperate = true)

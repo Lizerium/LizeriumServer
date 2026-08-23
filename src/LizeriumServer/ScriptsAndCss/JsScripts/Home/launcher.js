@@ -17,9 +17,22 @@ export class Launcher {
             this.bindNewsCarousels();
             this.bindNewsLightbox();
             this.bindNewsReader();
+            this.openInitialNewsReader();
             this.openNewsFromHash();
             window.addEventListener("hashchange", this.openNewsFromHash);
         });
+    }
+    openInitialNewsReader() {
+        var _a;
+        const initialNewsId = (_a = document
+            .querySelector("[data-news-initial-open]")) === null || _a === void 0 ? void 0 : _a.getAttribute("data-news-initial-open");
+        if (!initialNewsId) {
+            return;
+        }
+        const trigger = document.querySelector(`[data-news-reader-open="${initialNewsId}"]`);
+        if (trigger) {
+            window.setTimeout(() => trigger.click(), 80);
+        }
     }
     openNewsFromHash() {
         const match = window.location.hash.match(/^#news-(\d+)$/);
@@ -409,7 +422,10 @@ export class Launcher {
                 console.log("[click share]");
                 const newsId = button.getAttribute("data-news-reader-share") || "";
                 console.log("click share id: " + newsId);
-                const url = `${window.location.origin}${window.location.pathname}#news-${newsId}`;
+                const sharePath = button.getAttribute("data-news-reader-share-url") || "";
+                const url = sharePath
+                    ? `${window.location.origin}${sharePath}`
+                    : `${window.location.origin}${window.location.pathname}#news-${newsId}`;
                 console.log("click share url: " + url);
                 const title = ((_b = (_a = button.closest("[data-news-reader-post]")) === null || _a === void 0 ? void 0 : _a.querySelector("h2")) === null || _b === void 0 ? void 0 : _b.textContent) || document.title;
                 console.log("click share title: " + title);

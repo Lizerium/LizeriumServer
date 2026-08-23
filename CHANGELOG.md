@@ -12,6 +12,27 @@
 
 # Updates
 
+## 24.08.2026
+
+### Lizerium Server
+
+- Added canonical public news URLs in the `/news/{id}/{slug}.html` format while keeping the existing modal reader experience on the launcher news page.
+- Added direct opening of a news item through canonical news URLs so shared links and sitemap entries render the selected article immediately.
+- Added published launcher news entries to `sitemap.xml` and protected sitemap rebuild support through `/internal/sitemap/rebuild`.
+- Fixed sitemap generation for debug and hosted environments where `WebRootPath` can be empty by falling back to a writable `wwwroot` path.
+- Fixed the global page-transition handler so `Read full` news links open the modal instead of forcing a full page navigation.
+- Kept news-card video iframes lazy: card iframe `src` is set only after selecting a video platform.
+
+### Api Lizerium Server
+
+- Added automatic public `sitemap.xml` rebuild after news save/delete through the configured public site endpoint.
+- Added a manual `Rebuild sitemap.xml` action to the admin news page.
+- Added protected API-to-public sitemap rebuild configuration through `appSettings:sitemapRebuildToken` and `appSettings:publicSiteBaseUrl`.
+
+### Tests and Quality
+
+- Added regression tests for canonical news URLs, sitemap news entries, sitemap rebuild authorization and modal-reader/page-transition behavior.
+
 ## 08.08.2026
 
 ### Lizerium Server

@@ -30,6 +30,10 @@ import { Game } from "./Home/game";
         }
         let index = null;
         let wiki = null;
+        if (partsPath[1] === "news") {
+            var launcher = new Launcher(utilities, cookies);
+            launcher.start();
+        }
         switch (partsPath[1]) {
             case "":
             case "index":
