@@ -1,9 +1,9 @@
-/*
+﻿/*
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 23 августа 2026 07:14:40
- * Version: 1.0.154
+ * Last Updated: 24 августа 2026 07:14:27
+ * Version: 1.0.156
  */
 
 using System.Net;
@@ -38,11 +38,11 @@ public class LauncherCanonicalNewsRouteTests : IAsyncLifetime
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         _publishedNews = new LauncherNewsDataResponse
         {
-            TitleRu = "UTF в XML",
+            TitleRu = "UTF РІ XML",
             TitleEn = "UTF to XML",
-            MarkdownRu = "Текст опубликованной новости.",
+            MarkdownRu = "РўРµРєСЃС‚ РѕРїСѓР±Р»РёРєРѕРІР°РЅРЅРѕР№ РЅРѕРІРѕСЃС‚Рё.",
             MarkdownEn = "Published news text.",
-            NewsTypeRu = "Обновление",
+            NewsTypeRu = "РћР±РЅРѕРІР»РµРЅРёРµ",
             NewsTypeEn = "Update",
             IsPublished = true,
             PublishedAtUnix = now,
@@ -50,11 +50,11 @@ public class LauncherCanonicalNewsRouteTests : IAsyncLifetime
         };
         _hiddenNews = new LauncherNewsDataResponse
         {
-            TitleRu = "Скрытая новость",
+            TitleRu = "РЎРєСЂС‹С‚Р°СЏ РЅРѕРІРѕСЃС‚СЊ",
             TitleEn = "Hidden News",
-            MarkdownRu = "Черновик.",
+            MarkdownRu = "Р§РµСЂРЅРѕРІРёРє.",
             MarkdownEn = "Draft.",
-            NewsTypeRu = "Черновик",
+            NewsTypeRu = "Р§РµСЂРЅРѕРІРёРє",
             NewsTypeEn = "Draft",
             IsPublished = false,
             PublishedAtUnix = now - 1,

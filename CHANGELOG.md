@@ -21,6 +21,7 @@
 - Added published launcher news entries to `sitemap.xml` and protected sitemap rebuild support through `/internal/sitemap/rebuild`.
 - Fixed sitemap generation for debug and hosted environments where `WebRootPath` can be empty by falling back to a writable `wwwroot` path.
 - Fixed the global page-transition handler so `Read full` news links open the modal instead of forcing a full page navigation.
+- Fixed Knowledge Base SEO canonicalization: language-less `/wiki/KnowledgeBase/...` URLs now permanently redirect to the selected language URL, explicit `/ru/` and `/en/` article URLs keep their own language content, and article pages emit canonical plus `hreflang` alternates from a single valid HTML `<head>`.
 - Kept news-card video iframes lazy: card iframe `src` is set only after selecting a video platform.
 
 ### Api Lizerium Server
@@ -32,6 +33,7 @@
 ### Tests and Quality
 
 - Added regression tests for canonical news URLs, sitemap news entries, sitemap rebuild authorization and modal-reader/page-transition behavior.
+- Added regression tests for Knowledge Base redirects, canonical URLs and RU/EN alternate links.
 
 ## 08.08.2026
 

@@ -1,9 +1,9 @@
-/*
+﻿/*
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 23 августа 2026 07:14:40
- * Version: 1.0.154
+ * Last Updated: 24 августа 2026 07:14:27
+ * Version: 1.0.156
  */
 
 using LizeriumUtilities.Accessories.NewsAccessories;
@@ -19,7 +19,7 @@ public class NewsUrlExtensionsTests
         var news = new LauncherNewsDataResponse
         {
             Id = 21,
-            TitleRu = "UTF в XML",
+            TitleRu = "UTF РІ XML",
             TitleEn = "UTF to XML"
         };
 
@@ -32,7 +32,7 @@ public class NewsUrlExtensionsTests
         var news = new LauncherNewsDataResponse
         {
             Id = 21,
-            TitleRu = "Новость Lizerium Steam!",
+            TitleRu = "РќРѕРІРѕСЃС‚СЊ Lizerium Steam!",
             TitleEn = "Lizerium Steam News"
         };
 

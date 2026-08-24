@@ -10,28 +10,8 @@
 	Layout = "_Layout";
 	ViewData["Title"] = Model.Title;
 	ViewData["Description"] = string.IsNullOrEmpty(Model.Description) ? SharedLocalizer["Shared_Desc_Site"] : Model.Description;
-	var seoDomains = SeoDomainsOptions.Value;
-	var currentUrl = seoDomains.GetBaseUrl(Context.Request) + Context.Request.Path;
-	var openGraphImageUrl = seoDomains.GetOpenGraphImageUrl(Context.Request);
 	var Culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
 }
-
-<head>
-	<title>@Model.Title</title>
-	@if (!string.IsNullOrEmpty(Model.Description))
-	{
-		<meta name="description" content="@Model.Description" />
-	}
-
-	<!-- Open Graph -->
-	<meta property="og:title" content="@Model.Title" />
-	<meta property="og:description" content="@(string.IsNullOrEmpty(Model.Description) ? SharedLocalizer["Shared_Desc_Site"] : Model.Description)" />
-	<meta property="og:type" content="website" />
-	<meta property="og:url" content="@currentUrl" />
-	<meta property="og:image" content="@openGraphImageUrl?v=2" />
-	<meta property="og:site_name" content="@seoDomains.SiteName" />
-	<meta property="og:locale" content="ru_RU" />
-</head>
 
 <div class="custombody">
 	@functions {

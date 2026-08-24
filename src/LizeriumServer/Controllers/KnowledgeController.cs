@@ -2,10 +2,11 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 23 августа 2026 07:14:40
- * Version: 1.0.154
+ * Last Updated: 24 августа 2026 07:14:27
+ * Version: 1.0.156
  */
 
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 using LizeriumServer.FormatsData.AppWikiData;
@@ -29,16 +30,19 @@ namespace LizeriumServer.Controllers
         private readonly IStringLocalizer _stringLocalizer;
         private readonly ResourceHelper _resourceHelper;
         private readonly StoragePathsOptions _storagePaths;
+        private readonly SeoDomainsOptions _seoDomains;
 
         /// <summary>
         /// Конструктор
         /// </summary>
         /// <param name="env">Окружение сервера</param>
         public KnowledgeController(IWebHostEnvironment env, IStringLocalizerFactory localizer,
-            IOptions<StoragePathsOptions> storagePathsOptions)
+            IOptions<StoragePathsOptions> storagePathsOptions,
+            IOptions<SeoDomainsOptions> seoDomainsOptions)
         {
             _env = env;
             _storagePaths = storagePathsOptions.Value;
+            _seoDomains = seoDomainsOptions.Value;
 
             var location = typeof(KnowledgeController).Assembly.GetName().Name;
             if (location != null)
@@ -73,12 +77,27 @@ namespace LizeriumServer.Controllers
             }
 
             var match = Regex.Match(cultureCookie, @"c=(?<culture>[a-zA-Z\-]+)");
-            var culture = string.IsNullOrEmpty(match.Groups["culture"].Value) ? cultureCookie : match.Groups["culture"].Value;
+            var cookieCulture = string.IsNullOrEmpty(match.Groups["culture"].Value) ? cultureCookie : match.Groups["culture"].Value;
+            var route = NormalizeKnowledgeRoute(slug, cookieCulture);
 
-            string fullPath = MarkdownPage.ValidateLink(ref slug, cultureCookie, _env.ContentRootPath, _storagePaths.KnowledgeBase);
+            if (route.ShouldRedirect)
+                return RedirectPermanent(route.CanonicalPath);
+
+            var culture = route.Culture;
+            var cultureInfo = new CultureInfo(culture);
+            CultureInfo.CurrentCulture = cultureInfo;
+            CultureInfo.CurrentUICulture = cultureInfo;
+
+            string fullPath = route.IsKnowledgeBaseRoute
+                ? Path.Combine(_storagePaths.KnowledgeBase, culture, route.RelativePath.Replace('/', Path.DirectorySeparatorChar))
+                : MarkdownPage.ValidateLink(ref slug, cultureCookie, _env.ContentRootPath, _storagePaths.KnowledgeBase);
 
             if (!System.IO.File.Exists(fullPath))
                 return NotFound();
+
+            var seoBaseUrl = _seoDomains.GetBaseUrl(Request);
+            ViewData["CanonicalUrl"] = $"{seoBaseUrl}{route.CanonicalPath}";
+            SetAlternateWikiUrls(route, seoBaseUrl);
 
             var parsed = MarkdownPage.Parse(fullPath, _storagePaths.KnowledgeBase, new MdAlertData() {
                 LocInfoName = _stringLocalizer["Shared_Info"],
@@ -154,10 +173,109 @@ namespace LizeriumServer.Controllers
                 HtmlContent = parsed.HtmlContent,
                 Title = ViewData["Title"]?.ToString(),
                 Description = ViewData["Description"]?.ToString(),
-                Url = $"{Request.Scheme}://{Request.Host}{Request.Path}"
+                Url = $"{seoBaseUrl}{route.CanonicalPath}"
             };
 
             return View("MarkdownPage", model);
         }
+
+        private void SetAlternateWikiUrls(KnowledgeRouteInfo route, string seoBaseUrl)
+        {
+            if (!route.IsKnowledgeBaseRoute)
+                return;
+
+            foreach (var culture in SupportedWikiCultures)
+            {
+                var relativePath = route.RelativePath.Replace('/', Path.DirectorySeparatorChar);
+                var fullPath = Path.Combine(_storagePaths.KnowledgeBase, culture, relativePath);
+                if (!System.IO.File.Exists(fullPath))
+                    continue;
+
+                var url = $"{seoBaseUrl}/wiki/KnowledgeBase/{culture}/{route.RelativePath}";
+                if (culture == "ru")
+                    ViewData["AlternateRuUrl"] = url;
+                if (culture == "en")
+                    ViewData["AlternateEnUrl"] = url;
+            }
+
+            if (ViewData["AlternateRuUrl"] is string ruUrl)
+                ViewData["AlternateDefaultUrl"] = ruUrl;
+        }
+
+        private static KnowledgeRouteInfo NormalizeKnowledgeRoute(string slug, string culture)
+        {
+            var normalizedSlug = (slug ?? string.Empty).Trim('/');
+            var normalizedCulture = NormalizeCulture(culture);
+            var segments = normalizedSlug.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+            if (segments.Length == 0)
+            {
+                return new KnowledgeRouteInfo(
+                    normalizedCulture,
+                    "index.md",
+                    $"/wiki/KnowledgeBase/{normalizedCulture}/index.md",
+                    true,
+                    false);
+            }
+
+            if (!segments[0].Equals("KnowledgeBase", StringComparison.OrdinalIgnoreCase))
+            {
+                return new KnowledgeRouteInfo(
+                    normalizedCulture,
+                    normalizedSlug,
+                    $"/wiki/{normalizedSlug}",
+                    false,
+                    false);
+            }
+
+            if (segments.Length > 1 && IsSupportedWikiCulture(segments[1]))
+            {
+                var routeCulture = segments[1].ToLowerInvariant();
+                var relativePath = string.Join('/', segments.Skip(2));
+                if (string.IsNullOrWhiteSpace(relativePath))
+                    relativePath = "index.md";
+
+                return new KnowledgeRouteInfo(
+                    routeCulture,
+                    relativePath,
+                    $"/wiki/KnowledgeBase/{routeCulture}/{relativePath}",
+                    true,
+                    false);
+            }
+
+            var fallbackRelativePath = string.Join('/', segments.Skip(1));
+            if (string.IsNullOrWhiteSpace(fallbackRelativePath))
+                fallbackRelativePath = "index.md";
+
+            return new KnowledgeRouteInfo(
+                normalizedCulture,
+                fallbackRelativePath,
+                $"/wiki/KnowledgeBase/{normalizedCulture}/{fallbackRelativePath}",
+                true,
+                true);
+        }
+
+        private static string NormalizeCulture(string culture)
+        {
+            return IsSupportedWikiCulture(culture) ? culture.ToLowerInvariant() : "ru";
+        }
+
+        private static bool IsSupportedWikiCulture(string culture)
+        {
+            return SupportedWikiCultures.Contains(culture?.ToLowerInvariant() ?? string.Empty);
+        }
+
+        private static readonly HashSet<string> SupportedWikiCultures = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "ru",
+            "en"
+        };
+
+        private sealed record KnowledgeRouteInfo(
+            string Culture,
+            string RelativePath,
+            string CanonicalPath,
+            bool IsKnowledgeBaseRoute,
+            bool ShouldRedirect);
     }
 }

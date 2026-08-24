@@ -15,8 +15,11 @@
 	var seoDomains = SeoDomainsOptions.Value;
 	var currentBaseUrl = seoDomains.GetBaseUrl(Context.Request);
 	// Ссылка на текущую страницу
-	var currentUrl = currentBaseUrl + Context.Request.Path;
+	var currentUrl = ViewData["CanonicalUrl"]?.ToString() ?? currentBaseUrl + Context.Request.Path;
 	var openGraphImageUrl = seoDomains.GetOpenGraphImageUrl(Context.Request);
+	var alternateRuUrl = ViewData["AlternateRuUrl"]?.ToString();
+	var alternateEnUrl = ViewData["AlternateEnUrl"]?.ToString();
+	var alternateDefaultUrl = ViewData["AlternateDefaultUrl"]?.ToString();
 
 	// анонимный объект с "безопасными" именами
 	var jsonLdObj = new
@@ -72,6 +75,18 @@
     <meta property="og:locale" content="ru_RU">
     <meta property="vk:image" content="@openGraphImageUrl">
     <link rel="canonical" href="@currentUrl" />
+    @if (!string.IsNullOrWhiteSpace(alternateRuUrl))
+    {
+        <link rel="alternate" hreflang="ru" href="@alternateRuUrl" />
+    }
+    @if (!string.IsNullOrWhiteSpace(alternateEnUrl))
+    {
+        <link rel="alternate" hreflang="en" href="@alternateEnUrl" />
+    }
+    @if (!string.IsNullOrWhiteSpace(alternateDefaultUrl))
+    {
+        <link rel="alternate" hreflang="x-default" href="@alternateDefaultUrl" />
+    }
 
     <script>
         document.documentElement.classList.add('is-loading');

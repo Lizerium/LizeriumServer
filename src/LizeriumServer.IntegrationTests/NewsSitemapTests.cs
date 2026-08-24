@@ -1,9 +1,9 @@
-/*
+﻿/*
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 23 августа 2026 07:14:40
- * Version: 1.0.154
+ * Last Updated: 24 августа 2026 07:14:27
+ * Version: 1.0.156
  */
 
 using System.Net;
@@ -40,9 +40,9 @@ public class NewsSitemapTests : IAsyncLifetime
         var publishedAt = DateTimeOffset.UtcNow.AddDays(-3).ToUnixTimeSeconds();
         _publishedNews = new LauncherNewsDataResponse
         {
-            TitleRu = "Новость для sitemap",
+            TitleRu = "РќРѕРІРѕСЃС‚СЊ РґР»СЏ sitemap",
             TitleEn = "Sitemap News",
-            MarkdownRu = "Опубликованная новость.",
+            MarkdownRu = "РћРїСѓР±Р»РёРєРѕРІР°РЅРЅР°СЏ РЅРѕРІРѕСЃС‚СЊ.",
             MarkdownEn = "Published news.",
             NewsTypeRu = "SEO",
             NewsTypeEn = "SEO",
@@ -52,9 +52,9 @@ public class NewsSitemapTests : IAsyncLifetime
         };
         _hiddenNews = new LauncherNewsDataResponse
         {
-            TitleRu = "Скрытая новость sitemap",
+            TitleRu = "РЎРєСЂС‹С‚Р°СЏ РЅРѕРІРѕСЃС‚СЊ sitemap",
             TitleEn = "Hidden Sitemap News",
-            MarkdownRu = "Черновик.",
+            MarkdownRu = "Р§РµСЂРЅРѕРІРёРє.",
             MarkdownEn = "Draft.",
             NewsTypeRu = "Draft",
             NewsTypeEn = "Draft",

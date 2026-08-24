@@ -1,9 +1,9 @@
-/*
+﻿/*
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 23 августа 2026 07:14:40
- * Version: 1.0.154
+ * Last Updated: 24 августа 2026 07:14:27
+ * Version: 1.0.156
  */
 
 using LizeriumDatabase.Services.AppDataBaseService;
@@ -34,9 +34,9 @@ public class NewsCanonicalLinksTests : IAsyncLifetime
 
         _news = new LauncherNewsDataResponse
         {
-            TitleRu = "Адрес новости",
+            TitleRu = "РђРґСЂРµСЃ РЅРѕРІРѕСЃС‚Рё",
             TitleEn = "News Address",
-            MarkdownRu = string.Join(" ", Enumerable.Repeat("Текст новости для полной версии.", 16)),
+            MarkdownRu = string.Join(" ", Enumerable.Repeat("РўРµРєСЃС‚ РЅРѕРІРѕСЃС‚Рё РґР»СЏ РїРѕР»РЅРѕР№ РІРµСЂСЃРёРё.", 16)),
             MarkdownEn = string.Join(" ", Enumerable.Repeat("News body for the full version.", 16)),
             NewsTypeRu = "SEO",
             NewsTypeEn = "SEO",
