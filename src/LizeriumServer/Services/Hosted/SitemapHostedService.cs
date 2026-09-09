@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 08 сентября 2026 06:57:11
- * Version: 1.0.170
+ * Last Updated: 09 сентября 2026 06:57:17
+ * Version: 1.0.171
  */
 
 using LizeriumServer.Services.Breadcrumb;
