@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 23 октября 2026 07:54:01
- * Version: 1.0.214
+ * Last Updated: 24 октября 2026 10:31:42
+ * Version: 1.0.215
  */
 
 using Microsoft.Extensions.Caching.Memory;
